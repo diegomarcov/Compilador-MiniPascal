@@ -2,6 +2,7 @@ import argparse
 import sys
 import string
 from shlex import shlex
+from types import IntType, LongType
 
 class LexAn():
 
@@ -68,6 +69,13 @@ class LexAn():
 	def getCurrentLexeme(self):
 		return self.currentLexeme
 	
+	def makeNumber(self, source):
+		try:
+			number = str(int(source))
+		except:
+			number = None			
+		return number
+	
 	def getNextToken(self):
 		#self.currentLexemeIndex +=1
 		#print self.lexer
@@ -82,7 +90,10 @@ class LexAn():
 			if (self.currentLexeme == ''):
 				return "<EOF>"
 			else:
-				return "<IDENTIFIER>"
+				if(self.currentLexeme == self.makeNumber(self.currentLexeme)):
+					return "<NUMBER>"
+				else:
+					return "<IDENTIFIER>"
 	
 parser = argparse.ArgumentParser(description='Lexical analysis for the provided .pas file.')
 parser.add_argument('inputFile', metavar='IN_FILE', type=file, help='The source .pas file')
