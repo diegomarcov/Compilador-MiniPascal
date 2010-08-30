@@ -28,8 +28,30 @@ class LexAn():
 									"or" : "<OR>",
 									"and" : "<AND>",
 									"true" : "<TRUE>",
-									"false" : "<FALSE>"
-									# "<" : 
+									"false" : "<FALSE>",
+									"(" : "<PARENTHESIS>",
+									")" : "<PARENTHESIS>",
+									"[" : "<BRACKET>",
+									"]" : "<BRACKET>",
+									"=" : "<EQUAL>",
+									"<" : "<RELOP>",
+									">" : "<RELOP>", 
+									"<>": "<RELOP>", 
+									"<=": "<RELOP>", 
+									">=": "<RELOP>", 
+									"+" : "<ARITHOP>", 
+									"-" : "<ARITHOP>", 
+									"*" : "<ARITHOP>", 
+									"div" : "<ARITHOP>",
+									"not" : "<UN_LOGOP>",
+									"or" : "<BIN_LOGOP>",
+									"and": "<BIN_LOGOP>",
+									":" : "<TYPE_DECLARATION>",
+									".." : "<SUBRANGE>",
+									":=" : "<ASSIGNMENT>",
+									"," : "<COMMA>",
+									";" : "<SEMI_COLON>",
+									"." : "<PROGRAM_END>",
 									}
 									
 		self.lexer = shlex(file)
@@ -40,22 +62,27 @@ class LexAn():
 			lexeme = self.currentLexeme
 		return lexeme in self.tokenDictionary
 	
+	def getCurrentLine(self):
+		return self.lexer.lineno
+		
+	def getCurrentLexeme(self):
+		return self.currentLexeme
+	
 	def getNextToken(self):
 		#self.currentLexemeIndex +=1
 		#print self.lexer
 		#if self.currentLexemeIndex > len(self.lexer):
 		#	return "<EOF>"
 		#else:
-		self.currentLexeme = self.lexer.get_token()
-		if (self.currentLexeme == shlex.eof):
-			return "<EOF>"
-		else:
-		print repr(self.currentLexeme)
-		if(self.isKeyword(self.currentLexeme)):
-			print self.tokenDictionary[self.currentLexeme]
+		self.currentLexeme = self.lexer.get_token().lower()
+		#print "Current lexeme: 		%s" % repr(self.currentLexeme)
+		if (self.currentLexeme in self.tokenDictionary):
 			return self.tokenDictionary[self.currentLexeme]
 		else:
-			pass
+			if (self.currentLexeme == ''):
+				return "<EOF>"
+			else:
+				return "<IDENTIFIER>"
 	
 parser = argparse.ArgumentParser(description='Lexical analysis for the provided .pas file.')
 parser.add_argument('inputFile', metavar='IN_FILE', type=file, help='The source .pas file')
@@ -76,3 +103,9 @@ for token in lexer:
 '''
 
 lexicalAnalyzer = LexAn(inputFile)
+print "LEXEME				TOKEN				LINE NUMBER"
+token = lexicalAnalyzer.getNextToken()
+while(token != "<EOF>"):
+	#print token
+	print "%s			%s				%s" % (lexicalAnalyzer.getCurrentLexeme(), token, lexicalAnalyzer.getCurrentLine())
+	token = lexicalAnalyzer.getNextToken()
