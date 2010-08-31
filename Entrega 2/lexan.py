@@ -53,7 +53,6 @@ class LexAn():
 									"not" : "<UN_LOGOP>",
 									"or" : "<BIN_LOGOP>",
 									"and": "<BIN_LOGOP>",
-									":" : "<TYPE_DECLARATION>",
 									".." : "<SUBRANGE>",
 									":=" : "<ASSIGNMENT>",
 									"," : "<COMMA>",
@@ -105,12 +104,14 @@ class LexAn():
 			else:
 				self.lexer.push_token(self.forwardToken)
 				return "<END_PROGRAM>"
-		# elif(self.currentLexeme == ":"):
-			# print "AAAAAAAAAAAAAAAAAAAAASSSSSSSDDDDDDDDDDDDDDDDDDDDDDDD"
-			# if(self.lexer.read_token() == "="):
-				# self.lexer.get_token()
-				# self.currentLexeme = ":="
-				# return "<ASSIGNMENT>"
+		elif(self.currentLexeme == ":"):
+			self.forwardToken = self.lexer.get_token()
+			if(self.forwardToken == "="):
+				self.currentLexeme = ":="
+				return "<ASSIGNMENT>"
+			else:
+				self.lexer.push_token(self.forwardToken)
+				return "<TYPE_DECLARATION>"
 		elif(self.identificatorRE.match(self.currentLexeme)):
 			return "<IDENTIFIER>"
 		elif(self.numberRE.match(self.currentLexeme)):
