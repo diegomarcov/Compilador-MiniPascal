@@ -1,13 +1,13 @@
-import argparse
+import argparse, io
 from lexan import LexAn,LexError
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Lexical analysis for the provided .pas file.')
-	parser.add_argument('inputFile', metavar='IN_FILE', type=file, help='The source .pas file')
+	parser.add_argument('inputFile', metavar='IN_FILE', help='The source .pas file')
 	parser.add_argument('outputFile', metavar='OUT_FILE', nargs='?', help='The optional output file.')
 
 	args = parser.parse_args()
-	inputFile = args.inputFile
+	inputFile = io.BufferedReader(io.FileIO(args.inputFile))
 	#fileContent = inputFile.read()
 
 	'''

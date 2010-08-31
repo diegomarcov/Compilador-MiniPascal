@@ -10,7 +10,7 @@ class LexError (Exception):
 		self.message = msg
 		
 	def __str__(self):
-		return "Lexical error: " + self.message
+		return self.message
 
 class LexAn():
 	def __init__(self, file):
@@ -109,7 +109,7 @@ class LexAn():
 		elif(self.numberRE.match(self.currentLexeme)):
 			return "<NUMBER>"
 		else:
-			raise LexError(self.lexer.error_leader()+'The lexeme "' + self.currentLexeme + '" couldn\'t be recognized')
+			raise LexError(self.lexer.error_leader(self.lexer.infile)+'Lexical error: The lexeme "' + self.currentLexeme + '" couldn\'t be recognized')
 			
 #######################################################################
 			
