@@ -1,5 +1,5 @@
 import argparse
-from lexan import LexAn
+from lexan import LexAn,LexError
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Lexical analysis for the provided .pas file.')
@@ -23,6 +23,9 @@ if __name__ == '__main__':
 	lexicalAnalyzer = LexAn(inputFile)
 	print "LEXEME				TOKEN				LINE NUMBER"
 	token = ""
-	while(token != "<EOF>"):
-		token = lexicalAnalyzer.getNextToken()
-		print "%s			%s				%s" % (lexicalAnalyzer.getCurrentLexeme(), token, lexicalAnalyzer.getCurrentLine())
+	try:
+		while(token != "<EOF>"):
+			token = lexicalAnalyzer.getNextToken()
+			print "%s			%s				%s" % (lexicalAnalyzer.getCurrentLexeme(), token, lexicalAnalyzer.getCurrentLine())
+	except LexError as e:
+		print e

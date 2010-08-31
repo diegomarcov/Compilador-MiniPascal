@@ -1,7 +1,16 @@
 import sys
 import string
+import re
 from shlex import shlex
 from types import IntType, LongType
+
+class LexError (Exception):
+
+	def ___init___(self,msg):
+		self.message = msg
+		
+	def __str__(self):
+		return "Lexical error: " + self.message
 
 class LexAn():
 	def __init__(self, file):
@@ -55,6 +64,9 @@ class LexAn():
 		self.lexer = shlex(file)
 		self.lexer.quotes = '"'
 		self.lexer.commenters = "//"
+		#estas son expresiones regulares. Es importante leer la documentacion de la libreria re
+		self.identificatorRE = re.compile('^[a-zA-Z][a-zA-Z0-9]*$')
+		self.numberRE = re.compile('^[0-9]+$')
 		#self.currentLexemeIndex = -1
 	
 	def isKeyword(self, lexeme=None):
@@ -68,12 +80,12 @@ class LexAn():
 	def getCurrentLexeme(self):
 		return self.currentLexeme
 	
-	def makeNumber(self, source):
-		try:
-			number = str(int(source))
-		except:
-			number = None
-		return number
+	# def makeNumber(self, source):
+		# try:
+			# number = str(int(source))
+		# except:
+			# number = None
+		# return number
 	
 	def getNextToken(self):
 		#self.currentLexemeIndex +=1
@@ -92,7 +104,13 @@ class LexAn():
 				return "<SUBRANGE_SEPARATOR>"
 			else:
 				return "<END_PROGRAM>"
-		elif(self.currentLexeme == self.makeNumber(self.currentLexeme)):
+		elif(self.identificatorRE.match(self.currentLexeme)):
+			return "<IDENTIFIER>"
+		elif(self.numberRE.match(self.currentLexeme)):
 			return "<NUMBER>"
 		else:
-			return "<IDENTIFIER>"
+			raise LexError(self.lexer.error_leader()+'The lexeme "' + self.currentLexeme + '" couldn\'t be recognized')
+			
+#######################################################################
+			
+
