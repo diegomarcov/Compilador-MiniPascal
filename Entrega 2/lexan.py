@@ -64,9 +64,8 @@ class LexAn():
 		self.lexer.quotes = '"'
 		self.lexer.commenters = "//"
 		#estas son expresiones regulares. Es importante leer la documentacion de la libreria re
-		self.identificatorRE = re.compile('^[a-zA-Z][a-zA-Z0-9]*$')
+		self.identifierRE = re.compile('^[a-zA-Z][a-zA-Z0-9]*$')
 		self.numberRE = re.compile('^[0-9]+$')
-		#self.currentLexemeIndex = -1
 	
 	def isKeyword(self, lexeme=None):
 		if lexeme==None:
@@ -79,21 +78,8 @@ class LexAn():
 	def getCurrentLexeme(self):
 		return self.currentLexeme
 	
-	# def makeNumber(self, source):
-		# try:
-			# number = str(int(source))
-		# except:
-			# number = None
-		# return number
-	
 	def getNextToken(self):
-		#self.currentLexemeIndex +=1
-		#print self.lexer
-		#if self.currentLexemeIndex > len(self.lexer):
-		#	return "<EOF>"
-		#else:
 		self.currentLexeme = self.lexer.get_token().lower()
-		#print "Current lexeme: 		%s" % repr(self.currentLexeme)
 		if (self.currentLexeme in self.tokenDictionary):
 			return self.tokenDictionary[self.currentLexeme]
 		elif(self.currentLexeme == "."):
@@ -112,7 +98,7 @@ class LexAn():
 			else:
 				self.lexer.push_token(self.forwardToken)
 				return "<TYPE_DECLARATION>"
-		elif(self.identificatorRE.match(self.currentLexeme)):
+		elif(self.identifierRE.match(self.currentLexeme)):
 			return "<IDENTIFIER>"
 		elif(self.numberRE.match(self.currentLexeme)):
 			return "<NUMBER>"
