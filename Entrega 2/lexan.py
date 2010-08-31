@@ -61,11 +61,13 @@ class LexAn():
 									}
 									
 		self.lexer = shlex(file)
-		self.lexer.quotes = '"'
+		self.lexer.quotes = ''
+		self.lexer.wordchars += "'"
 		self.lexer.commenters = "//"
 		#estas son expresiones regulares. Es importante leer la documentacion de la libreria re
 		self.identifierRE = re.compile('^[a-zA-Z][a-zA-Z0-9]*$')
 		self.numberRE = re.compile('^[0-9]+$')
+		self.charRE = re.compile("^'[a-zA-Z0-9!#$%&()*+,\"\\-./:;<=>?@[\\]_`{|}~]'$")
 	
 	def isKeyword(self, lexeme=None):
 		if lexeme==None:
@@ -102,6 +104,8 @@ class LexAn():
 			return "<IDENTIFIER>"
 		elif(self.numberRE.match(self.currentLexeme)):
 			return "<NUMBER>"
+		elif(self.charRE.match(self.currentLexeme)):
+			return "<CHAR>"
 		else:
 			raise LexError(self.lexer.error_leader(self.lexer.infile)+'Lexical error: The lexeme "' + self.currentLexeme + '" couldn\'t be recognized')
 			

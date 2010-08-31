@@ -1,5 +1,6 @@
 program ejemplo5;
-{Declaracion de tipo entero}
+//sarasa
+10{Declaracion de tipo entero}
 type entero=integer;
 var A: array[5] of entero;
 var a:entero;
