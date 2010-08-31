@@ -98,12 +98,19 @@ class LexAn():
 		if (self.currentLexeme in self.tokenDictionary):
 			return self.tokenDictionary[self.currentLexeme]
 		elif(self.currentLexeme == "."):
-			if (self.lexer.read_token() == "."):
-				self.lexer.get_token()
+			self.forwardToken = self.lexer.get_token()
+			if (self.forwardToken == "."):
 				self.currentLexeme = ".."
 				return "<SUBRANGE_SEPARATOR>"
 			else:
+				self.lexer.push_token(self.forwardToken)
 				return "<END_PROGRAM>"
+		# elif(self.currentLexeme == ":"):
+			# print "AAAAAAAAAAAAAAAAAAAAASSSSSSSDDDDDDDDDDDDDDDDDDDDDDDD"
+			# if(self.lexer.read_token() == "="):
+				# self.lexer.get_token()
+				# self.currentLexeme = ":="
+				# return "<ASSIGNMENT>"
 		elif(self.identificatorRE.match(self.currentLexeme)):
 			return "<IDENTIFIER>"
 		elif(self.numberRE.match(self.currentLexeme)):
