@@ -36,10 +36,10 @@ class LexAn():
 									"and" : "<AND>",
 									"true" : "<TRUE>",
 									"false" : "<FALSE>",
-									"(" : "<PARENTHESIS>",
-									")" : "<PARENTHESIS>",
-									"[" : "<BRACKET>",
-									"]" : "<BRACKET>",
+									"(" : "<OPEN_PARENTHESIS>",
+									")" : "<CLOSE_PARENTHESIS>",
+									"[" : "<OPEN_BRACKET>",
+									"]" : "<CLOSE_BRACKET>",
 									"=" : "<EQUAL>",
 									"<" : "<RELOP>",
 									">" : "<RELOP>", 
@@ -78,13 +78,18 @@ class LexAn():
 	def getNextToken(self):
 		try:
 			self.originalLexeme = self.lexer.get_token()
-		except:
+		except EOFError:
 			raise LexError('\nLexical error: A comment in the source program was not closed!')
+			
 		self.currentLexeme = self.originalLexeme.lower()
 		if (self.currentLexeme in self.tokenDictionary):
 			return self.tokenDictionary[self.currentLexeme]
 		elif(self.currentLexeme == "."):
-			self.forwardToken = self.lexer.get_token()
+			try:
+				self.forwardToken = self.lexer.get_token()
+			except EOFError:
+				raise LexError('\nLexical error: A comment in the source program was not closed!')
+			
 			if (self.forwardToken == "."):
 				self.originalLexeme = ".."
 				return "<SUBRANGE_SEPARATOR>"
