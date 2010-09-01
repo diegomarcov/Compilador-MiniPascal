@@ -168,9 +168,9 @@ class shlex:
                                 nextchar = self.instream.read(1)
                                 if not nextchar: #eof
                                     raise EOFError
-                                if nextchar == '\n':
+                                elif nextchar == '\n':
                                     self.lineno = self.lineno + 1
-                                if nextchar==')':
+                                elif nextchar==')':
                                     out=True
                     else: #no es comentario :O
                         self.token = nextchar
