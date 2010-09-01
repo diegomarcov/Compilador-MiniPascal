@@ -50,7 +50,8 @@ Argumentos opcionales:
 \>-h, --help\>Muestra la ayuda por pantalla. \\
 \end{tabbing}
 
-\chapter*{Alfabeto de entrada}
+\chapter*{Lenguaje}
+\section*{Alfabeto de entrada}
 \textless letter\textgreater ::= A \mid B \mid C \mid D \mid E \mid F \mid G \mid H \mid I \mid J \mid K \mid L \mid M \mid N \mid O \mid P \mid Q \mid  R \mid S \mid T \mid U \mid V \mid W \mid\\ X \mid Y \mid Z \mid a \mid b \mid c \mid d \mid e \mid f \mid g \mid h \mid i \mid j \mid k \mid l \mid m \mid n \mid o \mid p \mid q \mid r \mid s \mid t \mid u \mid v \mid w \mid x \mid y \mid z\\
 
 
@@ -58,6 +59,17 @@ Argumentos opcionales:
 
 
 \textless special\_symbol\textgreater ::= + \mid - \mid * \mid = \mid \textless	\texgreater \mid \textless \mid \texgreater \mid \textless = \mid \texgreater = \mid ( \mid ) \mid [ \mid ] \mid { \mid } \mid := \mid . \mid , \mid ; \mid : \mid div \mid or \mid and \mid not \mid if \mid then \mid else \mid while \mid do \mid begin \mid end \mid const \mid var \mid type \mid array \mid function \mid procedure \mid program
+
+\section*{Errores detectados}
+El analizador léxico tiene un nivel moderado de detección de errores. Entre éstos, se encuentran:
+
+
+\begin{itemize}
+\item Caracter no reconocido: si se intenta ingresar un caracter que no pertenece al alfabeto, como \"\_\", se producirá un error.
+\item Comentarios abiertos: si el programa fuente tiene un comentario sin cerrar cuando termina el archivo, se informa el error.
+\item Números mal formados: si se intenta ingresar un número como 38a7, se informará el error.
+\item Si el archivo fuente especificado no existe, se informará el error.
+\end{itemize}
 
 \chapter*{Analizador léxico}
 \begin{table}[htbp]
