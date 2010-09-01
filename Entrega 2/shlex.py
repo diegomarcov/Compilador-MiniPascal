@@ -170,6 +170,8 @@ class shlex:
                                     raise EOFError
                                 elif nextchar == '\n':
                                     self.lineno = self.lineno + 1
+                                elif nextchar == '*':
+                                    self.instream.seek(-1,os.SEEK_CUR)
                                 elif nextchar==')':
                                     out=True
                     else: #no es comentario :O
