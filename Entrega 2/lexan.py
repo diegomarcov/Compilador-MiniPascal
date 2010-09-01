@@ -69,25 +69,21 @@ class LexAn():
 		self.numberRE = re.compile('^[0-9]+$')
 		self.charRE = re.compile("^'[a-zA-Z0-9!#$%&()*+,\"\\-./:;<=>?@[\\]_`{|}~]'$")
 	
-	def isKeyword(self, lexeme=None):
-		if lexeme==None:
-			lexeme = self.currentLexeme
-		return lexeme in self.tokenDictionary
-	
 	def getCurrentLine(self):
 		return self.lexer.lineno
 		
 	def getCurrentLexeme(self):
-		return self.currentLexeme
+		return self.originalLexeme
 	
 	def getNextToken(self):
-		self.currentLexeme = self.lexer.get_token().lower()
+		self.originalLexeme = self.lexer.get_token()
+		self.currentLexeme = self.originalLexeme.lower()
 		if (self.currentLexeme in self.tokenDictionary):
 			return self.tokenDictionary[self.currentLexeme]
 		elif(self.currentLexeme == "."):
 			self.forwardToken = self.lexer.get_token()
 			if (self.forwardToken == "."):
-				self.currentLexeme = ".."
+				self.originalLexeme = ".."
 				return "<SUBRANGE_SEPARATOR>"
 			else:
 				self.lexer.push_token(self.forwardToken)
@@ -95,7 +91,7 @@ class LexAn():
 		elif(self.currentLexeme == ":"):
 			self.forwardToken = self.lexer.get_token()
 			if(self.forwardToken == "="):
-				self.currentLexeme = ":="
+				self.originalLexeme = ":="
 				return "<ASSIGNMENT>"
 			else:
 				self.lexer.push_token(self.forwardToken)
@@ -107,7 +103,7 @@ class LexAn():
 		elif(self.charRE.match(self.currentLexeme)):
 			return "<CHAR>"
 		else:
-			raise LexError(self.lexer.error_leader(self.lexer.infile)+'Lexical error: The lexeme "' + self.currentLexeme + '" couldn\'t be recognized')
+			raise LexError(self.lexer.error_leader(self.lexer.infile)+'Lexical error: The lexeme "' + self.originalLexeme + '" couldn\'t be recognized')
 			
 #######################################################################
 			

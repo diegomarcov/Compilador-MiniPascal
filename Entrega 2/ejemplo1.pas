@@ -1,8 +1,8 @@
-program ejemplo1;
+prOgrAm ejeMplo1;
 const Z=4;
 type entero=integer;
 var A: array[5] of entero;
-var subrango:10..30;
+var subRANgo:10..30;
 var a:entero;
 var c:char;
 
