@@ -5,6 +5,8 @@
 \usepackage{latexsym}
 \usepackage{fullpage}
 \usepackage{float}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[colorlinks=true,urlcolor=Violet]{hyperref}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
@@ -47,8 +49,17 @@ Argumentos opcionales:
 \>\textless OUT\_FILE\textgreater\> El archivo opcional de salida.\>\\
 \>-h, --help\>Muestra la ayuda por pantalla. \\
 \end{tabbing}
-\chapter{Analizador léxico}
-\end{tabbing}
+
+\chapter*{Alfabeto de entrada}
+\textless letter\textgreater ::= A \mid B \mid C \mid D \mid E \mid F \mid G \mid H \mid I \mid J \mid K \mid L \mid M \mid N \mid O \mid P \mid Q \mid  R \mid S \mid T \mid U \mid V \mid W \mid\\ X \mid Y \mid Z \mid a \mid b \mid c \mid d \mid e \mid f \mid g \mid h \mid i \mid j \mid k \mid l \mid m \mid n \mid o \mid p \mid q \mid r \mid s \mid t \mid u \mid v \mid w \mid x \mid y \mid z\\
+
+
+\textless digit\textgreater ::= 0 \mid 1 \mid 2 \mid 3 \mid 4 \mid 5 \mid 6 \mid 7 \mid 8 \mid 9\\
+
+
+\textless special\_symbol\textgreater ::= + \mid - \mid * \mid = \mid \textless	\texgreater \mid \textless \mid \texgreater \mid \textless = \mid \texgreater = \mid ( \mid ) \mid [ \mid ] \mid { \mid } \mid := \mid . \mid , \mid ; \mid : \mid div \mid or \mid and \mid not \mid if \mid then \mid else \mid while \mid do \mid begin \mid end \mid const \mid var \mid type \mid array \mid function \mid procedure \mid program
+
+\chapter*{Analizador léxico}
 \begin{table}[htbp]
 
 \begin{tabular}{|l|l|}

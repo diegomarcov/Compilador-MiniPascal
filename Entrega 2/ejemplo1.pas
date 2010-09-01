@@ -9,7 +9,7 @@ var c:char;
 //asdasad
 {comentario con {llaves(*}
 begin
-a:=100+Z;
+a:=100a+Z;
 A[2]:=a;
 c:='d';
 

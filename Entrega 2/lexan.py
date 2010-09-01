@@ -41,8 +41,6 @@ class LexAn():
 									"[" : "<OPEN_BRACKET>",
 									"]" : "<CLOSE_BRACKET>",
 									"=" : "<EQUAL>",
-									#"<" : "<RELOP>",
-									#">" : "<RELOP>", 
 									"<>": "<RELOP>", 
 									"<=": "<RELOP>", 
 									">=": "<RELOP>", 
@@ -125,7 +123,6 @@ class LexAn():
 		elif(self.charRE.match(self.currentLexeme)):
 			return "<CHAR>"
 		else:
-			#cual es el proposito de self.lexer.error_leader(self.lexer.infile) en esta excepcion? hasta ahora, TODOS los casos me dieron 'None', o sea, solamente molesta...
-			raise LexError(self.lexer.error_leader(self.lexer.infile)+'Lexical error: The lexeme "' + self.originalLexeme + '" couldn\'t be recognized')
+			raise LexError('Lexical error: The lexeme "' + self.originalLexeme + '" couldn\'t be recognized')
 			
 #######################################################################
