@@ -9,29 +9,30 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 	inputFile = io.BufferedReader(io.FileIO(args.inputFile))
-	#fileContent = inputFile.read()
+	outputFile = args.outputFile
 
-	'''
-	print 'ORIGINAL:', repr(fileContent)
-	print
-
-	print 'TOKENS:'
-	lexer = shlex(fileContent)
-	for token in lexer:
-		print "%s @ %s" % (repr(token), lexer.lineno)
-	'''
-
+	if outputFile == None:
+		output = sys.stdout
+		print "\n\nStarting file lexical analysis...\n\n"
+	else:
+		try:
+			output = open(outputFile, 'w')
+			print "\n\nStarting file lexical analysis... results will be written to %s\n\n" % outputFile
+		except:
+			print "Error"
+		
 	lexicalAnalyzer = LexAn(inputFile)
-	print "\nStarting file lexical analysis...\n\n"
-	print "----------------------------------------------------------------------------------------------"
-	print "|%s|%s|%s|" % ("LEXEME".center(35), "TOKEN".center(35), "LINE NUMBER".center(20))
-	print "----------------------------------------------------------------------------------------------"
+	
+	output.write("----------------------------------------------------------------------------------------------\n")
+	output.write("|%s|%s|%s|\n" % ("LEXEME".center(35), "TOKEN".center(35), "LINE NUMBER".center(20)))
+	output.write("----------------------------------------------------------------------------------------------\n")
 	token = ""
 	try:
 		while(token != "<EOF>"):
 			token = lexicalAnalyzer.getNextToken()
-			print "|%s|%s|%s|" % (str(lexicalAnalyzer.getCurrentLexeme()).center(35), str(token).center(35), str(lexicalAnalyzer.getCurrentLine()).center(20))
+			output.write("|%s|%s|%s|\n" % (str(lexicalAnalyzer.getCurrentLexeme()).center(35), str(token).center(35), str(lexicalAnalyzer.getCurrentLine()).center(20)))
 	except LexError as e:
 		print e
-	print "----------------------------------------------------------------------------------------------"	
+	output.write("----------------------------------------------------------------------------------------------\n")
+	print "\nFinished lexical analysis succesfully!\n\n"
 	
