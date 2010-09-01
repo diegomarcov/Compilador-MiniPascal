@@ -33,6 +33,7 @@ if __name__ == '__main__':
 			output.write("|%s|%s|%s|\n" % (str(lexicalAnalyzer.getCurrentLexeme()).center(35), str(token).center(35), str(lexicalAnalyzer.getCurrentLine()).center(20)))
 	except LexError as e:
 		print e
-	output.write("----------------------------------------------------------------------------------------------\n")
-	print "\nFinished lexical analysis succesfully!\n\n"
+	else:
+		output.write("----------------------------------------------------------------------------------------------\n")
+		print "\nFinished lexical analysis succesfully!\n\n"
 	
