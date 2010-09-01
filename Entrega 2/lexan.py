@@ -67,7 +67,7 @@ class LexAn():
 		#estas son expresiones regulares. Es importante leer la documentacion de la libreria re
 		self.identifierRE = re.compile('^[a-zA-Z][a-zA-Z0-9]*$')
 		self.numberRE = re.compile('^[0-9]+$')
-		self.charRE = re.compile("^'[a-zA-Z0-9!#$%&()*+,\"\\-./:;<=>?@[\\]_`{|}~]'$")
+		self.charRE = re.compile("^'[a-zA-Z0-9]'$")
 	
 	def getCurrentLine(self):
 		return self.lexer.lineno
