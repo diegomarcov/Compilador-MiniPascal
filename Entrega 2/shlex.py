@@ -155,7 +155,6 @@ class shlex:
                         if not nextchar: #eof
                             raise EOFError
                 elif (nextchar == '('):
-					#esta parte esta trayendo problemas con comentarios del estilo (******************************************) (correr ejemplo3.pas)
                     nextnextchar = self.instream.read(1)
                     if nextnextchar == '*':
                         out = False
@@ -174,8 +173,6 @@ class shlex:
                                 elif nextchar==')':
                                     out=True
                     else: #no es comentario :O
-					#¿esta parte? esta causando que perdamos el token de identificador en function sumar(...... (devuelve function (....)
-					#correr ejemplo2.pas
                         self.token = nextchar
                         self.instream.seek(-1,os.SEEK_CUR) # vuelvo el lector una posicion atras, porque no era comentario
                         break
@@ -280,9 +277,13 @@ class shlex:
                                 if nextchar==')':
                                     out=True
                     else:
-                        self.token = nextchar
-                        self.instream.seek(-1,os.SEEK_CUR) # vuelvo el lector una posicion atras, porque no era comentario
-                        break
+                        self.instream.seek(-2,os.SEEK_CUR) 
+                        self.state = ' '
+                        if self.token or (self.posix and quoted):
+                            break   # emit current token
+                        else:
+                            continue
+
                 elif self.posix and nextchar in self.quotes:
                     self.state = nextchar
                 elif self.posix and nextchar in self.escape:
