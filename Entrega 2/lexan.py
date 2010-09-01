@@ -76,7 +76,10 @@ class LexAn():
 		return self.originalLexeme
 	
 	def getNextToken(self):
-		self.originalLexeme = self.lexer.get_token()
+		try:
+			self.originalLexeme = self.lexer.get_token()
+		except:
+			raise LexError('\nLexical error: A comment in the source program was not closed!')
 		self.currentLexeme = self.originalLexeme.lower()
 		if (self.currentLexeme in self.tokenDictionary):
 			return self.tokenDictionary[self.currentLexeme]
@@ -103,6 +106,7 @@ class LexAn():
 		elif(self.charRE.match(self.currentLexeme)):
 			return "<CHAR>"
 		else:
+			#cual es el proposito de self.lexer.error_leader(self.lexer.infile) en esta excepcion? hasta ahora, TODOS los casos me dieron 'None', o sea, solamente molesta...
 			raise LexError(self.lexer.error_leader(self.lexer.infile)+'Lexical error: The lexeme "' + self.originalLexeme + '" couldn\'t be recognized')
 			
 #######################################################################
