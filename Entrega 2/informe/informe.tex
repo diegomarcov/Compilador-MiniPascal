@@ -1,0 +1,68 @@
+\documentclass[a4paper,oneside]{report}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{fullpage}
+\usepackage{float}
+
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\title{Compiladores e Intérpretes\\Especificación del Lenguaje}
+
+\author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
+
+\begin{document}
+	
+
+\maketitle
+		
+\chapter*{Introducción}
+
+\chapter{Analizador léxico}
+
+\begin{table}[htbp]
+
+\begin{tabular}{|l|l|}
+\hline
+Identifier & (letter)(letter/digit)* \\ \hline
+Unsigned\_Number & (digit)(digit)* \\ \hline
+Binary\_Rel\_Op & < | > | <> | <= | >= \\ \hline
+Adding\_Arithmetic\_Op & + | - \\ \hline
+Multiplying\_Arithmetic\_Op & * | div \\ \hline
+Unary\_Logic\_Op & not \\ \hline
+Binary\_Logic\_Op & or | and \\ \hline
+Equal & = \\ \hline
+Type\_Indicator & : \\ \hline
+Assignment & := \\ \hline
+Coma & , \\ \hline
+Semicolon & ; \\ \hline
+End\_Of\_Program & . \\ \hline
+Subrange\_Separator & .. \\ \hline
+EOF & NULL \\ \hline
+Opening\_Parenthesis & ( \\ \hline
+Closing\_Parenthesis & ) \\ \hline
+Opening\_Brackets & [ \\ \hline
+Closing\_Brackets & ] \\ \hline
+Program & program \\ \hline
+Type & type \\ \hline
+Const & const \\ \hline
+Var & var \\ \hline
+Function & function \\ \hline
+Procedure & procedure \\ \hline
+Array & array \\ \hline
+Of & of \\ \hline
+Begin & begin \\ \hline
+End & end \\ \hline
+While & while \\ \hline
+Do & do \\ \hline
+If & if \\ \hline
+Then & then \\ \hline
+Else & else \\ \hline
+\end{tabular}
+\label{}
+\caption{Tokens}
+\end{table}
+
+
+\end{document}
