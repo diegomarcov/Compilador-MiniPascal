@@ -26,6 +26,6 @@ if __name__ == '__main__':
 	try:
 		while(token != "<EOF>"):
 			token = lexicalAnalyzer.getNextToken()
-			print "%s %s %s" % (repr(lexicalAnalyzer.getCurrentLexeme()).center(35), repr(token).center(35), repr(lexicalAnalyzer.getCurrentLine()).center(20))
+			print "%s %s %s" % (str(lexicalAnalyzer.getCurrentLexeme()).center(35), str(token).center(35), str(lexicalAnalyzer.getCurrentLine()).center(20))
 	except LexError as e:
 		print e
