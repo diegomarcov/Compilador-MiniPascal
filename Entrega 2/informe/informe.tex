@@ -18,32 +18,59 @@
 \maketitle
 		
 \chapter*{Introducción}
+\section*{Descripción}
+Esta entrega consiste de un analizador léxico para un programa de mini-pascal. Cada lexema reconocido en el programa fuente es analizado, transformado al tipo de token que corresponda, e impreso a la salida especificada junto con su número de línea.
 
+El programa tiene un nivel moderado de reconocimento de errores, permitiendo la detección de errores como un comentario abierto al finalizar el archivo.
+
+El analizador léxico fue desarrollado utilizando únicamente {\bf Python 2.7}\footnote{{\bf Python} es un lenguaje de programación interpretado y multiplataforma. Para más información, dirigirse a la página oficial: \url{http://www.python.org/}} y algunas de sus librerías asociadas ({\bf re}\footnote{{\bf re} es una librería de Python que permite el reconocimiento de expresiones regulares. Su documentación puede ser vista en: \url{http://docs.python.org/library/re.html}} y una modificación propia de {\bf shlex}\footnote{{\bf shlex} es una librería de Python para procesar comandos de consola. Nos basamos en su código fuente y realizamos algunas mejoras para procesar el stream de caracteres de entrada. La documentación de la versión original puede ser encontrada en: \url{http://docs.python.org/library/shlex.html}}).
+
+\section*{Modo de uso}
+\begin{tabbing}
+\hspace*{2cm}\=\hspace{2.2cm}\=\hspace{6cm}\= \kill
+LexAn [-h] \> \textless IN\_FILE\textgreater \> [\textless OUT\_FILE\textgreater]\\\\
+\end{tabbing}
+
+
+
+Argumentos:
+
+\begin{tabbing}
+\hspace*{3cm}\=\hspace{3cm}\=\hspace{6cm}\= \kill
+\>\textless IN\_FILE\textgreater \> El archivo de pascal de entrada.\>\\
+\end{tabbing}
+
+Argumentos opcionales:
+
+\begin{tabbing}
+\hspace*{3cm}\=\hspace{3cm}\=\hspace{6cm}\= \kill
+\>\textless OUT\_FILE\textgreater\> El archivo opcional de salida.\>\\
+\>-h, --help\>Muestra la ayuda por pantalla. \\
+\end{tabbing}
 \chapter{Analizador léxico}
-
+\end{tabbing}
 \begin{table}[htbp]
 
 \begin{tabular}{|l|l|}
 \hline
 Identifier & (letter)(letter/digit)* \\ \hline
-Unsigned\_Number & (digit)(digit)* \\ \hline
-Binary\_Rel\_Op & < | > | <> | <= | >= \\ \hline
-Adding\_Arithmetic\_Op & + | - \\ \hline
-Multiplying\_Arithmetic\_Op & * | div \\ \hline
-Unary\_Logic\_Op & not \\ \hline
-Binary\_Logic\_Op & or | and \\ \hline
+Number & (digit)(digit)* \\ \hline
+RelOp & \textless, \textgreater, \textless\textgreater, \textless=, \textgreater= \\ \hline
+Arith\_Op & + | - \\ \hline
+Un\_LogOp & not \\ \hline
+Bin\_LogOp & or | and \\ \hline
 Equal & = \\ \hline
-Type\_Indicator & : \\ \hline
+Type\_Declaration & : \\ \hline
 Assignment & := \\ \hline
-Coma & , \\ \hline
+Comma & , \\ \hline
 Semicolon & ; \\ \hline
-End\_Of\_Program & . \\ \hline
+End\_Program & . \\ \hline
 Subrange\_Separator & .. \\ \hline
 EOF & NULL \\ \hline
-Opening\_Parenthesis & ( \\ \hline
-Closing\_Parenthesis & ) \\ \hline
-Opening\_Brackets & [ \\ \hline
-Closing\_Brackets & ] \\ \hline
+Open\_Parenthesis & ( \\ \hline
+Close\_Parenthesis & ) \\ \hline
+Open\_Bracket & [ \\ \hline
+Close\_Bracket & ] \\ \hline
 Program & program \\ \hline
 Type & type \\ \hline
 Const & const \\ \hline
