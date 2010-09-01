@@ -21,11 +21,11 @@ if __name__ == '__main__':
 	'''
 
 	lexicalAnalyzer = LexAn(inputFile)
-	print "LEXEME				TOKEN				LINE NUMBER"
+	print "\nStarting file lexical analysis...\n\n%s %s %s\n" % ("LEXEME".center(35), "TOKEN".center(35), "LINE NUMBER".center(20))
 	token = ""
 	try:
 		while(token != "<EOF>"):
 			token = lexicalAnalyzer.getNextToken()
-			print "%s			%s				%s" % (lexicalAnalyzer.getCurrentLexeme(), token, lexicalAnalyzer.getCurrentLine())
+			print "%s %s %s" % (repr(lexicalAnalyzer.getCurrentLexeme()).center(35), repr(token).center(35), repr(lexicalAnalyzer.getCurrentLine()).center(20))
 	except LexError as e:
 		print e
