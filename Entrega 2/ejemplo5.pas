@@ -1,7 +1,7 @@
 program ejemplo5;
-//sarasa
-10{Declaracion de tipo entero}
-type entero=integer;
+//comentario
+
+type entero=integer{Declaracion de tipo entero};
 var A: array[5] of entero;
 var a:entero;
 (*Comienzo del programa*)
