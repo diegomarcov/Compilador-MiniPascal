@@ -41,8 +41,8 @@ class LexAn():
 									"[" : "<OPEN_BRACKET>",
 									"]" : "<CLOSE_BRACKET>",
 									"=" : "<EQUAL>",
-									"<" : "<RELOP>",
-									">" : "<RELOP>", 
+									#"<" : "<RELOP>",
+									#">" : "<RELOP>", 
 									"<>": "<RELOP>", 
 									"<=": "<RELOP>", 
 									">=": "<RELOP>", 
@@ -104,6 +104,20 @@ class LexAn():
 			else:
 				self.lexer.push_token(self.forwardToken)
 				return "<TYPE_DECLARATION>"
+		elif(self.currentLexeme == ">"):
+			self.forwardToken = self.lexer.get_token()
+			if(self.forwardToken == "="):
+				self.originalLexeme = ">="
+			else:
+				self.lexer.push_token(self.forwardToken)
+			return "<RELOP>"
+		elif(self.currentLexeme == "<"):
+			self.forwardToken = self.lexer.get_token()
+			if(self.forwardToken == "="):
+				self.originalLexeme = "<="
+			else:
+				self.lexer.push_token(self.forwardToken)
+			return "<RELOP>"
 		elif(self.identifierRE.match(self.currentLexeme)):
 			return "<IDENTIFIER>"
 		elif(self.numberRE.match(self.currentLexeme)):
@@ -115,5 +129,3 @@ class LexAn():
 			raise LexError(self.lexer.error_leader(self.lexer.infile)+'Lexical error: The lexeme "' + self.originalLexeme + '" couldn\'t be recognized')
 			
 #######################################################################
-			
-
