@@ -1,0 +1,139 @@
+<program> ::= <program heading> <block>.
+
+<program heading> ::= program <identifier>;
+
+<block> ::= <constant definition part><type definition part><variable declaration part><procedure and function declaration part><statement part>
+
+<constant definition part> ::= <empty> | const <constant definition>{;<constant definition>};
+
+<constant definition> ::= <identifier>=<constant>
+
+<identifier> ::= <letter>{<letter or digit>}
+
+<letter or digit> ::= <letter> | <digit>
+
+<letter> ::= A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
+
+<digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<constant> ::= <unsigned number> | <sign><unsigned number> | <constant identifier> | <sign><constant identifier> | <char>
+
+<unsigned number> ::= <unsigned integer>
+
+<unsigned integer> ::= <digit sequence>
+
+<digit sequence> ::= <digit>{<digit>}
+
+<sign> ::= + | -
+
+<constant identifier> ::= <identifier>
+
+<type definition part> ::= <empty> | type <type definition>{;<type definition>};
+
+<type definition> ::= <identifier>=<type>
+
+<type> ::= <simple type> | <structured type>
+
+<simple type> ::= <subrange type> | <type identifier>
+
+<subrange type> ::= <constant>..<constant>
+
+<type identifier> ::= <identifier>
+
+<structured type> ::= <unpacked structured type>
+
+<unpacked structured type> ::= <array type>
+
+<array type> ::= array[<index type>] of <component type>
+
+<index type> ::= <simple type>
+
+<component type> ::= <simple type>
+
+<variable definition part> : := <empty> | var<variable declaration>{;<variable declaration>};
+
+<variable declaration> ::= <identifier>{,<identifier>} : <type>
+
+<procedure and function declaration part> ::= {<procedure or function declaration part>;}
+
+<procedure or function declaration part> ::= <procedure declaration> | <function declaration>
+
+<procedure declaration> ::= <procedure heading><block>
+
+<procedure heading> ::= procedure <identifier>; | procedure <identifier>(<formal parameter section>{;<formal parameter section>});
+
+<formal parameter section> ::= <parameter group> | var <parameter group>
+
+<parameter group> ::= <identifier>{,<identifier>}:<type identifier>
+
+<function declaration> ::= <function heading><block>
+
+<function heading> ::= function<identifier>:<result type>; | <function identifier>(<formal parameter section>{;<formal parameter section>}):<result type>;
+
+<result type> ::= <type identifier>
+
+<statement part> ::= <compound statement>
+
+<compound statement> ::= begin <statement>{;<statement>} end
+
+<statement> ::= <unlabelled statement>
+
+<unlabelled statement> ::= <simple statement> | <structured statement>
+
+<simple statement> ::= <assignment statement> | <procedure statement> | <empty statement>
+
+<assignment statement> ::= <variable>:=<expression> | <function identifier>:=<expression>
+
+<variable> ::= <entire variable> | <component variable>
+
+<entire variable> ::= <variable identifier>
+
+<variable identifier> ::= <identifier>
+
+<component variable> ::= <indexed variable>
+
+<indexed variable> ::= <array variable>[<expression>]
+
+<array variable> ::= <entire variable>
+
+<expression> ::= <simple expression> | <simple expression><relational operator><simple expression>
+
+<simple expression> ::= <term> | <simple expression><adding operator><term> | <sign><term>
+
+<term>::= <factor> | <term><multiplying operator><factor>
+
+<factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | not <factor> | <char>
+
+<char> ::= '<letter>' | '<digit>'
+
+<unsigned constant> ::= <unsigned number> | <constant identifier>
+
+<function designator> ::= <function identifier> | <function identifier>(<actual parameter>{,<actual parameter>})
+
+<function identifier> ::= <identifier>
+
+<actual parameter> ::= <expression> | <variable>
+
+<multiplying operator> ::= * | div | and
+
+<adding operator> ::= + | - | or
+
+<relational operator> ::= = | <> | < | <= | >= | >
+
+<procedure statement> ::= <procedure identifier> | <procedure identifier>(<actual parameter>{,<actual parameter>})
+
+<procedure identifier> ::= <identifier>
+
+<empty statement> ::= <empty>
+
+<structured statement> ::= <compound statement> | <conditional statement> | <repetitive statement>
+
+<conditional statement> ::= <if statement>
+
+<if statement> ::= if <expression> then <statement> | if <expression> then <statement> else <statement>
+
+<repetitive statement> ::= <while statement>
+
+<while statement> ::= while <expression> do <statement>
+
+<special symbol> ::= + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
