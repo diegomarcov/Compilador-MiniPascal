@@ -1,116 +1,200 @@
 \documentclass[a4paper,oneside]{report}
 \usepackage[spanish]{babel}
 \usepackage[latin1]{inputenc}
-\usepackage{graphicx}
-\usepackage{latexsym}
 \usepackage{fullpage}
+\usepackage{listings}
+\usepackage{fancyvrb}
 \usepackage{float}
-\usepackage[usenames,dvipsnames]{color}
-\usepackage[colorlinks=true,urlcolor=Violet]{hyperref}
+\usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}%
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\lstset{language=,keywordstyle=\ttfamily,stringstyle=\ttfamily}
+\lstset{breaklines}
 
 \title{Compiladores e Intérpretes\\Especificación del Lenguaje}
 
 \author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
 
+\date{2 de Septiembre de 2010}
+
 \begin{document}
 	
-
 \maketitle
 		
+\tableofcontents
+
 \chapter*{Introducción}
 \section*{Descripción}
-Esta entrega consiste de un analizador léxico para un programa de mini-pascal. Cada lexema reconocido en el programa fuente es analizado, transformado al tipo de token que corresponda, e impreso a la salida especificada junto con su número de línea.
+Esta entrega consiste de un analizador léxico para un programa de \textsc{Mini-Pascal}. Cada \textit{lexema} reconocido en el programa fuente es analizado, transformado al tipo de \textit{token} que corresponda, e impreso a la salida especificada junto con su número de línea.
 
 El programa tiene un nivel moderado de reconocimento de errores, permitiendo la detección de errores como un comentario abierto al finalizar el archivo.
 
 El analizador léxico fue desarrollado utilizando únicamente {\bf Python 2.7}\footnote{{\bf Python} es un lenguaje de programación interpretado y multiplataforma. Para más información, dirigirse a la página oficial: \url{http://www.python.org/}} y algunas de sus librerías asociadas ({\bf re}\footnote{{\bf re} es una librería de Python que permite el reconocimiento de expresiones regulares. Su documentación puede ser vista en: \url{http://docs.python.org/library/re.html}} y una modificación propia de {\bf shlex}\footnote{{\bf shlex} es una librería de Python para procesar comandos de consola. Nos basamos en su código fuente y realizamos algunas mejoras para procesar el stream de caracteres de entrada. La documentación de la versión original puede ser encontrada en: \url{http://docs.python.org/library/shlex.html}}).
 
-\section*{Modo de uso}
-\begin{tabbing}
-\hspace*{2cm}\=\hspace{2.2cm}\=\hspace{6cm}\= \kill
-LexAn [-h] \> \textless IN\_FILE\textgreater \> [\textless OUT\_FILE\textgreater]\\\\
-\end{tabbing}
+\chapter{Modo de uso}
+
+\section{Ejecución}
+\lstinline[]!lexan [-h|--help] <IN_FILE> [<OUT_FILE>]!
 
 
+\subsection*{Argumentos:}
 
-Argumentos:
+\begin{description}
+	\item[{\ttfamily \textless IN\_FILE\textgreater}] El archivo de Pascal de entrada.
+\end{description}
 
-\begin{tabbing}
-\hspace*{3cm}\=\hspace{3cm}\=\hspace{6cm}\= \kill
-\>\textless IN\_FILE\textgreater \> El archivo de pascal de entrada.\>\\
-\end{tabbing}
+\subsection*{Argumentos opcionales:}
 
-Argumentos opcionales:
+\begin{description}
+	\item[\ttfamily\textless OUT\_FILE\textgreater]  El archivo opcional de salida. 
+	\item[\ttfamily -h, --help]Muestra la ayuda por pantalla.
+\end{description}
 
-\begin{tabbing}
-\hspace*{3cm}\=\hspace{3cm}\=\hspace{6cm}\= \kill
-\>\textless OUT\_FILE\textgreater\> El archivo opcional de salida.\>\\
-\>-h, --help\>Muestra la ayuda por pantalla. \\
-\end{tabbing}
+Por ejemplo:
 
-\chapter*{Lenguaje}
-\section*{Alfabeto de entrada}
-\textless letter\textgreater ::= A \mid B \mid C \mid D \mid E \mid F \mid G \mid H \mid I \mid J \mid K \mid L \mid M \mid N \mid O \mid P \mid Q \mid  R \mid S \mid T \mid U \mid V \mid W \mid\\ X \mid Y \mid Z \mid a \mid b \mid c \mid d \mid e \mid f \mid g \mid h \mid i \mid j \mid k \mid l \mid m \mid n \mid o \mid p \mid q \mid r \mid s \mid t \mid u \mid v \mid w \mid x \mid y \mid z\\
+\begin{quotation}
+	\lstinline!Lexan ejemplo1.pas output.txt!
+\end{quotation}
+
+En este caso, el programa leerá el archivo {\ttfamily ejemplo1.pas} y devolverá el resultado en {\ttfamily output.txt}.
+
+\section{Formato de salida}
+
+El Analizador Léxico devuevle la información en una tabla, donde sus columnas indican el lexema (\texttt{LEXEME}), token (\texttt{TOKEN}) y número de línea (\texttt{LINE NUMBER}), como se puede ver en el siguiente ejemplo:
+
+\begin{BVerbatim}[fontsize=\small ]
+Starting file lexical analysis...
 
 
-\textless digit\textgreater ::= 0 \mid 1 \mid 2 \mid 3 \mid 4 \mid 5 \mid 6 \mid 7 \mid 8 \mid 9\\
+----------------------------------------------------------------------------------------------
+|               LEXEME              |               TOKEN               |    LINE NUMBER     |
+----------------------------------------------------------------------------------------------
+|              program              |             <PROGRAM>             |         1          |
+|              ejemplo1             |            <IDENTIFIER>           |         1          |
+|                 ;                 |            <SEMI_COLON>           |         1          |
+|               const               |              <CONST>              |         2          |
+|                 Z                 |            <IDENTIFIER>           |         2          |
+|                 =                 |              <EQUAL>              |         2          |
+|                 4                 |              <NUMBER>             |         2          |
+|                 ;                 |            <SEMI_COLON>           |         2          |
 
+                                                     ...
 
-\textless special\_symbol\textgreater ::= + \mid - \mid * \mid = \mid \textless	\texgreater \mid \textless \mid \texgreater \mid \textless = \mid \texgreater = \mid ( \mid ) \mid [ \mid ] \mid { \mid } \mid := \mid . \mid , \mid ; \mid : \mid div \mid or \mid and \mid not \mid if \mid then \mid else \mid while \mid do \mid begin \mid end \mid const \mid var \mid type \mid array \mid function \mid procedure \mid program
+|                 c                 |            <IDENTIFIER>           |         14         |
+|                 :=                |            <ASSIGNMENT>           |         14         |
+|                'd'                |               <CHAR>              |         14         |
+|                 ;                 |            <SEMI_COLON>           |         14         |
+|                end                |               <END>               |         16         |
+|                 .                 |           <END_PROGRAM>           |         17         |
+|                                   |               <EOF>               |         17         |
+----------------------------------------------------------------------------------------------
 
-\section*{Errores detectados}
+Finished lexical analysis succesfully!
+\end{BVerbatim}
+
+\chapter{Lenguaje}
+\section{Alfabeto de entrada}
+
+\begin{lstlisting}
+<letter>::= A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
+
+<digit>::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<special symbol> ::=  + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
+\end{lstlisting}
+
+\section{Errores detectados}
 El analizador léxico tiene un nivel moderado de detección de errores. Entre éstos, se encuentran:
 
-
 \begin{itemize}
-\item Caracter no reconocido: si se intenta ingresar un caracter que no pertenece al alfabeto, como \"\_\", se producirá un error.
-\item Comentarios abiertos: si el programa fuente tiene un comentario sin cerrar cuando termina el archivo, se informa el error.
-\item Números mal formados: si se intenta ingresar un número como 38a7, se informará el error.
-\item Si el archivo fuente especificado no existe, se informará el error.
+	\item Caracter no reconocido: si se intenta ingresar un caracter que no pertenece al alfabeto, como ``@'', se producirá un error.
+	\item Comentarios abiertos: si el programa fuente tiene un comentario sin cerrar cuando termina el archivo, se informa el error.
+	\item Números mal formados: si se intenta ingresar un número como 38a7, se informará el error.
+	\item Si el archivo fuente especificado no existe, se informará el error.
 \end{itemize}
 
-\chapter*{Analizador léxico}
-\begin{table}[htbp]
+Los mensajes de error mostrarán el número de línea, con el lexema que generó el error, cuando corresponda.
+
+\chapter{Analizador léxico}
+\section{Palabras reservadas}
+El Analizador Léxico reconoce las siguientes palabras reservadas especificadas en la tabla \ref{tab:palabras}
+
+\begin{table}[H]
+
+\begin{tabular}{|c|}
+\hline
+\textbf{Palabras reservadas} \\  \hline
+\ttfamily
+program \\ 
+\texttt{type} \\ 
+\texttt{const} \\ 
+\texttt{var} \\ 
+\texttt{array} \\ 
+\texttt{of} \\ 
+\texttt{function} \\ 
+\texttt{procedure} \\ 
+\texttt{begin} \\ 
+\texttt{end} \\ 
+\texttt{while} \\ 
+\texttt{do} \\ 
+\texttt{if} \\ 
+\texttt{then} \\ 
+\texttt{else} \\ 
+\texttt{div} \\ 
+\texttt{not} \\ 
+\texttt{or} \\ 
+\texttt{and} \\ 
+\texttt{true} \\ 
+\texttt{false} \\ 
+\hline
+\end{tabular}
+\label{tab:palabras}
+\caption{Palabras reservadas}
+\end{table}
+\section{Tokens}
+El Analizador Léxico reconoce los tokens especificados en la tabla \ref{tab:tokens}.
+\begin{table}[H]
 
 \begin{tabular}{|l|l|}
 \hline
-Identifier & (letter)(letter/digit)* \\ \hline
-Number & (digit)(digit)* \\ \hline
-RelOp & \textless, \textgreater, \textless\textgreater, \textless=, \textgreater= \\ \hline
-Arith\_Op & + | - \\ \hline
-Un\_LogOp & not \\ \hline
-Bin\_LogOp & or | and \\ \hline
-Equal & = \\ \hline
-Type\_Declaration & : \\ \hline
-Assignment & := \\ \hline
-Comma & , \\ \hline
-Semicolon & ; \\ \hline
-End\_Program & . \\ \hline
-Subrange\_Separator & .. \\ \hline
-EOF & NULL \\ \hline
-Open\_Parenthesis & ( \\ \hline
-Close\_Parenthesis & ) \\ \hline
-Open\_Bracket & [ \\ \hline
-Close\_Bracket & ] \\ \hline
-Program & program \\ \hline
-Type & type \\ \hline
-Const & const \\ \hline
-Var & var \\ \hline
-Function & function \\ \hline
-Procedure & procedure \\ \hline
-Array & array \\ \hline
-Of & of \\ \hline
-Begin & begin \\ \hline
-End & end \\ \hline
-While & while \\ \hline
-Do & do \\ \hline
-If & if \\ \hline
-Then & then \\ \hline
-Else & else \\ \hline
+\textbf{Token}			& \textbf{Expresión Regular} \\ \hline
+Identifier 					& {\ttfamily [a-zA-Z][a-zA-Z0-9]*} \\ \hline
+Number							& {\ttfamily [0-9]+} \\ \hline
+Char								& {\ttfamily '[a-zA-Z0-9]'} \\ \hline
+RelOp      					& {\ttfamily <|>|<=|>=} \\ \hline
+Arith\_Op 					& {\ttfamily +|-|*}\\ \hline
+Un\_LogOp 					& {\ttfamily not} \\ \hline
+Bin\_LogOp 					& {\ttfamily or|and} \\ \hline
+Equal 							& {\ttfamily =} \\ \hline
+Type\_Declaration 	& {\ttfamily :} \\ \hline
+Assignment 					& {\ttfamily :=} \\ \hline
+Comma 							& {\ttfamily ,} \\ \hline
+Semicolon 					& {\ttfamily ;} \\ \hline
+End\_Program			 	& {\ttfamily .} \\ \hline
+Subrange\_Separator & {\ttfamily ..} \\ \hline
+EOF 								&  \\ \hline
+Open\_Parenthesis 	& {\ttfamily (} \\ \hline
+Close\_Parenthesis 	& {\ttfamily )} \\ \hline
+Open\_Bracket 			& {\ttfamily [} \\ \hline
+Close\_Bracket 			& {\ttfamily ]} \\ \hline
+Program 						& {\ttfamily program} \\ \hline
+Type 								& {\ttfamily type} \\ \hline
+Const 							& {\ttfamily const} \\ \hline
+Var 								& {\ttfamily var} \\ \hline
+Function 						& {\ttfamily function} \\ \hline
+Procedure 					& {\ttfamily procedure} \\ \hline
+Array 							& {\ttfamily array} \\ \hline
+Of 									& {\ttfamily of} \\ \hline
+Begin 							& {\ttfamily begin} \\ \hline
+End 								& {\ttfamily end} \\ \hline
+While 							& {\ttfamily while} \\ \hline
+Do 									& {\ttfamily do} \\ \hline
+If 									& {\ttfamily if} \\ \hline
+Then 								& {\ttfamily then} \\ \hline
+Else 								& {\ttfamily else} \\ \hline
 \end{tabular}
-\label{}
+\label{tab:tokens}
 \caption{Tokens}
 \end{table}
 

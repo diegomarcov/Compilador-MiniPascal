@@ -101,7 +101,7 @@ class LexAn():
 				return "<ASSIGNMENT>"
 			else:
 				self.lexer.push_token(self.forwardToken)
-				return "<TYPE_DECLARATION>"
+				return "<EQUAL>"
 		elif(self.currentLexeme == ">"):
 			self.forwardToken = self.lexer.get_token()
 			if(self.forwardToken == "="):
