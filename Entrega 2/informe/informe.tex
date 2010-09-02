@@ -12,7 +12,7 @@
 \lstset{language=,keywordstyle=\ttfamily,stringstyle=\ttfamily}
 \lstset{breaklines}
 
-\title{Compiladores e Intérpretes\\Especificación del Lenguaje}
+\title{Compiladores e Intérpretes\\Informe de la Segunda Entrega}
 
 \author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
 
@@ -33,6 +33,17 @@ El programa tiene un nivel moderado de reconocimento de errores, permitiendo la 
 El analizador léxico fue desarrollado utilizando únicamente {\bf Python 2.7}\footnote{{\bf Python} es un lenguaje de programación interpretado y multiplataforma. Para más información, dirigirse a la página oficial: \url{http://www.python.org/}} y algunas de sus librerías asociadas ({\bf re}\footnote{{\bf re} es una librería de Python que permite el reconocimiento de expresiones regulares. Su documentación puede ser vista en: \url{http://docs.python.org/library/re.html}} y una modificación propia de {\bf shlex}\footnote{{\bf shlex} es una librería de Python para procesar comandos de consola. Nos basamos en su código fuente y realizamos algunas mejoras para procesar el stream de caracteres de entrada. La documentación de la versión original puede ser encontrada en: \url{http://docs.python.org/library/shlex.html}}).
 
 \chapter{Modo de uso}
+
+\section{Requerimientos}
+La versión ``\texttt{.exe}'' del Analizador Léxico necesita una serie de librerías para funcionar, que fueron incluidas en la carpeta donde se encuentra el mismo ejecutable. Estas son:
+\begin{itemize}\ttfamily
+	\item python27.dll
+	\item msvcr90.dll
+	\item bz2.pyd
+	\item select.pyd
+	\item unicodedata.pyd
+	\item library.zip \rmfamily (que contiene las librerías de Python utilizadas)
+\end{itemize}
 
 \section{Ejecución}
 \lstinline[]!lexan [-h|--help] <IN_FILE> [<OUT_FILE>]!
