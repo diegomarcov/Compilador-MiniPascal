@@ -2,11 +2,7 @@
 \usepackage[spanish]{babel}
 \usepackage[latin1]{inputenc}
 \usepackage{fullpage}
-\usepackage{listings}
-\usepackage{fancyvrb}
-\usepackage{float}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}%
-
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
 
@@ -23,13 +19,27 @@
 \tableofcontents
 
 \chapter{Implementación}
+El analizador léxico fue desarrollado utilizando la release 2.7 del lenguaje interpretado y multiplataforma {\bf Python}\footnote{Para más información, dirigirse a la página oficial: \url{http://www.python.org/}}. Se aprovecharon las herramientas propias de dicho lenguaje para el reconocimiento de expresiones regulares; en particular, fue utilizada la librería oficial {\bf re}\footnote{La documentación oficial de {\bf re} puede ser vista en: \url{http://docs.python.org/library/re.html}}.
 
+Para procesar el stream de caracteres del archivo de entrada, se utilizó como base el código fuente de la librería {\bf shlex}\footnote{{\bf shlex} es una librería de Python para procesar comandos de consola. La documentación de la versión original puede ser encontrada en: \url{http://docs.python.org/library/shlex.html}} de Python, realizándole todas las modificaciones necesarias para la eliminación de comentarios e interpretación del alfabeto propio de mini-pascal. El código de esta versión modificada se encuentra en el archivo {\bf shlex.py} de la carpeta \textit{/src}.
+
+El reconocimiento de los argumentos de entrada está provisto por la librería {\bf argparse}\footnote{La documentación oficial de {\bf argparse} puede ser encontrada en \url{http://docs.python.org/dev/library/argparse.html}}, y el esquema de lectura con buffering es soportado por Python mediante la librería oficial {\bf io}\footnote{La documentación oficial de {\bf io} puede ser encontrada en \url{http://docs.python.org/tutorial/inputoutput.html}}.
+
+Por último, la generación del archivo ejecutable fue realizada mediante gracias a {\bf py2exe}\footnote{Para más información, dirigirse a la página oficial de py2exe: \url{http://www.py2exe.org/}}, una extensión creada a partir del módulo distutils de Python que permite generar archivos binarios para Windows.
 \chapter{Diseño general}
-
+Detallaremos a continuación la arquitectura general del analizador léxico, describiendo brevemente cada una de las clases que lo componen. Además de estas clases, existe un archivo {\bf setup.py} que no contiene código propio de la aplicación, y es simplemente utilizado para generar el ejecutable de Windows.
 \section{Programa principal}
+El programa principal, cuyo código fuente puede ser encontrado en el archivo {\bf main.py} de la carpeta \textit{/src}, no contiene ninguna clase, y es simplemente un script que reconoce los argumentos de entrada utilizando la librería \textit{argparse}, abre los archivos para lectura y escritura, y crea una instancia de la clase {\bf LexAn}, el analizador léxico implementado.
 
+A medida que LexAn devuelve los tokens uno a uno, el programa principal los imprime al archivo correspondiente (si no se especifica ninguno se utiliza \textit{stdout}, por lo que la salida se imprime por pantalla), y en caso de encontrar algún error (es decir, si se atrapa una excepción \textit{LexError}), el programa aborta inmediatamente la ejecución, detallando el error.
 \section{LexAn}
+La clase {\bf LexAn}, cuyo código fuente puede ser encontrado en el archivo {\bf lexan.py} de la carpeta \textit{/src}, procesa los lexemas provistos por {\bf shlex} para transformarlos en tokens, que finalmente serán volcados al archivo de salida. Para reconocer los lexemas, la clase cuenta con dos pilares: una estructura de diccionario de Python (similar al \texit{hash} de Nokia Qt, un arreglo asociativo en el que se mapean pares de valores (id, valor) y se accede mediante sus identificadores), y el reconocimiento de expresiones regulares utilizando la librería {\bf re}. La clase permite además saber qué lexema y número de línea del archivo fuente está siendo analizando.
 
+Los operadores y las palabras reservadas que cuentan con un token propio son cargadas inicialmente en el diccionario. Al momento de analizar un lexema, se realiza un checkeo para ver si dicho lexema es uno de los id del diccionario. En ese caso, se retorna inmediatamente el token asociado. En caso contrario, se compara el lexema con las expresiones regulares de identificador, número, y caracter (devolviendo el respectivo token en caso de match). Si ninguna de estas opciones tiene éxito, se dispara la excepción \textit{LexError}, indicando que el lexema no pudo ser reconocido.
+
+Por último, si al intentar obtener el siguiente lexema de {\bf shlex} se captura la excepción \textit{EOFError}, dicha excepción es propagada, informando que un comentario se mantuvo abierto hasta el final del archivo.
 \section{shlex}
+Ésta clase contiene el código de la librería {\bf shlex} de Python (creada originalmente para procesar scripts de consola) modificado para que elimine los comentarios del archivo fuente a medida que lee los caracteres, y adaptado para los separadores y el alfabeto propio de mini-pascal. El procedimiento más importante de la clase devuelve un lexema del archivo fuente, y permite además saber en qué línea se encuentra dicho lexema.
 
+Además de las modificaciones mencionadas, se agregó la excepción \textit{EOFError}, que es lanzada cuando se encuentra el caracter indicando el fin de archivo mientras aún se esperaba procesar. Ésta excepción es aprovechada por LexAn para saber cuándo un comentario multilínea se mantiene abierto de manera errónea. Su código fuente puede ser encontrado en el archivo {\bf shlex.py} de la carpeta \textit{/src}.
 \end{document}
