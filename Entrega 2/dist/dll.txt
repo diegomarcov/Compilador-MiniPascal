@@ -1,0 +1,10 @@
+Make sure you have the license if you distribute any of them, and
+make sure you don't distribute files belonging to the operating system.
+
+   WSOCK32.dll - C:\windows\system32\WSOCK32.dll
+   USER32.dll - C:\windows\system32\USER32.dll
+   ADVAPI32.dll - C:\windows\system32\ADVAPI32.dll
+   SHELL32.dll - C:\windows\system32\SHELL32.dll
+   KERNEL32.dll - C:\windows\system32\KERNEL32.dll
+   
+   msvcr90.dll - E:\Archivos de programa\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT\
