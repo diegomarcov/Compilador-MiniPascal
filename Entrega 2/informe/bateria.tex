@@ -1,0 +1,52 @@
+\documentclass[a4paper,oneside]{report}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{fullpage}
+\usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}%
+
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+
+\title{Compiladores e Intérpretes\\Batería de ejemplos}
+
+\author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
+
+\date{2 de Septiembre de 2010}
+
+\begin{document}
+	
+\maketitle
+
+\chapter*{Casos de prueba}
+
+Los siguientes son los casos de prueba entregados para ser ejecutados junto con el programa, con sus respectivos comportamientos.
+
+\section*{Casos de prueba correctos}
+\subsection*{\texttt{comentarios.pas}}
+Se declaran tipos, constante, y variables. En el cuerpo del programa hay asignaciones de muchos tipos. También se utilizan distintos tipos de comentarios, que son obviados.
+
+\subsection*{\texttt{proc\_y\_fun.pas}}
+Se declaran funciones, procedimientos, y variables. Se producen asignaciones y llamadas.
+
+\subsection*{\texttt{comentarios2.pas}}
+Se declaran tipos, y variables. Hay más comentarios, con casos más extremos que el anterior.
+
+\subsection*{\texttt{llamada\_proc.pas}}
+Se declaran función, procedimiento, tipo y variables. Se realizan asignaciones, llamadas, y utilización de estructuras de control. También hay comentarios.
+
+\subsection*{\texttt{ejemplo\_full.pas}}
+Ejemplo con todas las estructuras y tokens posibles puestos juntos. Se trata de la implementación de un Fibonacci en \textsc{Mini-Pascal}.
+
+\section*{Casos de prueba incorrectos}
+\subsection*{\texttt{caracter\_erroneo.pas}}
+
+En el cuerpo del programa se utiliza un caracter que no pertece al alfabeto reconocido por el lenguaje.
+
+\subsection*{\texttt{comentario\_abierto.pas}}
+Se deja un comentario abierto, por lo que el analizador llega a \texttt{EOF} antes de encontrar el terminador.
+
+\subsection*{\texttt{numero\_erroneo.pas}}
+Un número es formado de una manera errónea en una asignación, generando el error.
+
+
+\end{document}
