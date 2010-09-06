@@ -1,80 +1,66 @@
 <program> ::= <program heading> <block>.
 
-<program heading> ::= program <identifier>;
+<program heading> ::= <PROGRAM>	 <identifier> <SEMI_COLON>
 
 <block> ::= <constant definition part><type definition part><variable declaration part><procedure and function declaration part><statement part>
 
-<constant definition part> ::= <empty> | const <constant definition>{;<constant definition>};
+<constant definition part> ::= <empty> | <CONST> <constant definition>{<SEMI_COLON> <constant definition>} <SEMI_COLON>
 
-<constant definition> ::= <identifier>=<constant>
+<constant definition> ::= <identifier> <EQUAL> <constant>
 
-<identifier> ::= <letter>{<letter or digit>}
-
-<letter or digit> ::= <letter> | <digit>
-
-<letter> ::= A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
-
-<digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-
-<constant> ::= <unsigned number> | <sign><unsigned number> | <constant identifier> | <sign><constant identifier> | <char>
-
-<unsigned number> ::= <unsigned integer>
-
-<unsigned integer> ::= <digit sequence>
-
-<digit sequence> ::= <digit>{<digit>}
+<constant> ::= <NUMBER> | <sign><NUMBER> | <constant identifier> | <sign><constant identifier> | <CHAR>
 
 <sign> ::= + | -
 
-<constant identifier> ::= <identifier>
+<constant identifier> ::= <IDENTIFIER>
 
-<type definition part> ::= <empty> | type <type definition>{;<type definition>};
+<type definition part> ::= <empty> | <TYPE> <type definition> {<SEMI_COLON> <type definition>} <SEMI_COLON>
 
-<type definition> ::= <identifier>=<type>
+<type definition> ::= <IDENTIFIER> <EQUAL> <type>
 
 <type> ::= <simple type> | <structured type>
 
 <simple type> ::= <subrange type> | <type identifier>
 
-<subrange type> ::= <constant>..<constant>
+<subrange type> ::= <constant> <SUBRANGE_SEPARATOR> <constant>
 
-<type identifier> ::= <identifier>
+<type identifier> ::= <IDENTIFIER>
 
 <structured type> ::= <unpacked structured type>
 
 <unpacked structured type> ::= <array type>
 
-<array type> ::= array[<index type>] of <component type>
+<array type> ::= <ARRAY> [<index type>] <OF> <component type>
 
 <index type> ::= <simple type>
 
 <component type> ::= <simple type>
 
-<variable definition part> : := <empty> | var<variable declaration>{;<variable declaration>};
+<variable definition part> : := <empty> | <VAR> <variable declaration>{<SEMI_COLON> <variable declaration>} <SEMI_COLON>
 
-<variable declaration> ::= <identifier>{,<identifier>} : <type>
+<variable declaration> ::= <identifier>{<COMMA> <identifier>} <TYPE_DECLARATION> <type>
 
-<procedure and function declaration part> ::= {<procedure or function declaration part>;}
+<procedure and function declaration part> ::= {<procedure or function declaration part> <SEMI_COLON>}
 
 <procedure or function declaration part> ::= <procedure declaration> | <function declaration>
 
-<procedure declaration> ::= <procedure heading><block>
+<procedure declaration> ::= <procedure heading> <block>
 
-<procedure heading> ::= procedure <identifier>; | procedure <identifier>(<formal parameter section>{;<formal parameter section>});
+<procedure heading> ::= <PROCEDURE> <identifier><SEMI_COLON> | <PROCEDURE> <identifier> <OPEN_PARENTHESIS> <formal parameter section>{<SEMI_COLON><formal parameter section>} <CLOSE_PARENTHESIS> <SEMI_COLON>
 
-<formal parameter section> ::= <parameter group> | var <parameter group>
+<formal parameter section> ::= <parameter group> | <VAR> <parameter group>
 
-<parameter group> ::= <identifier>{,<identifier>}:<type identifier>
+<parameter group> ::= <identifier>{<COMMA> <identifier>}<TYPE_DECLARATION> <type identifier>
 
 <function declaration> ::= <function heading><block>
 
-<function heading> ::= function<identifier>:<result type>; | <function identifier>(<formal parameter section>{;<formal parameter section>}):<result type>;
+<function heading> ::= <FUNCTION> <identifier> <TYPE_DECLARATION> <result type> <SEMI_COLON> | <function identifier> <OPEN_PARENTHESIS> <formal parameter section>{<SEMI_COLON> <formal parameter section>} <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <result type> <SEMI_COLON>
 
 <result type> ::= <type identifier>
 
 <statement part> ::= <compound statement>
 
-<compound statement> ::= begin <statement>{;<statement>} end
+<compound statement> ::= <BEGIN> <statement>{<SEMI_COLON> <statement>} <END>
 
 <statement> ::= <unlabelled statement>
 
@@ -82,7 +68,7 @@
 
 <simple statement> ::= <assignment statement> | <procedure statement> | <empty statement>
 
-<assignment statement> ::= <variable>:=<expression> | <function identifier>:=<expression>
+<assignment statement> ::= <variable> <ASSIGNMENT> <expression> | <function identifier> <ASSIGNMENT> <expression>
 
 <variable> ::= <entire variable> | <component variable>
 
@@ -92,7 +78,7 @@
 
 <component variable> ::= <indexed variable>
 
-<indexed variable> ::= <array variable>[<expression>]
+<indexed variable> ::= <array variable> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
 
 <array variable> ::= <entire variable>
 
@@ -102,13 +88,11 @@
 
 <term>::= <factor> | <term><multiplying operator><factor>
 
-<factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | not <factor> | <char>
-
-<char> ::= '<letter>' | '<digit>'
+<factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | <UN_LOGOP> <factor> | <char>
 
 <unsigned constant> ::= <unsigned number> | <constant identifier>
 
-<function designator> ::= <function identifier> | <function identifier>(<actual parameter>{,<actual parameter>})
+<function designator> ::= <function identifier> | <function identifier> <OPEN_PARENTHESIS> <actual parameter>{<COMMA> <actual parameter>} <CLOSE_PARENTHESIS>
 
 <function identifier> ::= <identifier>
 
@@ -118,9 +102,9 @@
 
 <adding operator> ::= + | - | or
 
-<relational operator> ::= = | <> | < | <= | >= | >
+<relational operator> ::= <RELOP> | <EQUAL>
 
-<procedure statement> ::= <procedure identifier> | <procedure identifier>(<actual parameter>{,<actual parameter>})
+<procedure statement> ::= <procedure identifier> | <procedure identifier> <OPEN_PARENTHESIS> <actual parameter> {<COMMA> <actual parameter>} <CLOSE_PARENTHESIS>
 
 <procedure identifier> ::= <identifier>
 
@@ -130,10 +114,10 @@
 
 <conditional statement> ::= <if statement>
 
-<if statement> ::= if <expression> then <statement> | if <expression> then <statement> else <statement>
+<if statement> ::= <IF> <expression> <THEN> <statement> | <IF> <expression> <THEN> <statement> <ELSE> <statement>
 
 <repetitive statement> ::= <while statement>
 
-<while statement> ::= while <expression> do <statement>
+<while statement> ::= <WHILE> <expression> <DO> <statement>
 
 <special symbol> ::= + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program

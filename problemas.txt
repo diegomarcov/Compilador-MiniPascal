@@ -1,0 +1,1 @@
+- El tema de los signos se troskea, en la parte de declaración de constantes y variables. Puedo pedir que el signo sea <ARIT_OP>, pero incluye al *. Se podría hacer el checkeo después, con el lexema, o se pueden modificar los tokens que se devuelven con LexAn.
