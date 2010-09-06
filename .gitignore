@@ -1,2 +1,8 @@
 *.pyc
 build/
+/*/informe/*.aux
+/*/informe/*.bbl
+/*/informe/*.blg
+/*/informe/*.log
+/*/informe/*.out
+/*/informe/*.toc
