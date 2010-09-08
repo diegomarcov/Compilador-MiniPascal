@@ -41,8 +41,8 @@ En la tabla \ref{tab:tokens} se encuentran todos los tokens con sus respectivos 
 Identifier 					& {\ttfamily [a-zA-Z][a-zA-Z0-9]*} \\ \hline
 Number							& {\ttfamily [0-9]+} \\ \hline
 Char								& {\ttfamily '[a-zA-Z0-9]'} \\ \hline
-LessOp						& <  \\ \hline
-Greater\_Op					& {\ttfamily >} \\ \hline
+Less\_Op						& {\ttfamily <\ }  \\ \hline %si se le sacan el backslash espacio se re pincha. es una mierda latex
+Greater\_Op					& {\ttfamily >\ } \\ \hline
 Greater\_Equal\_Op	& {\ttfamily >=} \\ \hline
 Less\_Equal\_Op			& {\ttfamily <=} \\ \hline
 Add\_Op		 					& {\ttfamily +}\\ \hline
@@ -82,7 +82,6 @@ EOF 								&  \\ \hline
 \label{tab:tokens}
 \caption{Tokens}
 \end{table}
-
 \section{Corrección de la gramática}
 Antes de comenzar con la modificación, se corrigieron los errores marcados por la cátedra. 
 
