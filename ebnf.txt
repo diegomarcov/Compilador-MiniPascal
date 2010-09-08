@@ -10,7 +10,7 @@
 
 <constant> ::= <NUMBER> | <sign><NUMBER> | <constant identifier> | <sign><constant identifier> | <CHAR>
 
-<sign> ::= + | -
+<sign> ::= <ADD_OP> | <MINUS_OP>
 
 <constant identifier> ::= <IDENTIFIER>
 
@@ -30,7 +30,7 @@
 
 <unpacked structured type> ::= <array type>
 
-<array type> ::= <ARRAY> [<index type>] <OF> <component type>
+<array type> ::= <ARRAY> <OPEN_BRACKET> <index type> <CLOSE_BRACKET> <OF> <component type>
 
 <index type> ::= <simple type>
 
@@ -46,11 +46,11 @@
 
 <procedure declaration> ::= <procedure heading> <block>
 
-<procedure heading> ::= <PROCEDURE> <identifier><SEMI_COLON> | <PROCEDURE> <identifier> <OPEN_PARENTHESIS> <formal parameter section>{<SEMI_COLON><formal parameter section>} <CLOSE_PARENTHESIS> <SEMI_COLON>
+<procedure heading> ::= <PROCEDURE> <identifier> <SEMI_COLON> | <PROCEDURE> <identifier> <OPEN_PARENTHESIS> <formal parameter section> {<SEMI_COLON> <formal parameter section>} <CLOSE_PARENTHESIS> <SEMI_COLON>
 
 <formal parameter section> ::= <parameter group> | <VAR> <parameter group>
 
-<parameter group> ::= <identifier>{<COMMA> <identifier>}<TYPE_DECLARATION> <type identifier>
+<parameter group> ::= <identifier> {<COMMA> <identifier>} <TYPE_DECLARATION> <type identifier>
 
 <function declaration> ::= <function heading><block>
 
@@ -74,7 +74,7 @@
 
 <entire variable> ::= <variable identifier>
 
-<variable identifier> ::= <identifier>
+<variable identifier> ::= <IDENTIFIER>
 
 <component variable> ::= <indexed variable>
 
@@ -82,31 +82,31 @@
 
 <array variable> ::= <entire variable>
 
-<expression> ::= <simple expression> | <simple expression><relational operator><simple expression>
+<expression> ::= <simple expression> | <simple expression> <relational operator> <simple expression>
 
-<simple expression> ::= <term> | <simple expression><adding operator><term> | <sign><term>
+<simple expression> ::= <term> | <simple expression> <adding operator> <term> | <sign> <term>
 
-<term>::= <factor> | <term><multiplying operator><factor>
+<term>::= <factor> | <term> <multiplying operator> <factor>
 
-<factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | <UN_LOGOP> <factor> | <char>
+<factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | <NOT_LOGOP> <factor> | <char>
 
 <unsigned constant> ::= <unsigned number> | <constant identifier>
 
-<function designator> ::= <function identifier> | <function identifier> <OPEN_PARENTHESIS> <actual parameter>{<COMMA> <actual parameter>} <CLOSE_PARENTHESIS>
+<function designator> ::= <function identifier> | <function identifier> <OPEN_PARENTHESIS> <actual parameter> {<COMMA> <actual parameter>} <CLOSE_PARENTHESIS>
 
 <function identifier> ::= <identifier>
 
 <actual parameter> ::= <expression> | <variable>
 
-<multiplying operator> ::= * | div | and
+<multiplying operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
 
-<adding operator> ::= + | - | or
+<adding operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
 
-<relational operator> ::= <RELOP> | <EQUAL>
+<relational operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <EQUAL>
 
 <procedure statement> ::= <procedure identifier> | <procedure identifier> <OPEN_PARENTHESIS> <actual parameter> {<COMMA> <actual parameter>} <CLOSE_PARENTHESIS>
 
-<procedure identifier> ::= <identifier>
+<procedure identifier> ::= <IDENTIFIER>
 
 <empty statement> ::= <empty>
 
@@ -119,5 +119,3 @@
 <repetitive statement> ::= <while statement>
 
 <while statement> ::= <WHILE> <expression> <DO> <statement>
-
-<special symbol> ::= + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
