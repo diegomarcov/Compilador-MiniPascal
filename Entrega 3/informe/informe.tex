@@ -5,7 +5,7 @@
 %\usepackage{listings}
 %\usepackage{fancyvrb}
 \usepackage{float}
-\usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}%
+\usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}
 \usepackage{gmverb}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
@@ -27,24 +27,31 @@
 Esta entrega consiste en el desarrollo del \textbf{Analizador Sintáctico} que formará parte del Compilado de Mini-Pascal. Para esto, a partir de un código fuente, se lee la sucesión de lexemas, con el Analizador Léxico LexAn, de la entrega anterior, y se verifica que esta sucesión sea generada por la gramática previamente entregada.
 
 Se documentará también la modificación de la gramática, de manera tal que pase a ser LL(1).
-\begin{table}[htd]
+
 
 \chapter{Gramática}
 
 \section{Tokens}
 
-En la tabla \ref{tab:tokens} se encuentran todos los tokens con sus respectivos lexemas, como fue presentada en la entrega anterior, con sus debidas modificaciones. %NO TIENE MODIFICACIONES TODAVIA
-
+En la tabla \ref{tab:tokens} se encuentran todos los tokens con sus respectivos lexemas, como fue presentada en la entrega anterior, con sus debidas modificaciones. 
+\begin{table}[htd]
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Token}			& \textbf{Expresión Regular} \\ \hline
 Identifier 					& {\ttfamily [a-zA-Z][a-zA-Z0-9]*} \\ \hline
 Number							& {\ttfamily [0-9]+} \\ \hline
 Char								& {\ttfamily '[a-zA-Z0-9]'} \\ \hline
-RelOp      					& {\ttfamily <|>|<=|>=} \\ \hline
-Arith\_Op 					& {\ttfamily +|-|*}\\ \hline
-Un\_LogOp 					& {\ttfamily not} \\ \hline
-Bin\_LogOp 					& {\ttfamily or|and} \\ \hline
+Less\_Op						& {\ttfamily <\ }  \\ \hline %si se le sacan el backslash espacio se re pincha. es una mierda latex
+Greater\_Op					& {\ttfamily >\ } \\ \hline
+Greater\_Equal\_Op	& {\ttfamily >=} \\ \hline
+Less\_Equal\_Op			& {\ttfamily <=} \\ \hline
+Add\_Op		 					& {\ttfamily +}\\ \hline
+Minus\_Op 					& {\ttfamily -}\\ \hline
+Multiply\_Op				& {\ttfamily *}\\ \hline
+Div\_Op							& {\ttfamily div}\\\hline
+Not\_LogOp 					& {\ttfamily not} \\ \hline
+Or\_LogOp 					& {\ttfamily or} \\ \hline
+And\_LogOp 					& {\ttfamily and} \\ \hline
 Equal 							& {\ttfamily =} \\ \hline
 Type\_Declaration 	& {\ttfamily :} \\ \hline
 Assignment 					& {\ttfamily :=} \\ \hline
@@ -52,7 +59,6 @@ Comma 							& {\ttfamily ,} \\ \hline
 Semicolon 					& {\ttfamily ;} \\ \hline
 End\_Program			 	& {\ttfamily .} \\ \hline
 Subrange\_Separator & {\ttfamily ..} \\ \hline
-EOF 								&  \\ \hline
 Open\_Parenthesis 	& {\ttfamily (} \\ \hline
 Close\_Parenthesis 	& {\ttfamily )} \\ \hline
 Open\_Bracket 			& {\ttfamily [} \\ \hline
@@ -72,11 +78,11 @@ Do 									& {\ttfamily do} \\ \hline
 If 									& {\ttfamily if} \\ \hline
 Then 								& {\ttfamily then} \\ \hline
 Else 								& {\ttfamily else} \\ \hline
+EOF 								&  \\ \hline
 \end{tabular}
 \label{tab:tokens}
 \caption{Tokens}
 \end{table}
-
 \section{Corrección de la gramática}
 Antes de comenzar con la modificación, se corrigieron los errores marcados por la cátedra. 
 

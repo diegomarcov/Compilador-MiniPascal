@@ -7,3 +7,4 @@ build/
 /*/informe/*.out
 /*/informe/*.toc
 *~
+/*/informe/*.pdf
