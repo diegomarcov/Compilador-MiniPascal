@@ -1,4 +1,4 @@
-<program> ::= <program_heading> <block>.
+<program> ::= <program_heading> <block> <END_PROGRAM>
 
 <program_heading> ::= <PROGRAM>	 <IDENTIFIER> <SEMI_COLON>
 
