@@ -4,7 +4,7 @@
 
 <block> ::= <constant_definition_part> <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part>
 
-<constant_definition_part> ::= <EMPTY> | <CONST> <constant_definition> <constant_definition_rest>
+<constant_definition_part> ::= <LAMBDA> | <CONST> <constant_definition> <constant_definition_rest>
 
 <constant_definition_rest> ::= <SEMI_COLON> <constant_definition> <constant_definition_rest> | <SEMI_COLON>
 
@@ -14,7 +14,7 @@
 
 <sign> ::= <ADD_OP> | <MINUS_OP>
 
-<type_definition_part> ::= <EMPTY> | <TYPE> <type_definition> <type_definition_rest>
+<type_definition_part> ::= <LAMBDA> | <TYPE> <type_definition> <type_definition_rest>
 
 <type_definition_rest> ::= <SEMI_COLON> <type_definition> <type_definition_rest> <SEMI_COLON>
 
@@ -28,7 +28,7 @@
 
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
 
-<variable_definition_part> ::= <EMPTY> | <VAR> <variable_declaration> <variable_declaration_rest>
+<variable_definition_part> ::= <LAMBDA> | <VAR> <variable_declaration> <variable_declaration_rest>
 
 <variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration> <variable_declaration_rest> | <SEMI_COLON>
 
@@ -36,7 +36,7 @@
 
 <variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
 
-<procedure_and_function_declaration_part> ::= <EMPTY> | <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part>
+<procedure_and_function_declaration_part> ::= <LAMBDA> | <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part>
 
 <procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
 
@@ -64,7 +64,7 @@
 
 <statement> ::= <simple_statement> | <structured_statement>
 
-<simple_statement> ::= <assignment_statement> | <procedure_statement> | <EMPTY>
+<simple_statement> ::= <assignment_statement> | <procedure_statement> | <LAMBDA>
 
 <assignment_statement> ::= <variable> <ASSIGNMENT> <expression> | <IDENTIFIER> <ASSIGNMENT> <expression>
 
