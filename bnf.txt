@@ -24,7 +24,7 @@
 
 <simple_type> ::= <subrange_type> | <IDENTIFIER>
 
-<subrange_type> ::= <constant> <SUBRANGE_SEPARATOR> <constant>
+<subrange_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <sign> <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <sign> <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant>
 
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
 
@@ -74,11 +74,15 @@
 
 <expression> ::= <simple_expression> | <simple_expression> <relational_operator> <simple_expression>
 
-<simple_expression> ::= <term> | <simple_expression> <adding_operator> <term> | <sign> <term>
+<simple_expression> ::= <term> <simple_expression_other> | <sign> <term> <simple_expression_other>
 
-<term> ::= <factor> | <term> <multiplying_operator> <factor>
+<simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
 
-<factor> ::= <variable> | <unsigned_constant> | <function_designator> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
+<term> ::= <factor> <term_other>
+
+<term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
+
+<factor> ::= <IDENTIFIER> | <component_variable> | <unsigned_constant> | <function_designator> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
 
 <unsigned_constant> ::= <NUMBER> | <IDENTIFIER>
 
@@ -86,7 +90,7 @@
 
 <actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
 
-<actual_parameter> ::= <expression> | <variable>
+<actual_parameter> ::= <simple_expression> | <simple_expression> <relational_operator> <simple_expression> | <IDENTIFIER> | <component_variable>
 
 <multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
 
@@ -96,7 +100,7 @@
 
 <procedure_statement> ::= <IDENTIFIER> | <IDENTIFIER> <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest>
 
-<structured_statement> ::= <statement_part> | <conditional_statement> | <repetitive_statement>
+<structured_statement> ::= <BEGIN> <statement> <statement_rest> | <BEGIN> <statement_rest> | <conditional_statement> | <repetitive_statement>
 
 <conditional_statement> ::= <IF> <expression> <THEN> <statement> | <IF> <expression> <THEN> | <IF> <expression> <THEN> <statement> <ELSE> <statement> | <IF> <expression> <THEN> <statement> <ELSE>  | <IF> <expression> <THEN> <ELSE> <statement> | <IF> <expression> <THEN> <ELSE> 
 
