@@ -41,17 +41,30 @@ if __name__ == '__main__':
 	s = inputFile.read()
 	print s
 	for x in noTerm:
-		# for y in noTerm[:noTerm.index(x)-1]:
-			print 'no terminal', x 
-			producciones = re.search(r'^'+ x + ' ::= (.*)',s,re.MULTILINE).group(1)
+		producciones = re.search(r'^'+ x + ' ::= (.*)',s,re.MULTILINE).group(1)
+		for y in noTerm[:noTerm.index(x)-1]:
+			# print 'no terminal', x 
+			
 			listaProd = []
 			
 			while producciones!='':
 				matchobj = re.search(r'([<>\w ]*)\|?(.*)', producciones)
-				print 'grupos', matchobj.groups()
+				# print 'grupos', matchobj.groups()
 				
 				listaProd += [matchobj.group(1)]
-				print 'una produccion', matchobj.group(1)
+				# print 'una produccion', matchobj.group(1)
 				producciones = matchobj.group(2)
-				print 'producciones', producciones, len(producciones)
-			print 'lista' , listaProd
+				# print 'producciones', producciones, len(producciones)
+			# print 'lista' , listaProd
+			for produccion in listaProd:
+				matchobj = re.match(r' ?(<[a-z_]*>)',produccion)
+				if matchobj:
+					if matchobj.group(1) == y:
+						produccionesY = re.search(r'^'+ y + ' ::= (.*)',s,re.MULTILINE).group(1)
+						listaProdY = []
+						while produccionesY!='':
+							matchobj = re.search(r'([<>\w ]*)\|?(.*)', producciones)
+							listaProdY += [matchobj.group(1)]
+							# print 'una produccion', matchobj.group(1)
+							produccionesY = matchobj.group(2)
+						

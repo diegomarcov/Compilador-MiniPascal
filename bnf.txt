@@ -78,7 +78,7 @@
 
 <term> ::= <factor> | <term> <multiplying_operator> <factor>
 
-<factor> ::= <variable> | <unsigned_constant> | <function_designator> | (<expression>) | <NOT_LOGOP> <factor> | <CHAR>
+<factor> ::= <variable> | <unsigned_constant> | <function_designator> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
 
 <unsigned_constant> ::= <NUMBER> | <IDENTIFIER>
 
