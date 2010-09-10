@@ -1,10 +1,10 @@
 <program> ::= <program_heading> <block> <END_PROGRAM>
 
-<program_heading> ::= <PROGRAM>	 <IDENTIFIER> <SEMI_COLON>
+<program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
 
-<block> ::= <constant_definition_part> <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part>
+<block> ::= <constant_definition_part> <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <type_definition_part> <variable_definition_part> <statement_part> | <constant_definition_part> <type_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <type_definition_part> <statement_part> | <constant_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <variable_definition_part> <statement_part> | <constant_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <statement_part> | <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <type_definition_part> <variable_definition_part> <statement_part> |  <type_definition_part> <procedure_and_function_declaration_part> <statement_part> |  <type_definition_part> <statement_part> | <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <variable_definition_part> <statement_part> | <procedure_and_function_declaration_part> <statement_part> | <statement_part>
 
-<constant_definition_part> ::= <EMPTY> | <CONST> <constant_definition> <constant_definition_rest>
+<constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
 
 <constant_definition_rest> ::= <SEMI_COLON> <constant_definition> <constant_definition_rest> | <SEMI_COLON>
 
@@ -14,7 +14,7 @@
 
 <sign> ::= <ADD_OP> | <MINUS_OP>
 
-<type_definition_part> ::= <EMPTY> | <TYPE> <type_definition> <type_definition_rest>
+<type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
 
 <type_definition_rest> ::= <SEMI_COLON> <type_definition> <type_definition_rest> <SEMI_COLON>
 
@@ -28,7 +28,7 @@
 
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
 
-<variable_definition_part> ::= <EMPTY> | <VAR> <variable_declaration> <variable_declaration_rest>
+<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_rest>
 
 <variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration> <variable_declaration_rest> | <SEMI_COLON>
 
@@ -36,7 +36,7 @@
 
 <variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
 
-<procedure_and_function_declaration_part> ::= <EMPTY> | <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part>
+<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part>
 
 <procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
 
@@ -58,13 +58,13 @@
 
 <formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
 
-<statement_part> ::= <BEGIN> <statement> <statement_rest>
+<statement_part> ::= <BEGIN> <statement> <statement_rest> | <BEGIN> <statement_rest>
 
-<statement_rest> :: = <SEMI_COLON> <statement> <statement_rest> | <END>
+<statement_rest> ::= <SEMI_COLON> <statement> <statement_rest> | <SEMI_COLON> <statement_rest> | <END>
 
 <statement> ::= <simple_statement> | <structured_statement>
 
-<simple_statement> ::= <assignment_statement> | <procedure_statement> | <EMPTY>
+<simple_statement> ::= <assignment_statement> | <procedure_statement> 
 
 <assignment_statement> ::= <variable> <ASSIGNMENT> <expression> | <IDENTIFIER> <ASSIGNMENT> <expression>
 
@@ -76,9 +76,9 @@
 
 <simple_expression> ::= <term> | <simple_expression> <adding_operator> <term> | <sign> <term>
 
-<term>::= <factor> | <term> <multiplying_operator> <factor>
+<term> ::= <factor> | <term> <multiplying_operator> <factor>
 
-<factor> ::= <variable> | <unsigned_constant> | <function_designator> | (<expression>) | <NOT_LOGOP> <factor> | <CHAR>
+<factor> ::= <variable> | <unsigned_constant> | <function_designator> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
 
 <unsigned_constant> ::= <NUMBER> | <IDENTIFIER>
 
@@ -96,8 +96,8 @@
 
 <procedure_statement> ::= <IDENTIFIER> | <IDENTIFIER> <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest>
 
-<structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
+<structured_statement> ::= <statement_part> | <conditional_statement> | <repetitive_statement>
 
-<conditional_statement> ::= <IF> <expression> <THEN> <statement> | <IF> <expression> <THEN> <statement> <ELSE> <statement>
+<conditional_statement> ::= <IF> <expression> <THEN> <statement> | <IF> <expression> <THEN> | <IF> <expression> <THEN> <statement> <ELSE> <statement> | <IF> <expression> <THEN> <statement> <ELSE>  | <IF> <expression> <THEN> <ELSE> <statement> | <IF> <expression> <THEN> <ELSE> 
 
-<repetitive_statement> ::= <WHILE> <expression> <DO> <statement>
+<repetitive_statement> ::= <WHILE> <expression> <DO> <statement> |  <WHILE> <expression> <DO>
