@@ -2,15 +2,15 @@
 
 <program_heading> ::= <PROGRAM>	 <identifier> <SEMI_COLON>
 
-<block> ::= <constant_definition_part><type_definition_part><variable_declaration_part><procedure_and_function_declaration_part><statement_part>
+<block> ::= <constant_definition_part> <type_definition_part> <variable_declaration_part> <procedure_and_function_declaration_part> <statement_part>
 
 <constant_definition_part> ::= <empty> | <CONST> <constant_definition>{<SEMI_COLON> <constant_definition>} <SEMI_COLON>
 
 <constant_definition> ::= <identifier> <EQUAL> <constant>
 
-<constant> ::= <NUMBER> | <sign><NUMBER> | <constant_identifier> | <sign><constant_identifier> | <CHAR>
+<constant> ::= <NUMBER> | <sign> <NUMBER> | <constant_identifier> | <sign> <constant_identifier> | <CHAR>
 
-<sign> ::= + | -
+<sign> ::= <ADD_OP> | <MINUS_OP>
 
 <constant_identifier> ::= <IDENTIFIER>
 
@@ -30,7 +30,7 @@
 
 <unpacked_structured_type> ::= <array_type>
 
-<array_type> ::= <ARRAY> [<index_type>] <OF> <component_type>
+<array_type> ::= <ARRAY> <OPEN_BRACKET> <index_type> <CLOSE_BRACKET> <OF> <component_type>
 
 <index_type> ::= <simple_type>
 
@@ -46,13 +46,13 @@
 
 <procedure_declaration> ::= <procedure_heading> <block>
 
-<procedure_heading> ::= <PROCEDURE> <identifier><SEMI_COLON> | <PROCEDURE> <identifier> <OPEN_PARENTHESIS> <formal_parameter_section>{<SEMI_COLON><formal_parameter_section>} <CLOSE_PARENTHESIS> <SEMI_COLON>
+<procedure_heading> ::= <PROCEDURE> <identifier> <SEMI_COLON> | <PROCEDURE> <identifier> <OPEN_PARENTHESIS> <formal_parameter_section> {<SEMI_COLON> <formal_parameter_section>} <CLOSE_PARENTHESIS> <SEMI_COLON>
 
 <formal_parameter_section> ::= <parameter_group> | <VAR> <parameter_group>
 
-<parameter_group> ::= <identifier>{<COMMA> <identifier>}<TYPE_DECLARATION> <type_identifier>
+<parameter_group> ::= <identifier> {<COMMA> <identifier>} <TYPE_DECLARATION> <type_identifier>
 
-<function_declaration> ::= <function_heading><block>
+<function_declaration> ::= <function_heading> <block>
 
 <function_heading> ::= <FUNCTION> <identifier> <TYPE_DECLARATION> <result_type> <SEMI_COLON> | <function_identifier> <OPEN_PARENTHESIS> <formal_parameter_section>{<SEMI_COLON> <formal_parameter_section>} <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <result_type> <SEMI_COLON>
 
@@ -74,7 +74,7 @@
 
 <entire_variable> ::= <variable_identifier>
 
-<variable_identifier> ::= <identifier>
+<variable_identifier> ::= <IDENTIFIER>
 
 <component_variable> ::= <indexed_variable>
 
@@ -82,31 +82,31 @@
 
 <array_variable> ::= <entire_variable>
 
-<expression> ::= <simple_expression> | <simple_expression><relational_operator><simple_expression>
+<expression> ::= <simple_expression> | <simple_expression> <relational_operator> <simple_expression>
 
-<simple_expression> ::= <term> | <simple_expression><adding_operator><term> | <sign><term>
+<simple_expression> ::= <term> | <simple_expression> <adding_operator> <term> | <sign> <term>
 
-<term>::= <factor> | <term><multiplying_operator><factor>
+<term>::= <factor> | <term> <multiplying_operator> <factor>
 
-<factor> ::= <variable> | <unsigned_constant> | <function_designator> | (<expression>) | <UN_LOGOP> <factor> | <char>
+<factor> ::= <variable> | <unsigned_constant> | <function_designator> | (<expression>) | <NOT_LOGOP> <factor> | <char>
 
 <unsigned_constant> ::= <unsigned_number> | <constant_identifier>
 
-<function_designator> ::= <function_identifier> | <function_identifier> <OPEN_PARENTHESIS> <actual_parameter>{<COMMA> <actual_parameter>} <CLOSE_PARENTHESIS>
+<function_designator> ::= <function_identifier> | <function_identifier> <OPEN_PARENTHESIS> <actual_parameter> {<COMMA> <actual_parameter>} <CLOSE_PARENTHESIS>
 
 <function_identifier> ::= <identifier>
 
 <actual_parameter> ::= <expression> | <variable>
 
-<multiplying_operator> ::= * | div | and
+<multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
 
-<adding_operator> ::= + | - | or
+<adding_operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
 
-<relational_operator> ::= <RELOP> | <EQUAL>
+<relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <EQUAL>
 
 <procedure_statement> ::= <procedure_identifier> | <procedure_identifier> <OPEN_PARENTHESIS> <actual_parameter> {<COMMA> <actual_parameter>} <CLOSE_PARENTHESIS>
 
-<procedure_identifier> ::= <identifier>
+<procedure_identifier> ::= <IDENTIFIER>
 
 <empty_statement> ::= <empty>
 
@@ -119,5 +119,3 @@
 <repetitive_statement> ::= <while_statement>
 
 <while_statement> ::= <WHILE> <expression> <DO> <statement>
-
-<special_symbol> ::= + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
