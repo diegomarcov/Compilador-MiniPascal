@@ -1,0 +1,139 @@
+<program> ::= <program_heading> <block>.
+
+<program_heading> ::= <PROGRAM>	 <IDENTIFIER> <SEMI_COLON>
+
+<block> ::= <constant_definition_part> <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part>
+
+<constant_definition_part> ::= <empty> | <CONST> <constant_definition> <constant_definition_rest>
+
+<constant_definition_rest> ::= <SEMI_COLON> <constant_definition> <constant_definition_rest> | <SEMI_COLON>
+
+<constant_definition> ::= <IDENTIFIER> <EQUAL> <constant>
+
+<constant> ::= <NUMBER> | <sign> <NUMBER> | <constant_identifier> | <sign> <constant_identifier> | <CHAR>
+
+<sign> ::= <ADD_OP> | <MINUS_OP>
+
+<constant_identifier> ::= <IDENTIFIER>
+
+<type_definition_part> ::= <empty> | <TYPE> <type_definition> <type_definition_rest>
+
+<type_definition_rest> ::= <SEMI_COLON> <type_definition> <type_definition_rest> <SEMI_COLON>
+
+<type_definition> ::= <IDENTIFIER> <EQUAL> <type>
+
+<type> ::= <simple_type> | <structured_type>
+
+<simple_type> ::= <subrange_type> | <type_identifier>
+
+<subrange_type> ::= <constant> <SUBRANGE_SEPARATOR> <constant>
+
+<type_identifier> ::= <IDENTIFIER>
+
+<structured_type> ::= <unpacked_structured_type>
+
+<unpacked_structured_type> ::= <array_type>
+
+<array_type> ::= <ARRAY> <OPEN_BRACKET> <index_type> <CLOSE_BRACKET> <OF> <component_type>
+
+<index_type> ::= <simple_type>
+
+<component_type> ::= <simple_type>
+
+<variable_definition_part> ::= <empty> | <VAR> <variable_declaration> <variable_declaration_rest>
+
+<variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration> <variable_declaration_rest> | <SEMI_COLON>
+
+<variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
+
+<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
+
+<procedure_and_function_declaration_part> ::= <empty> | <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part>
+
+<procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
+
+<procedure_declaration> ::= <procedure_heading> <block>
+
+<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <SEMI_COLON> | <PROCEDURE> <IDENTIFIER> <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
+
+<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest> | <CLOSE_PARENTHESIS> <SEMI_COLON>
+
+<formal_parameter_section> ::= <parameter_group> | <VAR> <parameter_group>
+
+<parameter_group> ::= <IDENTIFIER> <parameter_group_rest>
+
+<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest> | <TYPE_DECLARATION> <type_identifier>
+
+<function_declaration> ::= <function_heading> <block>
+
+<function_heading> ::= <FUNCTION> <IDENTIFIER> <TYPE_DECLARATION> <result_type> <SEMI_COLON> | <function_identifier> <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
+
+<formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <result_type> <SEMI_COLON>
+
+<result_type> ::= <type_identifier>
+
+<statement_part> ::= <compound_statement>
+
+<compound_statement> ::= <BEGIN> <statement> <compound_statement_rest>
+
+<compound_statement_rest> :: = <SEMI_COLON> <statement> <compound_statement_rest> | <END>
+
+<statement> ::= <unlabelled_statement>
+
+<unlabelled_statement> ::= <simple_statement> | <structured_statement>
+
+<simple_statement> ::= <assignment_statement> | <procedure_statement> | <empty_statement>
+
+<assignment_statement> ::= <variable> <ASSIGNMENT> <expression> | <function_identifier> <ASSIGNMENT> <expression>
+
+<variable> ::= <entire_variable> | <component_variable>
+
+<entire_variable> ::= <variable_identifier>
+
+<variable_identifier> ::= <IDENTIFIER>
+
+<component_variable> ::= <indexed_variable>
+
+<indexed_variable> ::= <array_variable> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
+
+<array_variable> ::= <entire_variable>
+
+<expression> ::= <simple_expression> | <simple_expression> <relational_operator> <simple_expression>
+
+<simple_expression> ::= <term> | <simple_expression> <adding_operator> <term> | <sign> <term>
+
+<term>::= <factor> | <term> <multiplying_operator> <factor>
+
+<factor> ::= <variable> | <unsigned_constant> | <function_designator> | (<expression>) | <NOT_LOGOP> <factor> | <CHAR>
+
+<unsigned_constant> ::= <NUMBER> | <constant_identifier>
+
+<function_designator> ::= <function_identifier> | <function_identifier> <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest>
+
+<actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
+
+<function_identifier> ::= <IDENTIFIER>
+
+<actual_parameter> ::= <expression> | <variable>
+
+<multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
+
+<adding_operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
+
+<relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <EQUAL>
+
+<procedure_statement> ::= <procedure_identifier> | <procedure_identifier> <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest>
+
+<procedure_identifier> ::= <IDENTIFIER>
+
+<empty_statement> ::= <empty>
+
+<structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
+
+<conditional_statement> ::= <if_statement>
+
+<if_statement> ::= <IF> <expression> <THEN> <statement> | <IF> <expression> <THEN> <statement> <ELSE> <statement>
+
+<repetitive_statement> ::= <while_statement>
+
+<while_statement> ::= <WHILE> <expression> <DO> <statement>

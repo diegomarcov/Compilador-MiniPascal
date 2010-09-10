@@ -8,3 +8,5 @@ build/
 /*/informe/*.toc
 *~
 /*/informe/*.pdf
+.project
+.pydevproject
