@@ -2,15 +2,25 @@
 
 <program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
 
-<block> ::= <constant_definition_part> <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <type_definition_part> <variable_definition_part> <statement_part> | <constant_definition_part> <type_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <type_definition_part> <statement_part> | <constant_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <variable_definition_part> <statement_part> | <constant_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <statement_part> | <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <type_definition_part> <variable_definition_part> <statement_part> |  <type_definition_part> <procedure_and_function_declaration_part> <statement_part> |  <type_definition_part> <statement_part> | <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <variable_definition_part> <statement_part> | <procedure_and_function_declaration_part> <statement_part> | <statement_part>
+<block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
+
+<block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
+
+<block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
+
+<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part> 
 
 <constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
 
-<constant_definition_rest> ::= <SEMI_COLON> <constant_definition> <constant_definition_rest> | <SEMI_COLON>
+<constant_definition_rest> ::= <SEMI_COLON> <constant_definition_rest_rest>
+
+<constant_definition_rest_rest> ::= <constant_definition> <constant_definition_rest> | <LAMBDA>
 
 <constant_definition> ::= <IDENTIFIER> <EQUAL> <constant>
 
-<constant> ::= <NUMBER> | <sign> <NUMBER> | <IDENTIFIER> | <sign> <IDENTIFIER> | <CHAR>
+<constant> ::= <NUMBER> | <IDENTIFIER> | <CHAR> | <sign> <constant_rest>
+
+<constant_rest> ::= <NUMBER> | <IDENTIFIER>
 
 <sign> ::= <ADD_OP> | <MINUS_OP>
 
