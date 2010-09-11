@@ -35,12 +35,17 @@
 <simple_type> ::= <subrange_type> | <IDENTIFIER>
 
 <subrange_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <sign> <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <sign> <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant>
+<subrange_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest>
+
+<subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
 
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
 
 <variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_rest>
 
-<variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration> <variable_declaration_rest> | <SEMI_COLON>
+<variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest> 
+
+<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
 
 <variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
 
@@ -68,9 +73,13 @@
 
 <formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
 
-<statement_part> ::= <BEGIN> <statement> <statement_rest> | <BEGIN> <statement_rest>
+<statement_part> ::= <BEGIN> <statement_part_rest>
 
-<statement_rest> ::= <SEMI_COLON> <statement> <statement_rest> | <SEMI_COLON> <statement_rest> | <END>
+<statement_part_rest> ::= <statement> <statement_rest> | <statement_rest>
+
+<statement_rest> ::= <SEMI_COLON> <statemente_rest_rest> | <END>
+
+<statemente_rest_rest> ::= <statement> <statement_rest> | <statement_rest>
 
 <statement> ::= <simple_statement> | <structured_statement>
 
