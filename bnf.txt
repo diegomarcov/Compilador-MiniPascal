@@ -34,7 +34,6 @@
 
 <simple_type> ::= <subrange_type> | <IDENTIFIER>
 
-<subrange_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <sign> <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <sign> <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant>
 <subrange_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest>
 
 <subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
@@ -83,15 +82,15 @@
 
 <statement> ::= <simple_statement> | <structured_statement>
 
-<simple_statement> ::= <assignment_statement> | <procedure_statement> 
+<simple_statement> ::= <IDENTIFIER> <simple_statement_rest>
 
-<assignment_statement> ::= <variable> <ASSIGNMENT> <expression> | <IDENTIFIER> <ASSIGNMENT> <expression>
-
-<variable> ::= <IDENTIFIER> | <component_variable>
+<simple_statement_rest> ::= <ASSIGNMENT> <expression> | <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
 
 <component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
 
-<expression> ::= <simple_expression> | <simple_expression> <relational_operator> <simple_expression>
+<expression> ::= <simple_expression> <expression_rest> 
+
+<expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
 
 <simple_expression> ::= <term> <simple_expression_other> | <sign> <term> <simple_expression_other>
 
@@ -101,15 +100,19 @@
 
 <term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
 
-<factor> ::= <IDENTIFIER> | <component_variable> | <unsigned_constant> | <function_designator> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
+<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
 
-<unsigned_constant> ::= <NUMBER> | <IDENTIFIER>
-
-<function_designator> ::= <IDENTIFIER> | <IDENTIFIER> <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest>
+<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
 
 <actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
 
-<actual_parameter> ::= <simple_expression> | <simple_expression> <relational_operator> <simple_expression> | <IDENTIFIER> | <component_variable>
+<actual_parameter> ::= <simple_expression> <actual_parameter_simple_exp_rest> | <IDENTIFIER> | <component_variable>
+
+<actual_parameter_simple_exp_rest> ::=  <relational_operator> <simple_expression> | <LAMBDA>
+
+<actual_parameter> ::= <IDENTIFIER> <actual_parameter_fact> | <sign> <term> <simple_expression_other> <actual_parameter_fact> |  <NUMBER> <term_other> <simple_expression_other> <actual_parameter_fact> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> <term_other> <simple_expression_other> <actual_parameter_fact> | <NOT_LOGOP> <factor> <term_other> <simple_expression_other> <actual_parameter_fact> | <CHAR> <term_other> <simple_expression_other> <actual_parameter_fact>
+
+<actual_parameter_fact> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | | <LAMBDA>
 
 <multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
 
