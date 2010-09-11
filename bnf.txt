@@ -104,15 +104,9 @@
 
 <factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
 
+<actual_parameter> ::= <expression>
+
 <actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
-
-<actual_parameter_simple_exp_rest> ::=  <relational_operator> <simple_expression> | <LAMBDA>
-
-<actual_parameter> ::= <IDENTIFIER> <actual_parameter_fact> | <sign> <term> <simple_expression_other> <actual_parameter_simple_exp_rest> |  <NUMBER> <term_other> <simple_expression_other> <actual_parameter_simple_exp_rest> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> <term_other> <simple_expression_other> <actual_parameter_simple_exp_rest> | <NOT_LOGOP> <factor> <term_other> <simple_expression_other> <actual_parameter_simple_exp_rest> | <CHAR> <term_other> <simple_expression_other> <actual_parameter_simple_exp_rest>
-
-<actual_parameter_fact> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <actual_parameter_fact_rest>| <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> <term_other> <simple_expression_other> <actual_parameter_simple_exp_rest> | <term_other> <simple_expression_other> <actual_parameter_simple_exp_rest> | <LAMBDA>
-
-<actual_parameter_fact_rest> ::= <term_other> <simple_expression_other> <actual_parameter_simple_exp_rest> | <LAMBDA>
 
 <multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
 
@@ -120,10 +114,18 @@
 
 <relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <EQUAL>
 
-<procedure_statement> ::= <IDENTIFIER> | <IDENTIFIER> <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest>
+<procedure_statement> ::= <IDENTIFIER> <procedure_statement_rest>
 
-<structured_statement> ::= <BEGIN> <statement> <statement_rest> | <BEGIN> <statement_rest> | <conditional_statement> | <repetitive_statement>
+<procedure_statement_rest> ::= <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
 
-<conditional_statement> ::= <IF> <expression> <THEN> <statement> | <IF> <expression> <THEN> | <IF> <expression> <THEN> <statement> <ELSE> <statement> | <IF> <expression> <THEN> <statement> <ELSE>  | <IF> <expression> <THEN> <ELSE> <statement> | <IF> <expression> <THEN> <ELSE> 
+<structured_statement> ::= <BEGIN> <structured_statement_other> | <conditional_statement> | <repetitive_statement>
+
+<structured_statement_other> ::= <statement> <statement_rest> | <statement_rest>
+
+<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_rest>
+
+<conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
 
 <repetitive_statement> ::= <WHILE> <expression> <DO> <statement> |  <WHILE> <expression> <DO>
+
+<repetitive_statement_rest> ::= <statement> | <LAMBDA>
