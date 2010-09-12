@@ -26,7 +26,9 @@
 
 <type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
 
-<type_definition_rest> ::= <SEMI_COLON> <type_definition> <type_definition_rest> <SEMI_COLON>
+<type_definition_rest> ::= <SEMI_COLON> <type_definition_rest_rest>
+
+<type_definition_rest_rest> ::= <type_definition> <type_definition_rest> | <LAMBDA>
 
 <type_definition> ::= <IDENTIFIER> <EQUAL> <type>
 
