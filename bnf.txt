@@ -1,16 +1,25 @@
-<program> ::= <program_heading> <block> <END_PROGRAM>
 
 <program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
 
-<block> ::= <constant_definition_part> <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <type_definition_part> <variable_definition_part> <statement_part> | <constant_definition_part> <type_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <type_definition_part> <statement_part> | <constant_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <variable_definition_part> <statement_part> | <constant_definition_part> <procedure_and_function_declaration_part> <statement_part> | <constant_definition_part> <statement_part> | <type_definition_part> <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <type_definition_part> <variable_definition_part> <statement_part> |  <type_definition_part> <procedure_and_function_declaration_part> <statement_part> |  <type_definition_part> <statement_part> | <variable_definition_part> <procedure_and_function_declaration_part> <statement_part> | <variable_definition_part> <statement_part> | <procedure_and_function_declaration_part> <statement_part> | <statement_part>
+<block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
+
+<block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
+
+<block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
+
+<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part> 
 
 <constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
 
-<constant_definition_rest> ::= <SEMI_COLON> <constant_definition> <constant_definition_rest> | <SEMI_COLON>
+<constant_definition_rest> ::= <SEMI_COLON> <constant_definition_rest_rest>
+
+<constant_definition_rest_rest> ::= <constant_definition> <constant_definition_rest> | <LAMBDA>
 
 <constant_definition> ::= <IDENTIFIER> <EQUAL> <constant>
 
-<constant> ::= <NUMBER> | <sign> <NUMBER> | <IDENTIFIER> | <sign> <IDENTIFIER> | <CHAR>
+<constant> ::= <NUMBER> | <IDENTIFIER> | <CHAR> | <sign> <constant_rest>
+
+<constant_rest> ::= <NUMBER> | <IDENTIFIER>
 
 <sign> ::= <ADD_OP> | <MINUS_OP>
 
@@ -24,13 +33,17 @@
 
 <simple_type> ::= <subrange_type> | <IDENTIFIER>
 
-<subrange_type> ::= <constant> <SUBRANGE_SEPARATOR> <constant>
+<subrange_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest>
+
+<subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
 
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
 
 <variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_rest>
 
-<variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration> <variable_declaration_rest> | <SEMI_COLON>
+<variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest> 
+
+<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
 
 <variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
 
@@ -58,35 +71,41 @@
 
 <formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
 
-<statement_part> ::= <BEGIN> <statement> <statement_rest> | <BEGIN> <statement_rest>
+<statement_part> ::= <BEGIN> <statement_part_rest>
 
-<statement_rest> ::= <SEMI_COLON> <statement> <statement_rest> | <SEMI_COLON> <statement_rest> | <END>
+<statement_part_rest> ::= <statement> <statement_rest> | <statement_rest>
+
+<statement_rest> ::= <SEMI_COLON> <statemente_rest_rest> | <END>
+
+<statemente_rest_rest> ::= <statement> <statement_rest> | <statement_rest>
 
 <statement> ::= <simple_statement> | <structured_statement>
 
-<simple_statement> ::= <assignment_statement> | <procedure_statement> 
+<simple_statement> ::= <IDENTIFIER> <simple_statement_rest>
 
-<assignment_statement> ::= <variable> <ASSIGNMENT> <expression> | <IDENTIFIER> <ASSIGNMENT> <expression>
-
-<variable> ::= <IDENTIFIER> | <component_variable>
+<simple_statement_rest> ::= <ASSIGNMENT> <expression> | <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
 
 <component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
 
-<expression> ::= <simple_expression> | <simple_expression> <relational_operator> <simple_expression>
+<expression> ::= <simple_expression> <expression_rest> 
 
-<simple_expression> ::= <term> | <simple_expression> <adding_operator> <term> | <sign> <term>
+<expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
 
-<term> ::= <factor> | <term> <multiplying_operator> <factor>
+<simple_expression> ::= <term> <simple_expression_other> | <sign> <term> <simple_expression_other>
 
-<factor> ::= <variable> | <unsigned_constant> | <function_designator> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
+<simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
 
-<unsigned_constant> ::= <NUMBER> | <IDENTIFIER>
+<term> ::= <factor> <term_other>
 
-<function_designator> ::= <IDENTIFIER> | <IDENTIFIER> <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest>
+<term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
+
+<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
+
+<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<actual_parameter> ::= <expression>
 
 <actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
-
-<actual_parameter> ::= <expression> | <variable>
 
 <multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
 
@@ -94,10 +113,18 @@
 
 <relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <EQUAL>
 
-<procedure_statement> ::= <IDENTIFIER> | <IDENTIFIER> <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest>
+<procedure_statement> ::= <IDENTIFIER> <procedure_statement_rest>
 
-<structured_statement> ::= <statement_part> | <conditional_statement> | <repetitive_statement>
+<procedure_statement_rest> ::= <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
 
-<conditional_statement> ::= <IF> <expression> <THEN> <statement> | <IF> <expression> <THEN> | <IF> <expression> <THEN> <statement> <ELSE> <statement> | <IF> <expression> <THEN> <statement> <ELSE>  | <IF> <expression> <THEN> <ELSE> <statement> | <IF> <expression> <THEN> <ELSE> 
+<structured_statement> ::= <BEGIN> <structured_statement_other> | <conditional_statement> | <repetitive_statement>
+
+<structured_statement_other> ::= <statement> <statement_rest> | <statement_rest>
+
+<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_rest>
+
+<conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
 
 <repetitive_statement> ::= <WHILE> <expression> <DO> <statement> |  <WHILE> <expression> <DO>
+
+<repetitive_statement_rest> ::= <statement> | <LAMBDA>
