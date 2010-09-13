@@ -24,7 +24,9 @@
 
 <type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
 
-<type_definition_rest> ::= <SEMI_COLON> <type_definition> <type_definition_rest> <SEMI_COLON>
+<type_definition_rest> ::= <SEMI_COLON> <type_definition_rest_rest>
+
+<type_definition_rest_rest> ::= <type_definition> <type_definition_rest> | <LAMBDA>
 
 <type_definition> ::= <IDENTIFIER> <EQUAL> <type>
 
@@ -48,7 +50,7 @@
 
 <variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
 
-<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part>
+<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
 
 <procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
 
@@ -128,6 +130,6 @@
 
 <conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
 
-<repetitive_statement> ::= <WHILE> <expression> <DO> <statement> |  <WHILE> <expression> <DO>
+<repetitive_statement> ::= <WHILE> <expression> <DO> <repetitive_statement_rest>
 
 <repetitive_statement_rest> ::= <statement> | <LAMBDA>
