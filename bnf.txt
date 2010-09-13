@@ -1,4 +1,3 @@
-
 <program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
 
 <block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
@@ -39,9 +38,9 @@
 
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
 
-<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_rest>
+<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
 
-<variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest> 
+<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest> 
 
 <variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
 
@@ -55,7 +54,9 @@
 
 <procedure_declaration> ::= <procedure_heading> <block>
 
-<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <SEMI_COLON> | <PROCEDURE> <IDENTIFIER> <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
+<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest> 
+
+<procedure_heading_rest> ::= <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
 
 <formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest> | <CLOSE_PARENTHESIS> <SEMI_COLON>
 
@@ -67,7 +68,9 @@
 
 <function_declaration> ::= <function_heading> <block>
 
-<function_heading> ::= <FUNCTION> <IDENTIFIER> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON> | <IDENTIFIER> <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
+<function_heading> ::= <FUNCTION> <IDENTIFIER> <function_heading_rest>
+
+<function_heading_rest> ::= <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
 
 <formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
 
