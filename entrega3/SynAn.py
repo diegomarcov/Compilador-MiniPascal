@@ -12,20 +12,24 @@ class SynError (Exception):
 
 	def __init__(self,leader,expected,found):
 		super(SynError,self).__init__()
-		print "Enter sandman"
 		self.leader = leader
 		self.expected = expected
 		self.found = found
-		print "Exit sandman"
 		
 	def __str__(self):
-		print "Retornando la excepcion"
-		print "MY LEADER STRING = %s" % self.leader
-		print "MY EXPECTED STRING = %s" % self.expected
-		print "MY FOUND STRING = %s" % self.found
-		self.returningstring = '\n%sSyntactical Error: Expecting a "%s", but a %s was found' % (self.leader,self.expected,self.found)
-		return self.returningstring
+		return '\n%sSyntactical Error: Expecting a "%s", but a %s was found' % (self.leader,self.expected,self.found)
 
+		
+class UnexpectedTokenError(Exception):
+
+	def __init__(self,leader,found):
+		super(UnexpectedTokenError,self).__init__()
+		self.leader = leader
+		self.found = found
+		
+	def __str__(self):
+		return '\n%sUnexpected token "%s" found.\n' % (self.leader, self.found)
+		
 class SynAn():
 	def __init__(self,lexer,debug,outputFile):
 		self.lexer = lexer
@@ -63,20 +67,28 @@ class SynAn():
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
 				else:
-					self.thiserrorLeader = self.lexer.errorLeader()
-					self.thislexeme = self.lexer.getCurrentLexeme()
-					print self.thiserrorLeader
-					print self.thislexeme
-					self.currentError = SynError(self.thiserrorLeader,';',self.thislexeme)
-					raise self.currentError
+					raise SynError(self.lexer.errorLeader(),';',self.lexer.currentLexeme())
+
 			else:
 				pass
 
 	def block(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<CONST>":
+			self.lexer.pushToken(self.currentToken)
+			self.constant_definition_part()
+			self.block_cons_rest()
+		else:
+			self.lexer.pushToken(self.currentToken)
+			self.block_cons_rest()
+			
+		# or self.currentToken == "<VAR>" or self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 
 	def constant_definition_part(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<CONST>":
+			self.constant_definition()
+			self.constant_definition_rest()
 
 	def block_cons_rest(self):
 		pass
@@ -306,6 +318,4 @@ if __name__ == '__main__':
 			output.write(msg)
 		print msg
 	except SynError as e:
-		if output is not None:
-			output.write(str(e))
-		print e
+		output.write(str(e))
