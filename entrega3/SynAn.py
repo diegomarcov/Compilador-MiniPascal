@@ -84,39 +84,21 @@ class SynAn():
 			
 		# or self.currentToken == "<VAR>" or self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 
+	def block_cons_rest(self):
+		pass
+	
+	def block_type_rest(self):
+		pass
+
+	def block_var_rest(self):
+		pass
+
 	def constant_definition_part(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<CONST>":
 			self.constant_definition()
 			self.constant_definition_rest()
 
-	def block_cons_rest(self):
-		pass
-
-	def type_definition_part(self):
-		pass
-
-	def block_type_rest(self):
-		pass
-
-	def variable_definition_part(self):
-		pass
-
-	def block_var_rest(self):
-		pass
-
-	def procedure_and_function_declaration_part(self):
-		pass
-
-	def statement_part(self):
-		self.out.write('In statement_part\n')
-		if self.lexer.getNextToken() = '<BEGIN>':
-			self.statement_part_rest()
-		else:
-			raise SysAn(self.lexer.errorLeader(),"begin",self.lexer.currentLexeme)
-
-	def constant_definition(self):
-		pass
 
 	def constant_definition_rest(self):
 		pass
@@ -124,16 +106,19 @@ class SynAn():
 	def constant_definition_rest_rest(self):
 		pass
 
-	def constant(self):
+	def constant_definition(self):
 		pass
 
-	def sign(self):
+	def constant(self):
 		pass
 
 	def constant_rest(self):
 		pass
 
-	def type_definition(self):
+	def sign(self):
+		pass
+
+	def type_definition_part(self):
 		pass
 
 	def type_definition_rest(self):
@@ -142,13 +127,13 @@ class SynAn():
 	def type_definition_rest_rest(self):
 		pass
 
+	def type_definition(self):
+		pass
+
 	def type(self):
 		pass
 
 	def simple_type(self):
-		pass
-
-	def structured_type(self):
 		pass
 
 	def subrange_type(self):
@@ -157,7 +142,10 @@ class SynAn():
 	def subrange_type_rest(self):
 		pass
 
-	def variable_declaration(self):
+	def structured_type(self):
+		pass
+
+	def variable_definition_part(self):
 		pass
 
 	def variable_declaration_part_rest(self):
@@ -166,7 +154,13 @@ class SynAn():
 	def variable_declaration_rest_rest(self):
 		pass
 
+	def variable_declaration(self):
+		pass
+
 	def variable_declaration_rest(self):
+		pass
+
+	def procedure_and_function_declaration_part(self):
 		pass
 
 	def procedure_or_function_declaration_part(self):
@@ -175,25 +169,25 @@ class SynAn():
 	def procedure_declaration(self):
 		pass
 
-	def function_declaration(self):
-		pass
-
 	def procedure_heading(self):
 		pass
 
 	def procedure_heading_rest(self):
 		pass
 
-	def formal_parameter_section(self):
+	def formal_parameter_rest(self):
 		pass
 
-	def formal_parameter_rest(self):
+	def formal_parameter_section(self):
 		pass
 
 	def parameter_group(self):
 		pass
 
 	def parameter_group_rest(self):
+		pass
+
+	def function_declaration(self):
 		pass
 
 	def function_heading(self):
@@ -205,10 +199,10 @@ class SynAn():
 	def formal_parameter_function_rest(self):
 		pass
 
-	def statement_part_rest(self):
+	def statement_part(self):
 		pass
 
-	def statement(self):
+	def statement_part_rest(self):
 		pass
 
 	def statement_rest(self):
@@ -217,16 +211,44 @@ class SynAn():
 	def statemente_rest_rest(self):
 		pass
 
-	def simple_statement(self):
-		pass
+	def statement(self):
+				self.out.write('In statement_part\n')
+		if self.lexer.getNextToken() = '<BEGIN>':
+			self.statement_part_rest()
+		else:
+			raise SysAn(self.lexer.errorLeader(),"begin",self.lexer.currentLexeme)
 
-	def structured_statement(self):
+	def simple_statement(self):
 		pass
 
 	def simple_statement_rest(self):
 		pass
 
+	def component_variable(self):
+		pass
+
 	def expression(self):
+		pass
+
+	def expression_rest(self):
+		pass
+
+	def simple_expression(self):
+		pass
+
+	def simple_expression_other(self):
+		pass
+
+	def term(self):
+		pass
+
+	def term_other(self):
+		pass
+
+	def factor(self):
+		pass
+
+	def factor_rest(self):
 		pass
 
 	def actual_parameter(self):
@@ -235,37 +257,13 @@ class SynAn():
 	def actual_parameter_rest(self):
 		pass
 
-	def component_variable(self):
-		pass
-
-	def simple_expression(self):
-		pass
-
-	def expression_rest(self):
-		pass
-
-	def relational_operator(self):
-		pass
-
-	def term(self):
-		pass
-
-	def simple_expression_other(self):
+	def multiplying_operator(self):
 		pass
 
 	def adding_operator(self):
 		pass
 
-	def factor(self):
-		pass
-
-	def term_other(self):
-		pass
-
-	def multiplying_operator(self):
-		pass
-
-	def factor_rest(self):
+	def relational_operator(self):
 		pass
 
 	def procedure_statement(self):
@@ -274,19 +272,19 @@ class SynAn():
 	def procedure_statement_rest(self):
 		pass
 
+	def structured_statement(self):
+		pass
+
 	def structured_statement_other(self):
 		pass
 
 	def conditional_statement(self):
 		pass
 
-	def repetitive_statement(self):
-		pass
-
-	def conditional_statement_rest(self):
-		pass
-
 	def conditional_statement_other(self):
+		pass
+
+	def repetitive_statement(self):
 		pass
 
 	def repetitive_statement_rest(self):
