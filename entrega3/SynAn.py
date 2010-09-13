@@ -16,12 +16,15 @@ class SynError (Exception):
 		self.found = found
 		
 	def __str__(self):
+		
 		return '\n%sSyntactical Error: Expecting a "%s", but a %s was found' % (self.leader,self.expected,self.found)
 
 class SynAn():
 	def __init__(self,lexer,debug,outputFile):
 		self.lexer = lexer
+		
 		self.debug = bool(debug)
+		
 		if self.debug:
 			self.out = outputFile
 		else:
@@ -38,7 +41,8 @@ class SynAn():
 			self.out.write('Success\n')
 			return 'The program is syntactically correct.'
 		else:
-			raise SynError(self.lexer.errorLeader(),'.',self.lexer.currentLexeme())
+			
+			raise SynError(self.lexer.errorLeader(),'.',self.lexer.getCurrentLexeme())
 
 	def program_heading(self):
 		self.out.write('In program_heading\n')
@@ -47,6 +51,7 @@ class SynAn():
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
 				else:
+					
 					raise SynError(self.lexer.errorLeader(),';',self.lexer.currentLexeme())
 			else:
 				pass
@@ -261,7 +266,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Lexical analysis for the provided .pas file.')
 	parser.add_argument('inputFile', metavar='IN_FILE', help='The source .pas file')
 	parser.add_argument('outputFile', metavar='OUT_FILE', nargs='?', help='The optional output file.')
-	parser.add_argument('-d', help='Debug mode', dest='debug')
+	parser.add_argument('-d', help='Debug mode',action='store_const', const=True, dest='debug')
 
 	args = parser.parse_args()
 	inputFile = io.BufferedReader(io.FileIO(args.inputFile))
@@ -284,7 +289,7 @@ if __name__ == '__main__':
 		if output is not None:
 			output.write(msg)
 		print msg
-	except Exception as e:
+	except SynError as e:
 		if output is not None:
-			output.write(msg)
+			output.write(e)
 		print e
