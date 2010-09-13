@@ -21,7 +21,7 @@ if __name__ == '__main__':
 		except:
 			print "Error"
 		
-	lexicalAnalyzer = LexAn(inputFile)
+	lexicalAnalyzer = LexAn(inputFile,args.inputFile)
 	
 	output.write("----------------------------------------------------------------------------------------------\n")
 	output.write("|%s|%s|%s|\n" % ("LEXEME".center(35), "TOKEN".center(35), "LINE NUMBER".center(20)))

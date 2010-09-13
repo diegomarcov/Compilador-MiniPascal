@@ -13,7 +13,7 @@ class LexError (Exception):
 		return self.message
 
 class LexAn():
-	def __init__(self, file):
+	def __init__(self, file,filename):
 
 		self.tokenDictionary = {"program" : "<PROGRAM>",
 									"type" : "<TYPE>",
@@ -58,7 +58,7 @@ class LexAn():
 									'' : "<EOF>"
 									}
 									
-		self.lexer = shlex(file)
+		self.lexer = shlex(file,filename)
 		self.lexer.quotes = ''
 		self.lexer.wordchars += "'"
 		self.lexer.commenters = "//"
@@ -72,12 +72,18 @@ class LexAn():
 		
 	def getCurrentLexeme(self):
 		return self.originalLexeme
+		
+	def pushToken(self,token):
+		self.lexer.push_token(token)
+		
+	def errorLeader(self):
+		return self.lexer.error_leader()
 	
 	def getNextToken(self):
 		try:
 			self.originalLexeme = self.lexer.get_token()
 		except EOFError:
-			raise LexError('\nLexical error: A comment in the source program was not closed!')
+			raise LexError('\n%sLexical error: A comment in the source program was not closed!'% self.errorLeader())
 			
 		self.currentLexeme = self.originalLexeme.lower()
 		if (self.currentLexeme in self.tokenDictionary):
@@ -86,7 +92,7 @@ class LexAn():
 			try:
 				self.forwardToken = self.lexer.get_token()
 			except EOFError:
-				raise LexError('\nLexical error: A comment in the source program was not closed!')
+				raise LexError('\n%sLexical error: A comment in the source program was not closed!' % self.errorLeader())
 			
 			if (self.forwardToken == "."):
 				self.originalLexeme = ".."
@@ -123,6 +129,6 @@ class LexAn():
 		elif(self.charRE.match(self.currentLexeme)):
 			return "<CHAR>"
 		else:
-			raise LexError('Lexical error: The lexeme "' + self.originalLexeme + '" couldn\'t be recognized')
+			raise LexError('\n%sLexical error: The lexeme "%s" couldn\'t be recognized' % (self.errorLeader(),self.originalLexeme))
 			
 #######################################################################

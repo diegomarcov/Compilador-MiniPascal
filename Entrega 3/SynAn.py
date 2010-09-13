@@ -3,15 +3,40 @@ import argparse, io
 sys.path.append('../Entrega 2/')
 from lexan import LexAn,LexError
 
+#esto fue creado para tener un "archivo" que no escriba nada, para no tener que hacer siempre un if en los writes de debug
+class VortexWriter(): # nombre sumamente cambiable
+	def write(self,s):
+		pass
+		
+class SynError (Exception):
+
+	def ___init___(self,msg):
+		self.message = msg
+		
+	def __str__(self):
+		return self.message
+
 class SynAn():
-	def __init__(self,lexer):
+	def __init__(self,lexer,debug,outputFile):
 		self.lexer = lexer
+		self.debug = bool(debug)
+		if self.debug:
+			self.out = outputFile
+		else:
+			self.out = VortexWriter()
 		
 	def execute(self):
-		self.program()
+		return self.program()
 
 	def program(self):
-		pass
+		self.out.write('In program\n')
+		self.program_heading()
+		self.block()
+		if self.lexer.getNextToken() == '<END_PROGRAM>':
+			self.out.write('Success\n')
+			return 'The program is syntactically correct.'
+		else:
+			raise SynError('\n%sSyntactical Error: Expecting a ".", but a %s was found' % (self.lexer.errorLeader,self.lexer.currentLexeme))
 
 	def program_heading(self):
 		pass
@@ -226,6 +251,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Lexical analysis for the provided .pas file.')
 	parser.add_argument('inputFile', metavar='IN_FILE', help='The source .pas file')
 	parser.add_argument('outputFile', metavar='OUT_FILE', nargs='?', help='The optional output file.')
+	parser.add_argument('-d', help='Debug mode', dest='debug')
 
 	args = parser.parse_args()
 	inputFile = io.BufferedReader(io.FileIO(args.inputFile))
@@ -241,8 +267,8 @@ if __name__ == '__main__':
 		except:
 			print "Error: The file %s could not be opened for writing" % outputFile
 			
-	lexicalAnalyzer = LexAn(inputFile)
-	syntacticalAnalyzer = SynAn(lexicalAnalyzer)
+	lexicalAnalyzer = LexAn(inputFile,args.debug)
+	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,outputFile)
 	try:
 		msg = syntacticalAnalyzer.execute()
 		if output is not None:
