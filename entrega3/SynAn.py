@@ -10,14 +10,21 @@ class VortexWriter(): # nombre sumamente cambiable
 		
 class SynError (Exception):
 
-	def ___init___(self,leader,expected,found):
+	def __init__(self,leader,expected,found):
+		super(SynError,self).__init__()
+		print "Enter sandman"
 		self.leader = leader
 		self.expected = expected
 		self.found = found
+		print "Exit sandman"
 		
 	def __str__(self):
-		
-		return '\n%sSyntactical Error: Expecting a "%s", but a %s was found' % (self.leader,self.expected,self.found)
+		print "Retornando la excepcion"
+		print "MY LEADER STRING = %s" % self.leader
+		print "MY EXPECTED STRING = %s" % self.expected
+		print "MY FOUND STRING = %s" % self.found
+		self.returningstring = '\n%sSyntactical Error: Expecting a "%s", but a %s was found' % (self.leader,self.expected,self.found)
+		return self.returningstring
 
 class SynAn():
 	def __init__(self,lexer,debug,outputFile):
@@ -41,8 +48,13 @@ class SynAn():
 			self.out.write('Success\n')
 			return 'The program is syntactically correct.'
 		else:
+			self.thiserrorLeader = self.lexer.errorLeader()
+			self.thislexeme = self.lexer.getCurrentLexeme()
+			print self.thiserrorLeader
+			print self.thislexeme
+			self.currentError = SynError(self.lexer.errorLeader(),'.',self.lexer.getCurrentLexeme())
 			
-			raise SynError(self.lexer.errorLeader(),'.',self.lexer.getCurrentLexeme())
+			raise self.currentError
 
 	def program_heading(self):
 		self.out.write('In program_heading\n')
@@ -51,8 +63,12 @@ class SynAn():
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
 				else:
-					
-					raise SynError(self.lexer.errorLeader(),';',self.lexer.currentLexeme())
+					self.thiserrorLeader = self.lexer.errorLeader()
+					self.thislexeme = self.lexer.getCurrentLexeme()
+					print self.thiserrorLeader
+					print self.thislexeme
+					self.currentError = SynError(self.thiserrorLeader,';',self.thislexeme)
+					raise self.currentError
 			else:
 				pass
 
