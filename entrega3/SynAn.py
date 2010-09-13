@@ -273,7 +273,7 @@ if __name__ == '__main__':
 	outputFile = args.outputFile
 	
 	if outputFile == None:
-		output = None
+		output = sys.stdout
 		print "\n\nStarting file lexical and syntactical analysis...\n\n"
 	else:
 		try:
@@ -283,7 +283,7 @@ if __name__ == '__main__':
 			print "Error: The file %s could not be opened for writing" % outputFile
 			
 	lexicalAnalyzer = LexAn(inputFile,args.inputFile)
-	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,outputFile)
+	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,output)
 	try:
 		msg = syntacticalAnalyzer.execute()
 		if output is not None:
@@ -291,5 +291,5 @@ if __name__ == '__main__':
 		print msg
 	except SynError as e:
 		if output is not None:
-			output.write(e)
+			output.write(str(e))
 		print e
