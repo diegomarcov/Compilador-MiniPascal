@@ -6,7 +6,8 @@ from types import IntType, LongType
 
 class LexError (Exception):
 
-	def ___init___(self,msg):
+	def __init__(self,msg):
+		super(LexError,self).__init__()
 		self.message = msg
 		
 	def __str__(self):

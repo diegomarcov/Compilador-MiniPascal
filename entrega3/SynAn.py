@@ -10,7 +10,8 @@ class VortexWriter(): # nombre sumamente cambiable
 		
 class SynError (Exception):
 
-	def ___init___(self,leader,expected,found):
+	def __init__(self,leader,expected,found):
+		super(SynError,self).__init__()
 		self.leader = leader
 		self.expected = expected
 		self.found = found
@@ -51,7 +52,6 @@ class SynAn():
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
 				else:
-					
 					raise SynError(self.lexer.errorLeader(),';',self.lexer.currentLexeme())
 			else:
 				pass
@@ -290,6 +290,4 @@ if __name__ == '__main__':
 			output.write(msg)
 		print msg
 	except SynError as e:
-		if output is not None:
-			output.write(str(e))
-		print e
+		output.write(str(e))
