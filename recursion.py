@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import re,io,argparse
+import re,io,argparse,string
 from shlex import shlex
 
 if __name__ == '__main__':
@@ -11,15 +11,15 @@ if __name__ == '__main__':
 	inputFile = args.inputFile
 	outputFile = args.outputFile
 
-	#if outputFile == None:
-		#output = sys.stdout
-		##print "\n\nStarting file lexical analysis...\n\n"
-	#else:
-		#try:
-			#output = open(outputFile, 'w')
-			##prinqq"\n\nStarting file lexical analysis... results will be written to %s\n\n" % outputFile
-		#except:
-			#print "Error"
+	if outputFile == None:
+		output = sys.stdout
+		#print "\n\nStarting file lexical analysis...\n\n"
+	else:
+		try:
+			output = open(outputFile, 'w')
+			#prinqq"\n\nStarting file lexical analysis... results will be written to %s\n\n" % outputFile
+		except:
+			print "Error"
 		
 	lex =shlex(inputFile)
 	lex.wordchars += "<>"
@@ -31,40 +31,44 @@ if __name__ == '__main__':
 	notermre = re.compile('^<[a-z_]*>')
 	while s!='':
 		s = lex.get_token()
-		print s
+		# print s
 		if termre.match(s):
 			term.add(s)
+			
 		elif notermre.match(s):
+			if s not in noTerm:
+				output.write("\tdef %s(self):\n\t\tpass\n\n" % s.replace('<','').replace('>',''))
 			noTerm.add(s)
+			
 	noTerm = list(noTerm)
-	inputFile.seek(0)
-	s = inputFile.read()
-	print s
-	for x in noTerm:
-		producciones = re.search(r'^'+ x + ' ::= (.*)',s,re.MULTILINE).group(1)
-		for y in noTerm[:noTerm.index(x)-1]:
+	# inputFile.seek(0)
+	# s = inputFile.read()
+	# print s
+	# for x in noTerm:
+		# producciones = re.search(r'^'+ x + ' ::= (.*)',s,re.MULTILINE).group(1)
+		# for y in noTerm[:noTerm.index(x)-1]:
 			# print 'no terminal', x 
 			
-			listaProd = []
+			# listaProd = []
 			
-			while producciones!='':
-				matchobj = re.search(r'([<>\w ]*)\|?(.*)', producciones)
+			# while producciones!='':
+				# matchobj = re.search(r'([<>\w ]*)\|?(.*)', producciones)
 				# print 'grupos', matchobj.groups()
 				
-				listaProd += [matchobj.group(1)]
+				# listaProd += [matchobj.group(1)]
 				# print 'una produccion', matchobj.group(1)
-				producciones = matchobj.group(2)
+				# producciones = matchobj.group(2)
 				# print 'producciones', producciones, len(producciones)
 			# print 'lista' , listaProd
-			for produccion in listaProd:
-				matchobj = re.match(r' ?(<[a-z_]*>)',produccion)
-				if matchobj:
-					if matchobj.group(1) == y:
-						produccionesY = re.search(r'^'+ y + ' ::= (.*)',s,re.MULTILINE).group(1)
-						listaProdY = []
-						while produccionesY!='':
-							matchobj = re.search(r'([<>\w ]*)\|?(.*)', producciones)
-							listaProdY += [matchobj.group(1)]
+			# for produccion in listaProd:
+				# matchobj = re.match(r' ?(<[a-z_]*>)',produccion)
+				# if matchobj:
+					# if matchobj.group(1) == y:
+						# produccionesY = re.search(r'^'+ y + ' ::= (.*)',s,re.MULTILINE).group(1)
+						# listaProdY = []
+						# while produccionesY!='':
+							# matchobj = re.search(r'([<>\w ]*)\|?(.*)', producciones)
+							# listaProdY += [matchobj.group(1)]
 							# print 'una produccion', matchobj.group(1)
-							produccionesY = matchobj.group(2)
-						
+							# produccionesY = matchobj.group(2)
+

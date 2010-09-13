@@ -1,3 +1,5 @@
+<program> ::= <program_heading> <block> <END_PROGRAM>
+
 <program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
 
 <block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
@@ -6,7 +8,7 @@
 
 <block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
 
-<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part> 
+<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part>
 
 <constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
 
@@ -42,7 +44,7 @@
 
 <variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
 
-<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest> 
+<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
 
 <variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
 
@@ -56,7 +58,7 @@
 
 <procedure_declaration> ::= <procedure_heading> <block>
 
-<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest> 
+<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest>
 
 <procedure_heading_rest> ::= <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
 
@@ -92,7 +94,7 @@
 
 <component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
 
-<expression> ::= <simple_expression> <expression_rest> 
+<expression> ::= <simple_expression> <expression_rest>
 
 <expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
 

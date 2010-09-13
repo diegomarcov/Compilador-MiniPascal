@@ -1,1 +1,0 @@
-preguntar que onda el funcion_heading (puede arrancar con un identificador...)
