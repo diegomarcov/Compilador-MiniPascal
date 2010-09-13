@@ -1,7 +1,7 @@
 import sys
 import string
 import re
-from shlex import shlex
+from .shlex import shlex
 from types import IntType, LongType
 
 class LexError (Exception):

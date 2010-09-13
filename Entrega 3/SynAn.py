@@ -10,11 +10,13 @@ class VortexWriter(): # nombre sumamente cambiable
 		
 class SynError (Exception):
 
-	def ___init___(self,msg):
-		self.message = msg
+	def ___init___(self,leader,expected,found):
+		self.leader = leader
+		self.expected = expected
+		self.found = found
 		
 	def __str__(self):
-		return self.message
+		return '\n%sSyntactical Error: Expecting a "%s", but a %s was found' % (self.leader,self.expected,self.found)
 
 class SynAn():
 	def __init__(self,lexer,debug,outputFile):
@@ -36,10 +38,18 @@ class SynAn():
 			self.out.write('Success\n')
 			return 'The program is syntactically correct.'
 		else:
-			raise SynError('\n%sSyntactical Error: Expecting a ".", but a %s was found' % (self.lexer.errorLeader,self.lexer.currentLexeme))
+			raise SynError(self.lexer.errorLeader(),'.',self.lexer.currentLexeme())
 
 	def program_heading(self):
-		pass
+		self.out.write('In program_heading\n')
+		if self.lexer.getNextToken() == '<PROGRAM>':
+			if self.lexer.getNextToken() == '<IDENTIFIER>':
+				if self.lexer.getNextToken() == '<SEMI_COLON>':
+					self.out.write('program_heading succeeded\n')
+				else:
+					raise SynError(self.lexer.errorLeader(),';',self.lexer.currentLexeme())
+			else:
+				pass
 
 	def block(self):
 		pass
@@ -267,7 +277,7 @@ if __name__ == '__main__':
 		except:
 			print "Error: The file %s could not be opened for writing" % outputFile
 			
-	lexicalAnalyzer = LexAn(inputFile,args.debug)
+	lexicalAnalyzer = LexAn(inputFile,args.inputFile)
 	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,outputFile)
 	try:
 		msg = syntacticalAnalyzer.execute()
