@@ -42,9 +42,9 @@
 
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
 
-<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_rest>
+<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
 
-<variable_declaration_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest> 
+<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest> 
 
 <variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
 
@@ -52,7 +52,7 @@
 
 <variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
 
-<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part>
+<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
 
 <procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
 
