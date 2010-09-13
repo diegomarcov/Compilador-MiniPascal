@@ -1,7 +1,7 @@
 import sys
 import argparse, io
-sys.path.append('../Entrega 2/')
-from lexan import LexAn,LexError
+sys.path.append('../entrega2/')
+from lexan import LexAn
 
 #esto fue creado para tener un "archivo" que no escriba nada, para no tener que hacer siempre un if en los writes de debug
 class VortexWriter(): # nombre sumamente cambiable
