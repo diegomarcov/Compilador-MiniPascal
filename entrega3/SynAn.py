@@ -81,7 +81,11 @@ class SynAn():
 		pass
 
 	def statement_part(self):
-		pass
+		self.out.write('In statement_part\n')
+		if self.lexer.getNextToken() = '<BEGIN>':
+			self.statement_part_rest()
+		else:
+			raise SysAn(self.lexer.errorLeader(),"begin",self.lexer.currentLexeme)
 
 	def constant_definition(self):
 		pass

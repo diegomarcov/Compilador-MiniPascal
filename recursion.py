@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import re,io,argparse,string
+import re,io,argparse,string,sys
 from shlex import shlex
 
 if __name__ == '__main__':
@@ -29,16 +29,20 @@ if __name__ == '__main__':
 	s='$'
 	termre = re.compile('^<[A-Z_]*>')
 	notermre = re.compile('^<[a-z_]*>')
+	# s = lex.get_token()
 	while s!='':
+		line = lex.lineno
 		s = lex.get_token()
 		# print s
 		if termre.match(s):
 			term.add(s)
 			
 		elif notermre.match(s):
-			if s not in noTerm:
+			print line, lex.lineno, s
+			if line != lex.lineno and (lex.lineno%2) ==1:
 				output.write("\tdef %s(self):\n\t\tpass\n\n" % s.replace('<','').replace('>',''))
 			noTerm.add(s)
+		line = lex.lineno
 			
 	noTerm = list(noTerm)
 	# inputFile.seek(0)
