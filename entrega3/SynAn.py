@@ -17,9 +17,19 @@ class SynError (Exception):
 		self.found = found
 		
 	def __str__(self):
-		
 		return '\n%sSyntactical Error: Expecting a "%s", but a %s was found' % (self.leader,self.expected,self.found)
 
+		
+class UnexpectedTokenError(Exception):
+
+	def __init__(self,leader,found):
+		super(UnexpectedTokenError,self).__init__()
+		self.leader = leader
+		self.found = found
+		
+	def __str__(self):
+		return '\n%sUnexpected token "%s" found.\n' % (self.leader, self.found)
+		
 class SynAn():
 	def __init__(self,lexer,debug,outputFile):
 		self.lexer = lexer
@@ -42,8 +52,13 @@ class SynAn():
 			self.out.write('Success\n')
 			return 'The program is syntactically correct.'
 		else:
+			self.thiserrorLeader = self.lexer.errorLeader()
+			self.thislexeme = self.lexer.getCurrentLexeme()
+			print self.thiserrorLeader
+			print self.thislexeme
+			self.currentError = SynError(self.lexer.errorLeader(),'.',self.lexer.getCurrentLexeme())
 			
-			raise SynError(self.lexer.errorLeader(),'.',self.lexer.getCurrentLexeme())
+			raise self.currentError
 
 	def program_heading(self):
 		self.out.write('In program_heading\n')
@@ -53,14 +68,27 @@ class SynAn():
 					self.out.write('program_heading succeeded\n')
 				else:
 					raise SynError(self.lexer.errorLeader(),';',self.lexer.currentLexeme())
+
 			else:
 				pass
 
 	def block(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<CONST>":
+			self.lexer.pushToken(self.currentToken)
+			self.constant_definition_part()
+			self.block_cons_rest()
+		else:
+			self.lexer.pushToken(self.currentToken)
+			self.block_cons_rest()
+			
+		# or self.currentToken == "<VAR>" or self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 
 	def constant_definition_part(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<CONST>":
+			self.constant_definition()
+			self.constant_definition_rest()
 
 	def block_cons_rest(self):
 		pass
