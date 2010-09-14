@@ -348,19 +348,21 @@ class SynAn():
 			self.synErr(', or :')
 
 	def procedure_and_function_declaration_part(self):
+		self.out.write("In procedure_and_function_declaration_part\n")
 		self.currentToken = self.lexer.getNextToken()
-		self.out.write("@ procedure_and_function_declaration_part: %s" % self.currentToken)
+		print "Current token @proc: %s" % self.currentToken
 		if self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 			self.pushLexeme()
 			self.procedure_or_function_declaration_part()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SEMI_COLON>":
-				self.out.write("Hago la llamada recursiva a procedure_and_function_declaration_part")
+				self.out.write("Hago la llamada recursiva a procedure_and_function_declaration_part\n")
 				self.procedure_and_function_declaration_part()
 			else:
 				self.synErr('";"')
 		else:
-			pass#lambda
+			#lambda
+			self.pushLexeme()
 
 	def procedure_or_function_declaration_part(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -416,13 +418,11 @@ class SynAn():
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<VAR>":
 			self.parameter_group()
+		elif self.currentToken == "<IDENTIFIER>":
+			self.pushLexeme()
+			self.parameter_group()
 		else:
-			self.currentToken = self.lexer.getNextToken()
-			if self.currentToken == "<IDENTIFIER>":
-				self.pushLexeme()
-				self.parameter_group()
-			else:
-				self.synErr('parameter group')
+			self.synErr('a parameter group')
 
 	def parameter_group(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -451,21 +451,24 @@ class SynAn():
 			self.synErr('\",\" or \":\"')
 		
 	def function_declaration(self):
+		self.out.write('In function_declaration\n')
 		self.function_heading()
 		self.block()
 
 	def function_heading(self):
+		self.out.write('In function_heading\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<FUNCTION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
 				self.function_heading_rest()
 			else:
-				self.synErr('identifier')
+				self.synErr('an identifier')
 		else:
-			self.synErr('function')
+			self.synErr('a function')
 
 	def function_heading_rest(self):
+		self.out.write('In function_heading_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<TYPE_DECLARATION>":
 			self.currentToken = self.lexer.getNextToken()
@@ -477,7 +480,7 @@ class SynAn():
 					self.synErr(';')
 			else:
 				#este error se podria cambiar por "VALID DATA TYPE"
-				self.synErr('identifier')
+				self.synErr('a type identifier')
 		elif self.currentToken == "<OPEN_PARENTHESIS>":
 			self.formal_parameter_section()
 			self.formal_parameter_function_rest()
@@ -498,20 +501,21 @@ class SynAn():
 					if self.currentToken == "<SEMI_COLON>":
 						self.out.write('\nSuccesfully recognised parameter group!\n')
 					else:
-						self.synErr(';')
+						self.synErr('";"')
 				else:
 					#este error se podria cambiar por "VALID DATA TYPE"
 					self.synErr('identifier')
 			else:
-				self.synErr(':')
+				self.synErr('":"')
 		else:
-			self.synErr('; or )')
+			self.synErr('";" or ")"')
 
 	def statement_part(self):
 		self.out.write('In statement_part\n')
 		if self.lexer.getNextToken() == '<BEGIN>':
 			self.statement_part_rest()
 		else:
+			print "THIS ERROR!"
 			self.synErr('"begin"')
 
 	def statement_part_rest(self):
@@ -530,7 +534,7 @@ class SynAn():
 		if token=='<SEMI_COLON>':
 			self.statement_rest_rest()
 		elif token=='<END>':
-			self.out.write('statement_rest is finished')
+			self.out.write('Statement_rest is finished\n')
 		else:
 			self.synErr('";" or "end"')
 
@@ -558,7 +562,7 @@ class SynAn():
 	def simple_statement(self):
 		self.out.write('In simple_statement\n')
 		token=self.lexer.getNextToken()
-		
+		self.out.write('Current token == %s\n' % token)
 		if token=='<IDENTIFIER>' :
 			self.simple_statement_rest()
 		else:
@@ -620,7 +624,7 @@ class SynAn():
 	def simple_expression(self):
 		self.out.write('In simple_expression\n')
 		token=self.lexer.getNextToken()
-		self.out.write('In simple_expression\n')
+		self.out.write('Current token == %s\n' % token)
 		self.pushLexeme()
 		if token in ('<ADD_OP>','<MINUS_OP>'):
 			self.sign()
@@ -655,15 +659,17 @@ class SynAn():
 			self.factor()
 			self.term_other()
 		else:
+			self.out.write('Lambda @ term_other with token == %s\n' % token)
 			pass #lambda
 
 	def factor(self):
 		self.out.write('In factor\n')
 		token=self.lexer.getNextToken()
+		self.out.write('Current token == %s\n' % token)
 		if token=='<IDENTIFIER>':
 			self.factor_rest()
 		elif token=='<NUMBER>':
-			self.out.write('factor is finished\n')
+			self.out.write('Factor is finished\n')
 		elif token=='<OPEN_PARENTHESIS>':
 			self.expression()
 			if self.lexer.getNextToken()=='<CLOSE_PARENTHESIS>':
@@ -687,6 +693,7 @@ class SynAn():
 				self.out.write('factor_rest is finished\n')
 		elif token=='<OPEN_PARENTHESIS>':
 			self.actual_parameter()
+			self.actual_parameter_rest()
 		else:
 			self.pushLexeme() #lambda
 
@@ -699,12 +706,11 @@ class SynAn():
 		token=self.lexer.getNextToken()
 		if token=='<COMMA>':
 			self.actual_parameter()
-			self.actual_parameter_rest()
-			
+			self.actual_parameter_rest()			
 		elif token=='<CLOSE_PARENTHESIS>':
 			self.out.write('actual_parameter_restis finished\n')
 		else:
-			self.synErr('")"')
+			self.synErr('"," or ")"')
 
 	def multiplying_operator(self):
 		self.out.write('In multiplying_operator\n')
