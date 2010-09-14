@@ -348,19 +348,21 @@ class SynAn():
 			self.synErr(', or :')
 
 	def procedure_and_function_declaration_part(self):
+		self.out.write("In procedure_and_function_declaration_part\n")
 		self.currentToken = self.lexer.getNextToken()
-		self.out.write("@ procedure_and_function_declaration_part: %s" % self.currentToken)
+		print "Current token @proc: %s" % self.currentToken
 		if self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 			self.pushLexeme()
 			self.procedure_or_function_declaration_part()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SEMI_COLON>":
-				self.out.write("Hago la llamada recursiva a procedure_and_function_declaration_part")
+				self.out.write("Hago la llamada recursiva a procedure_and_function_declaration_part\n")
 				self.procedure_and_function_declaration_part()
 			else:
 				self.synErr('";"')
 		else:
-			pass#lambda
+			#lambda
+			self.pushLexeme()
 
 	def procedure_or_function_declaration_part(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -451,6 +453,7 @@ class SynAn():
 			self.synErr('\",\" or \":\"')
 		
 	def function_declaration(self):
+		self.out.write('In function_declaration\n')
 		self.function_heading()
 		self.block()
 
@@ -461,9 +464,9 @@ class SynAn():
 			if self.currentToken == "<IDENTIFIER>":
 				self.function_heading_rest()
 			else:
-				self.synErr('identifier')
+				self.synErr('an identifier')
 		else:
-			self.synErr('function')
+			self.synErr('a function')
 
 	def function_heading_rest(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -477,7 +480,7 @@ class SynAn():
 					self.synErr(';')
 			else:
 				#este error se podria cambiar por "VALID DATA TYPE"
-				self.synErr('identifier')
+				self.synErr('a type identifier')
 		elif self.currentToken == "<OPEN_PARENTHESIS>":
 			self.formal_parameter_section()
 			self.formal_parameter_function_rest()
@@ -512,6 +515,7 @@ class SynAn():
 		if self.lexer.getNextToken() == '<BEGIN>':
 			self.statement_part_rest()
 		else:
+			print "THIS ERROR!"
 			self.synErr('"begin"')
 
 	def statement_part_rest(self):
@@ -530,7 +534,7 @@ class SynAn():
 		if token=='<SEMI_COLON>':
 			self.statement_rest_rest()
 		elif token=='<END>':
-			self.out.write('statement_rest is finished')
+			self.out.write('Statement_rest is finished\n')
 		else:
 			self.synErr('";" or "end"')
 
