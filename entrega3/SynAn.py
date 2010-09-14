@@ -501,14 +501,14 @@ class SynAn():
 					if self.currentToken == "<SEMI_COLON>":
 						self.out.write('\nSuccesfully recognised parameter group!\n')
 					else:
-						self.synErr(';')
+						self.synErr('";"')
 				else:
 					#este error se podria cambiar por "VALID DATA TYPE"
 					self.synErr('identifier')
 			else:
-				self.synErr(':')
+				self.synErr('":"')
 		else:
-			self.synErr('; or )')
+			self.synErr('";" or ")"')
 
 	def statement_part(self):
 		self.out.write('In statement_part\n')
@@ -562,7 +562,7 @@ class SynAn():
 	def simple_statement(self):
 		self.out.write('In simple_statement\n')
 		token=self.lexer.getNextToken()
-		
+		self.out.write('Current token == %s\n' % token)
 		if token=='<IDENTIFIER>' :
 			self.simple_statement_rest()
 		else:
@@ -624,7 +624,7 @@ class SynAn():
 	def simple_expression(self):
 		self.out.write('In simple_expression\n')
 		token=self.lexer.getNextToken()
-		self.out.write('In simple_expression\n')
+		self.out.write('Current token == %s\n' % token)
 		self.pushLexeme()
 		if token in ('<ADD_OP>','<MINUS_OP>'):
 			self.sign()
@@ -659,12 +659,13 @@ class SynAn():
 			self.factor()
 			self.term_other()
 		else:
+			self.out.write('Lambda @ term_other with token == %s\n' % token)
 			pass #lambda
 
 	def factor(self):
 		self.out.write('In factor\n')
 		token=self.lexer.getNextToken()
-		self.out.write('Current token == %s' % token)
+		self.out.write('Current token == %s\n' % token)
 		if token=='<IDENTIFIER>':
 			self.factor_rest()
 		elif token=='<NUMBER>':
