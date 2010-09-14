@@ -17,7 +17,7 @@ class SynError (Exception):
 		self.found = found
 		
 	def __str__(self):
-		return '\n%sSyntactical Error: Expecting "%s", but a %s was found' % (self.leader,self.expected,self.found)
+		return '\n%sSyntactical Error: Expecting %s, but a %s was found' % (self.leader,self.expected,self.found)
 
 		
 class UnexpectedTokenError(Exception):
@@ -74,11 +74,11 @@ class SynAn():
 	def block(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<CONST>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.constant_definition_part()
 			self.block_cons_rest()
 		else:
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.block_cons_rest()
 			
 		# or self.currentToken == "<VAR>" or self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
@@ -86,31 +86,31 @@ class SynAn():
 	def block_cons_rest(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<TYPE>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.type_definition_part()
 			self.block_type_rest()
 		else:
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.block_type_rest()
 	
 	def block_type_rest(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<VAR>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.variable_definition_part()
 			self.block_var_rest()
 		else:
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.block_var_rest()
 
 	def block_var_rest(self):
 		self.currentToken = self.lexer.getNextToken()
 		# en este caso controlo si viene el <statement_part> porque es mas sencillo
 		if self.currentToken == "<BEGIN>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.statement_part()
 		else:
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.procedure_and_function_declaration_part()
 			self.statement_part()
 
@@ -120,7 +120,7 @@ class SynAn():
 			self.constant_definition()
 			self.constant_definition_rest()
 		else:
-			self.synErr('constant')
+			self.synErr('const')
 
 
 	def constant_definition_rest(self):
@@ -133,11 +133,11 @@ class SynAn():
 	def constant_definition_rest_rest(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.constant_definition()
 			self.constant_definition_rest()
 		else:
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			
 	def constant_definition(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -155,7 +155,7 @@ class SynAn():
 		if self.currentToken == "<NUMBER>" or self.currentToken == "<IDENTIFIER>" or self.currentToken == "<CHAR>":
 			self.out.write("\nFound constant declaration succesfully!\n")
 		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.sign()
 			self.constant_rest()
 		else:
@@ -193,12 +193,12 @@ class SynAn():
 	def type_definition_rest_rest(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.type_definition()
 			self.type_definition_rest()
 		else:
 			# si no es un IDENTIFIER es <LAMBDA>, asi que no hacemos nada, simplemente devolvemos el lexema
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 
 	def type_definition(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -215,12 +215,12 @@ class SynAn():
 		self.currentToken = self.lexer.getNextToken()
 		#en este caso me resulta mas sencillo preguntar si es STRUCTURED TYPE
 		if self.currentToken == "<ARRAY>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.structured_type()
 		else:
 		#asumo que si no vino un token ARRAY, se viene un tipo simple...
 		#posiblemente este descartando casos de error!!!
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.simple_type()
 		
 	def simple_type(self):
@@ -238,7 +238,7 @@ class SynAn():
 			else:
 				self.synErr('..')
 		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.sign()
 			self.subrange_type_rest()
 		elif self.currentToken == "<IDENTIFIER">:
@@ -251,7 +251,7 @@ class SynAn():
 			self.constant()
 		else:
 		#lambda
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 
 	def subrange_type_rest(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -308,12 +308,12 @@ class SynAn():
 	def variable_declaration_rest_rest(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.variable_declaration()
 			self.variable_declaration_rest()
 		else:
 		#lambda
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 
 	def variable_declaration(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -338,7 +338,7 @@ class SynAn():
 	def procedure_and_function_declaration_part(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.procedure_or_function_declaration_part()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SEMI_COLON>":
@@ -351,10 +351,10 @@ class SynAn():
 	def procedure_or_function_declaration_part(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<PROCEDURE>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.procedure_declaration()
 		elif self.currentToken == "<FUNCTION>":
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 			self.function_declaration()
 		else:
 			self.synErr('function or procedure')		
@@ -405,7 +405,7 @@ class SynAn():
 		else:
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
-				self.lexer.pushLexeme()
+				self.pushLexeme()
 				self.parameter_group()
 			else:
 				self.synErr('parameter group')
@@ -503,7 +503,7 @@ class SynAn():
 	def statement_part_rest(self):
 		self.out.write('In statement_part\n')
 		token=self.lexer.getNextToken()
-		self.lexer.pushLexeme()
+		self.pushLexeme()
 		if token=='<SEMI_COLON>' or token=='<END>':
 			self.statement_rest()
 		else:
@@ -567,7 +567,7 @@ class SynAn():
 			self.expression()
 		else:
 			self.out.write('push lexeme\n')
-			self.lexer.pushLexeme()
+			self.pushLexeme()
 
 	def component_variable(self):
 		self.out.write('In component_variable\n')
@@ -660,16 +660,40 @@ class SynAn():
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
 
 	def factor_rest(self):
-		pass
+		self.out.write('In factor_rest\n')
+		token=self.lexer.getNextToken()
+		if token=='<OPEN_BRACKET>':
+			self.expression()
+			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
+				self.out.write('factor_rest is finished\n')
+		elif token=='<OPEN_PARENTHESIS>':
+			self.actual_parameter()
+		else:
+			self.pushLexeme() #lambda
 
 	def actual_parameter(self):
-		pass
+		self.out.write('In actual_parameter\n')
+		self.expression()
 
 	def actual_parameter_rest(self):
-		pass
+		self.out.write('In actual_parameter_rest\n')
+		token=self.lexer.getNextToken()
+		if token=='<COMMA>':
+			self.actual_parameter()
+			self.actual_parameter_rest()
+			
+		elif token=='<CLOSE_PARENTHESIS>':
+			self.out.write('actual_parameter_restis finished\n')
+		else:
+			raise synErr(')')
 
 	def multiplying_operator(self):
-		pass
+		self.out.write('In multiplying_operator\n')
+		token=self.lexer.getNextToken()
+		if token in ('<MULTIPLY_OP>','<DIV_OP>','<AND_LOGOP>)':
+			self.out.write('multiplying_operator is finished\n')
+		else:
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
 
 	def adding_operator(self):
 		pass
@@ -736,5 +760,5 @@ if __name__ == '__main__':
 		if output is not None:
 			output.write(msg)
 		print msg
-	except SynError as e:
+	except SynError,UnexpectedTokenError,LexError as e:
 		output.write(str(e))

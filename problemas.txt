@@ -1,0 +1,1 @@
+preguntar si la salida si o si tiene que salir por pantalla, o si se da un file, se puede mandar ahi solo
