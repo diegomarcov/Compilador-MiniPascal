@@ -108,6 +108,7 @@ class SynAn():
 			self.block_var_rest()
 
 	def block_var_rest(self):
+		self.out.write('In block_var_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		# en este caso controlo si viene el <statement_part> porque es mas sencillo
 		if self.currentToken == "<BEGIN>":
@@ -119,6 +120,7 @@ class SynAn():
 			self.statement_part()
 
 	def constant_definition_part(self):
+		self.out.write('In constant_definition_part\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<CONST>":
 			self.constant_definition()
@@ -128,13 +130,16 @@ class SynAn():
 
 
 	def constant_definition_rest(self):
+		self.out.write('In constant_definition_rest\n')	
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<SEMI_COLON>":
 			self.constant_definition_rest_rest()
+			print "sali de constant_definition_rest"
 		else:
 			self.synErr(';')
 
 	def constant_definition_rest_rest(self):
+		self.out.write('In constant_definition_rest_rest\n')	
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
 			self.pushLexeme()
@@ -144,6 +149,7 @@ class SynAn():
 			self.pushLexeme()
 			
 	def constant_definition(self):
+		self.out.write('In constant_definition\n')		
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
 			self.currentToken = self.lexer.getNextToken()
@@ -155,9 +161,10 @@ class SynAn():
 			self.synErr('identifier')
 		
 	def constant(self):
+		self.out.write('In constant\n')	
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<NUMBER>" or self.currentToken == "<IDENTIFIER>" or self.currentToken == "<CHAR>":
-			self.out.write("\nFound constant declaration succesfully!\n")
+			self.out.write("\nFound a constant declaration succesfully!\n")
 		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
 			self.pushLexeme()
 			self.sign()
@@ -166,6 +173,7 @@ class SynAn():
 			self.synErr('number, identifier or char')
 			
 	def constant_rest(self):
+		self.out.write('In constant_rest\n')	
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<NUMBER>" or self.currentToken == "<IDENTIFIER>":
 			self.out.write("\nFound constant declaration succesfully!\n")
@@ -502,7 +510,7 @@ class SynAn():
 		if self.lexer.getNextToken() == '<BEGIN>':
 			self.statement_part_rest()
 		else:
-			raise SysAn(self.lexer.errorLeader(),"begin",self.lexer.currentLexeme())
+			self.synErr('begin')
 
 	def statement_part_rest(self):
 		self.out.write('In statement_part\n')
@@ -799,7 +807,7 @@ class SynAn():
 			pass #lambda
 		
 	def synErr(self,s):
-		return SynError(self.lexer.errorLeader(),s,self.lexer.currentLexeme())
+		return SynError(self.lexer.errorLeader(),s,self.lexer.getCurrentLexeme())
 		
 	def pushLexeme(self):
 		self.lexer.pushLexeme(self.out)
