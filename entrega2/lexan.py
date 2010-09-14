@@ -42,16 +42,16 @@ class LexAn():
 									"[" : "<OPEN_BRACKET>",
 									"]" : "<CLOSE_BRACKET>",
 									"=" : "<EQUAL>",
-									"<>": "<RELOP>", 
-									"<=": "<RELOP>", 
-									">=": "<RELOP>", 
+									"<>": "<NOT_EQUAL_OP>", 
+									"<=": "<LESS_EQUAL_OP>", 
+									">=": "<GREATER_EQUAL_OP>", 
 									"+" : "<ADD_OP>", 
 									"-" : "<MINUS_OP>", 
 									"*" : "<MULTIPLY_OP>", 
 									"div" : "<DIV_OP>",
-									"not" : "<UN_LOGOP>",
-									"or" : "<BIN_LOGOP>",
-									"and": "<BIN_LOGOP>",
+									"not" : "<NOT_LOGOP>",
+									"or" : "<OR_LOGOP>",
+									"and": "<AND_LOGOP>",
 									".." : "<SUBRANGE>",
 									":=" : "<ASSIGNMENT>",
 									"," : "<COMMA>",
@@ -115,16 +115,22 @@ class LexAn():
 			self.forwardToken = self.lexer.get_token()
 			if(self.forwardToken == "="):
 				self.originalLexeme = ">="
+				return "<GREATER_EQUAL_OP>"
 			else:
 				self.lexer.push_token(self.forwardToken)
-			return "<RELOP>"
+				return "<GREATER_OP>"
 		elif(self.currentLexeme == "<"):
 			self.forwardToken = self.lexer.get_token()
 			if(self.forwardToken == "="):
 				self.originalLexeme = "<="
+				return "<LESS_EQUAL_OP>"
 			else:
-				self.lexer.push_token(self.forwardToken)
-			return "<RELOP>"
+				if self.forwardToken=='>':
+					self.originalLexeme = "<>"
+					return "<NOT_EQUAL_OP>"
+				else:
+					self.lexer.push_token(self.forwardToken)
+					return "<LESS_OP>"
 		elif(self.identifierRE.match(self.currentLexeme)):
 			return "<IDENTIFIER>"
 		elif(self.numberRE.match(self.currentLexeme)):
