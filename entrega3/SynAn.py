@@ -680,6 +680,10 @@ class SynAn():
 			self.factor()
 		elif token=='<CHAR>':
 			self.out.write('factor is finished\n')
+		elif token=='<TRUE>':
+			self.out.write('factor is finished\n')
+		elif token=='<FALSE>':
+			self.out.write('factor is finished\n')
 		else:
 			print "Este error no esta del todo bien definido... ver!"
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
@@ -758,6 +762,9 @@ class SynAn():
 		token=self.lexer.getNextToken()
 		if token == '<BEGIN>':
 			self.structured_statement_other()
+			
+		elif token == '<IF>':
+			self.pushLexeme()
 			self.conditional_statement()
 		else:
 			self.pushLexeme()
@@ -781,7 +788,7 @@ class SynAn():
 			self.expression()
 			if self.lexer.getNextToken() =='<THEN>':
 				self.statement()
-				self.conditional_statement_rest()
+				self.conditional_statement_other()
 			else:
 				self.synErr('"then"')
 		else:

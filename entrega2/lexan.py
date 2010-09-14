@@ -76,7 +76,7 @@ class LexAn():
 		
 	def pushLexeme(self,file=None):
 		if file:
-			file.write('%s\n'%self.originalLexeme)
+			file.write('pushed: %s\n'%self.originalLexeme)
 		self.lexer.push_token(self.getCurrentLexeme())
 		
 	def errorLeader(self):

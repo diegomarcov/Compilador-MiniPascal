@@ -128,7 +128,7 @@
 
 <structured_statement_other> ::= <statement> <statement_rest> | <statement_rest>
 
-<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_rest>
+<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_other>
 
 <conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
 
