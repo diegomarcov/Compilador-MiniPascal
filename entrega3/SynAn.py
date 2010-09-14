@@ -515,7 +515,7 @@ class SynAn():
 			self.synErr('"begin"')
 
 	def statement_part_rest(self):
-		self.out.write('In statement_part\n')
+		self.out.write('In statement_part_rest\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
 		if token=='<SEMI_COLON>' or token=='<END>':
@@ -532,14 +532,14 @@ class SynAn():
 		elif token=='<END>':
 			self.out.write('statement_rest is finished')
 		else:
-			self.synErr('\";\" or \"end\"')
+			self.synErr('";" or "end"')
 
 	def statement_rest_rest(self):
 		self.out.write('In statement_rest_rest\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
 		if token=='<SEMI_COLON>' or token=='<END>':
-			self.statement_rest_rest()
+			self.statement_rest()
 		else:
 			self.statement()
 			self.statement_rest()
@@ -549,7 +549,9 @@ class SynAn():
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
 		if token=='<IDENTIFIER>':
-			self.simple_statement_rest()
+			self.simple_statement()
+		elif token=="<BEGIN>" or token=="<IF>" or token =="<WHILE>":
+			self.structured_statement()
 		else:
 			self.synErr('an identifier')
 
@@ -558,9 +560,9 @@ class SynAn():
 		token=self.lexer.getNextToken()
 		
 		if token=='<IDENTIFIER>' :
-			self.simple_statement()
+			self.simple_statement_rest()
 		else:
-			self.structured_statement()
+			self.synErr('an identifier')
 
 	def simple_statement_rest(self):
 		self.out.write('In simple_statement_rest\n')
@@ -574,12 +576,14 @@ class SynAn():
 				if self.lexer.getNextToken()=='<ASSIGNMENT>':
 					self.expression()
 				else:
-					self.synErr(':=')
+					self.synErr('":="')
 			else:
-				self.synErr(']')
-		elif token=='<OPEN_PARENTHESIS>' :
-			self.expression()
+				self.synErr('"]"')
+		elif token=='<OPEN_PARENTHESIS>':
+			self.actual_parameter()
+			self.actual_parameter_rest()
 		else:
+			#lambda
 			self.out.write('push lexeme\n')
 			self.pushLexeme()
 
