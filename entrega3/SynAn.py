@@ -410,7 +410,7 @@ class SynAn():
 			else:
 				self.synErr('";"')
 		else:
-			self.synErr('";" or ")"')
+			self.synErr(' \";\" or \")\"')
 				
 	def formal_parameter_section(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -448,7 +448,7 @@ class SynAn():
 				# si bien el token es IDENTIFIER, lo que se espera en este caso es un DATA TYPE
 				self.synErr('a type identifier')
 		else:
-			self.synErr('"," or ":"')
+			self.synErr('\",\" or \":\"')
 		
 	def function_declaration(self):
 		self.function_heading()
@@ -482,7 +482,7 @@ class SynAn():
 			self.formal_parameter_section()
 			self.formal_parameter_function_rest()
 		else:
-			self.synErr('":" or ")"')
+			self.synErr('\":\" or \")\"')
 
 	def formal_parameter_function_rest(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -521,8 +521,8 @@ class SynAn():
 		if token=='<SEMI_COLON>' or token=='<END>':
 			self.statement_rest()
 		else:
-			statement()
-			statement_rest()
+			self.statement()
+			self.statement_rest()
 
 	def statement_rest(self):
 		self.out.write('In statement_rest\n')
@@ -532,7 +532,7 @@ class SynAn():
 		elif token=='<END>':
 			self.out.write('statement_rest is finished')
 		else:
-			raise self.synErr(';" or "end')
+			self.synErr('\";\" or \"end\"')
 
 	def statement_rest_rest(self):
 		self.out.write('In statement_rest_rest\n')
@@ -574,9 +574,9 @@ class SynAn():
 				if self.lexer.getNextToken()=='<ASSIGNMENT>':
 					self.expression()
 				else:
-					raise synErr(':=')
+					self.synErr(':=')
 			else:
-				raise synErr(']')
+				self.synErr(']')
 		elif token=='<OPEN_PARENTHESIS>' :
 			self.expression()
 		else:
@@ -592,11 +592,11 @@ class SynAn():
 				if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
 					self.out.write('component_variable is finished\n')
 				else:
-					raise synErr('"]"')
+					self.synErr('"]"')
 			else:
-				raise synErr('"["')
+				self.synErr('"["')
 		else:
-			raise synErr('an identifier')
+			self.synErr('an identifier')
 
 	def expression(self):
 		self.out.write('In expression\n')
@@ -665,12 +665,13 @@ class SynAn():
 			if self.lexer.getNextToken()=='<CLOSE_PARENTHESIS>':
 				self.out.write('factor is finished\n')
 			else:
-				raise synErr('")"')
+				self.synErr('")"')
 		elif token=='<NOT_LOGOP>':
 			self.factor()
 		elif token=='<CHAR>':
 			self.out.write('factor is finished\n')
 		else:
+			print "Este error no esta del todo bien definido... ver!"
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
 
 	def factor_rest(self):
@@ -699,7 +700,7 @@ class SynAn():
 		elif token=='<CLOSE_PARENTHESIS>':
 			self.out.write('actual_parameter_restis finished\n')
 		else:
-			raise synErr('")"')
+			self.synErr('")"')
 
 	def multiplying_operator(self):
 		self.out.write('In multiplying_operator\n')
@@ -731,7 +732,7 @@ class SynAn():
 		if token == '<IDENTIFIER>':
 			self.procedure_statement_rest()
 		else:
-			raise synErr('an identifier')
+			self.synErr('an identifier')
 
 	def procedure_statement_rest(self):
 		self.out.write('In procedure_statement_rest\n')
@@ -772,9 +773,9 @@ class SynAn():
 				self.statement()
 				self.conditional_statement_rest()
 			else:
-				raise synErr('"then"')
+				self.synErr('"then"')
 		else:
-			raise synErr('"if"')
+			self.synErr('"if"')
 
 	def conditional_statement_other(self):
 		self.out.write('In conditional_statement_other\n')
@@ -795,9 +796,9 @@ class SynAn():
 				self.repetitive_statement_rest()
 				
 			else:
-				raise synErr('"do"')
+				self.synErr('"do"')
 		else:
-			raise synErr('"while"')
+			self.synErr('"while"')
 
 	def repetitive_statement_rest(self):
 		self.out.write('In repetitive_statement_rest\n')
@@ -848,5 +849,5 @@ if __name__ == '__main__':
 		output.write(str(e))
 	except LexError as e:
 		output.write(str(e))
-	except:
-		print("Unexpected error!!!!!!!!!! EVERYTHING IS BROKEN, GO FIX YOUR CODE!")
+	# except Exception as e:
+		# output.write(str(e))
