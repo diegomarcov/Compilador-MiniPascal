@@ -72,7 +72,9 @@ class SynAn():
 				pass
 
 	def block(self):
+		self.out.write('In block\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write(self.currentToken)
 		if self.currentToken == "<CONST>":
 			self.pushLexeme()
 			self.constant_definition_part()
@@ -84,6 +86,7 @@ class SynAn():
 		# or self.currentToken == "<VAR>" or self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 
 	def block_cons_rest(self):
+		self.out.write('In block_cons_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<TYPE>":
 			self.pushLexeme()
@@ -94,6 +97,7 @@ class SynAn():
 			self.block_type_rest()
 	
 	def block_type_rest(self):
+		self.out.write('In block_type_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<VAR>":
 			self.pushLexeme()

@@ -77,7 +77,7 @@ class LexAn():
 	def pushLexeme(self,file=None):
 		if file:
 			file.write('%s\n'%self.originalLexeme)
-		self.lexer.push_token(self.getCurrentLexeme)
+		self.lexer.push_token(self.getCurrentLexeme())
 		
 	def errorLeader(self):
 		return self.lexer.error_leader()
@@ -87,7 +87,7 @@ class LexAn():
 			self.originalLexeme = self.lexer.get_token()
 		except EOFError:
 			raise LexError('\n%sLexical error: A comment in the source program was not closed!'% self.errorLeader())
-			
+		
 		self.currentLexeme = self.originalLexeme.lower()
 		if (self.currentLexeme in self.tokenDictionary):
 			return self.tokenDictionary[self.currentLexeme]
