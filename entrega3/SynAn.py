@@ -17,7 +17,7 @@ class SynError (Exception):
 		self.found = found
 		
 	def __str__(self):
-		return '\n%sSyntactical Error: Expecting a "%s", but a %s was found' % (self.leader,self.expected,self.found)
+		return '\n%sSyntactical Error: Expecting "%s", but a %s was found' % (self.leader,self.expected,self.found)
 
 		
 class UnexpectedTokenError(Exception):
@@ -200,23 +200,44 @@ class SynAn():
 		pass
 
 	def statement_part(self):
-		pass
-
-	def statement_part_rest(self):
-		pass
-
-	def statement_rest(self):
-		pass
-
-	def statemente_rest_rest(self):
-		pass
-
-	def statement(self):
-				self.out.write('In statement_part\n')
+		self.out.write('In statement_part\n')
 		if self.lexer.getNextToken() = '<BEGIN>':
 			self.statement_part_rest()
 		else:
-			raise SysAn(self.lexer.errorLeader(),"begin",self.lexer.currentLexeme)
+			raise SysAn(self.lexer.errorLeader(),"begin",self.lexer.currentLexeme())
+
+	def statement_part_rest(self):
+		self.out.write('In statement_part\n')
+		token=self.lexer.getNextToken()
+		self.lexer.pushLexeme()
+		if token=='<SEMI_COLON>' or token=='<END>':
+			self.statement_rest()
+		else:
+			statement()
+			statement_rest()
+
+	def statement_rest(self):
+		self.out.write('In statement_rest\n')
+		token=self.lexer.getNextToken()
+		if token=='<SEMI_COLON>':
+			self.statement_rest_rest()
+		elif token=='<END>':
+			self.out.write('statement_rest is finished')
+		else:
+			raise self.synErr(';" or "end')
+
+	def statement_rest_rest(self):
+		self.out.write('In statement_rest_rest\n')
+		token=self.lexer.getNextToken()
+		self.pushLexeme()
+		if token=='<SEMI_COLON>' or token=='<END>':
+			self.statement_rest_rest()
+		else:
+			statement()
+			statement_rest()
+
+	def statement(self):
+		pass
 
 	def simple_statement(self):
 		pass
@@ -289,6 +310,9 @@ class SynAn():
 
 	def repetitive_statement_rest(self):
 		pass
+		
+	def synErr(self,s):
+		return SynError(self.lexer.errorLeader(),s,self.lexer.currentLexeme())
 
 
 

@@ -74,8 +74,8 @@ class LexAn():
 	def getCurrentLexeme(self):
 		return self.originalLexeme
 		
-	def pushToken(self,token):
-		self.lexer.push_token(token)
+	def pushLexeme(self):
+		self.lexer.push_token(self.getCurrentLexeme)
 		
 	def errorLeader(self):
 		return self.lexer.error_leader()
