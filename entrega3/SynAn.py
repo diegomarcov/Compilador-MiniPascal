@@ -233,26 +233,77 @@ class SynAn():
 		if token=='<SEMI_COLON>' or token=='<END>':
 			self.statement_rest_rest()
 		else:
-			statement()
-			statement_rest()
+			self.statement()
+			self.statement_rest()
 
 	def statement(self):
-		pass
+		self.out.write('In statement\n')
+		token=self.lexer.getNextToken()
+		self.pushLexeme()
+		if token=='<IDENTIFIER>':
+			self.simple_statement_rest()
+		else:
+			self.synErr('identifier')
 
 	def simple_statement(self):
-		pass
+		self.out.write('In simple_statement\n')
+		token=self.lexer.getNextToken()
+		
+		if token=='<IDENTIFIER>' :
+			self.simple_statement()
+		else:
+			self.structured_statement()
 
 	def simple_statement_rest(self):
-		pass
+		self.out.write('In simple_statement_rest\n')
+		token=self.lexer.getNextToken()
+		
+		if token=='<ASSIGNMENT>' :
+			self.expression()
+		elif token=='<OPEN_BRACKET>' :
+			self.expression()
+			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
+				if self.lexer.getNextToken()=='<ASSIGNMENT>':
+					self.expression()
+				else:
+					raise synErr(':=')
+			else:
+				raise synErr(']')
+		elif token=='<OPEN_PARENTHESIS>' :
+			self.expression()
+		else:
+			self.out.write('push lexeme\n')
+			self.lexer.pushLexeme()
 
 	def component_variable(self):
-		pass
+		self.out.write('In component_variable\n')
+		token=self.lexer.getNextToken()
+		if token=='<IDENTIFIER>': 
+			if self.lexer.getNextToken()=='<OPEN_BRACKET>':
+				self.expression()
+				if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
+					self.out.write('component_variable is finished\n')
+				else:
+					raise synErr(']')
+			else:
+				raise synErr('[')
+		else:
+			raise synErr('identifier')
 
 	def expression(self):
-		pass
+		self.out.write('In expression\n')
+		self.simple_expression()
+		self.expression_rest()
 
 	def expression_rest(self):
-		pass
+		self.out.write('In expression_rest\n')
+		token=self.lexer.getNextToken()
+		self.pushLexeme()
+		if token in ('<LESS_OP>','<LESS_EQUAL_OP>'.'<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
+			self.relational_operator()
+			self.simple_expression
+		else:
+			pass #lambda
 
 	def simple_expression(self):
 		pass
