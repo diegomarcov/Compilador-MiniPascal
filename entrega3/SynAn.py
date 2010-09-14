@@ -184,14 +184,14 @@ class SynAn():
 			self.synErr('type')
 
 	def type_definition_rest(self):
-		self.currentToken == self.lexer.getNextToken()
+		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<SEMI_COLON>":
 			self.type_definition_rest_rest()
 		else:
 			self.synErr(';')
 
 	def type_definition_rest_rest(self):
-		self.currentToken == self.lexer.getNextToken()
+		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
 			self.lexer.pushLexeme()
 			self.type_definition()
@@ -201,7 +201,7 @@ class SynAn():
 			self.lexer.pushLexeme()
 
 	def type_definition(self):
-		self.currentToken == self.lexer.getNextToken()
+		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
 			self.currentToken == self.lexer.getNextToken()
 			if self.currentToken == "<EQUAL>":
@@ -212,7 +212,7 @@ class SynAn():
 			self.synErr('identifier')
 
 	def type(self):
-		self.currentToken == self.lexer.getNextToken()
+		self.currentToken = self.lexer.getNextToken()
 		#en este caso me resulta mas sencillo preguntar si es STRUCTURED TYPE
 		if self.currentToken == "<ARRAY>":
 			self.lexer.pushLexeme()
@@ -224,70 +224,274 @@ class SynAn():
 			self.simple_type()
 		
 	def simple_type(self):
-		
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<NUMBER>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<SUBRANGE_SEPARATOR>":
+				self.constant()
+			else:
+				self.synErr('..')
+		elif self.currentToken == "<CHAR>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<SUBRANGE_SEPARATOR>":
+				self.constant()
+			else:
+				self.synErr('..')
+		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
+			self.lexer.pushLexeme()
+			self.sign()
+			self.subrange_type_rest()
+		elif self.currentToken == "<IDENTIFIER">:
+			self.simple_type_rest()
+		else self.synErr('simple type')
 
-	def subrange_type(self):
-		pass
+	def simple_type_rest(self):
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<SUBRANGE_SEPARATOR>":
+			self.constant()
+		else:
+		#lambda
+			self.lexer.pushLexeme()
 
 	def subrange_type_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<NUMBER>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<SUBRANGE_SEPARATOR>":
+				self.constant()
+			else:
+				self.synErr('..')
+		elif self.currentToken == "<IDENTIFIER>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<SUBRANGE_SEPARATOR>":
+				self.constant()
+			else:
+				self.synErr('..')
+		else self.synErr('subrange declaration')
+			
 
 	def structured_type(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<ARRAY>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<OPEN_BRACKET>":
+				self.simple_type()
+				self.currentToken = self.lexer.getNextToken()
+				if self.currentToken == "<CLOSE_BRACKET>":
+					self.currentToken = self.lexer.getNextToken()
+					if self.currentToken == "<OF>":
+						self.simple_type()
+					else:
+						self.synErr('of')
+				else:
+					self.synErr(']')
+			else:
+				self.synErr('[')
+		else:
+			self.synErr('array')
 
 	def variable_definition_part(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<VAR>":
+			self.variable_declaration()
+			self.variable_declaration_part_rest()
+		else:
+			self.synErr('VAR')
 
 	def variable_declaration_part_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<SEMI_COLON>":
+			self.variable_declaration_rest_rest()
+		else:
+			self.synErr(';')
 
 	def variable_declaration_rest_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<IDENTIFIER>":
+			self.lexer.pushLexeme()
+			self.variable_declaration()
+			self.variable_declaration_rest()
+		else:
+		#lambda
+			self.lexer.pushLexeme()
 
 	def variable_declaration(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<IDENTIFIER>":
+			self.variable_declaration_rest()
+		else:
+			self.synErr('identifier')
 
 	def variable_declaration_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<COMMA>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<IDENTIFIER>":
+				self.variable_declaration_rest()
+			else:
+				self.synErr('identifier')
+		elif self.currentToken == "<TYPE_DECLARATION>":
+			self.type()
+		else:
+			self.synErr(', or :')
 
 	def procedure_and_function_declaration_part(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
+			self.lexer.pushLexeme()
+			self.procedure_or_function_declaration_part()
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<SEMI_COLON>":
+				self.procedure_and_function_declaration_part()
+			else:
+				self.synErr(';')
+		else:
+		#lambda
 
 	def procedure_or_function_declaration_part(self):
-		pass
-
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<PROCEDURE>":
+			self.lexer.pushLexeme()
+			self.procedure_declaration()
+		elif self.currentToken == "<FUNCTION>":
+			self.lexer.pushLexeme()
+			self.function_declaration()
+		else:
+			self.synErr('function or procedure')		
+		
 	def procedure_declaration(self):
-		pass
+		self.procedure_heading()
+		self.block()
 
 	def procedure_heading(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<PROCEDURE>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<IDENTIFIER>":
+				self.procedure_heading_rest()
+			else:
+				self.synErr('identifier')
+		else:
+			self.synErr('procedure')
 
 	def procedure_heading_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<SEMI_COLON>":
+			self.out.write('\nSuccesfully recognised procedure heading!\n')
+		elif self.currentToken == "<OPEN_PARENTHESIS>":
+			self.formal_parameter_section()
+			self.formal_parameter_rest()
+		else:
+			self.synErr('; or (')
 
 	def formal_parameter_rest(self):
-		pass
-
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<SEMI_COLON>":
+			self.formal_parameter_section()
+			self.formal_parameter_rest()
+		elif self.currentToken == "<CLOSE_PARENTHESIS>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<SEMI_COLON>":
+				self.out.write('\nSuccesfully recognised procedure heading!\n')
+			else:
+				self.synErr(';')
+		else:
+			self.synErr('; or )')
+				
 	def formal_parameter_section(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<VAR>":
+			self.parameter_group()
+		else:
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<IDENTIFIER>":
+				self.lexer.pushLexeme()
+				self.parameter_group()
+			else:
+				self.synErr('parameter group')
 
 	def parameter_group(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<IDENTIFIER>":
+			self.parameter_group_rest()
+		else:
+			self.synErr('parameter group')
 
 	def parameter_group_rest(self):
-		pass
-
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<COMMA>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<IDENTIFIER>":
+				self.parameter_group_rest()
+			else:
+				# quizas este error se podria mejorar con algo como "current lexeme no es un parametro valido"
+				self.synErr('identifier')
+		elif self.currentToken == "<TYPE_DECLARATION>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<IDENTIFIER>":
+				self.out.write('\nSuccesfully recognised parameter group')
+			else:
+				# si bien el token es IDENTIFIER, lo que se espera en este caso es un DATA TYPE
+				self.synErr('valid data type')
+		else:
+			self.synErr(', or :')
+		
 	def function_declaration(self):
-		pass
+		self.function_heading()
+		self.block()
 
 	def function_heading(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<FUNCTION>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<IDENTIFIER>":
+				self.function_heading_rest()
+			else:
+				self.synErr('identifier')
+		else:
+			self.synErr('function')
 
 	def function_heading_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<TYPE_DECLARATION>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<IDENTIFIER>":
+				self.currentToken = self.lexer.getNextToken()
+				if self.currentToken == "<SEMI_COLON>":
+					self.out.write('\nSuccesfully recognised function heading!\n')
+				else:
+					self.synErr(';')
+			else:
+				#este error se podria cambiar por "VALID DATA TYPE"
+				self.synErr('identifier')
+		elif self.currentToken == "<OPEN_PARENTHESIS>":
+			self.formal_parameter_section()
+			self.formal_parameter_function_rest()
+		else:
+			self.synErr(': or )')
 
 	def formal_parameter_function_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<SEMI_COLON>":
+			self.formal_parameter_section()
+			self.formal_parameter_function_rest()
+		elif self.currentToken == "<CLOSE_PARENTHESIS>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<TYPE_DECLARATION>":
+				self.currentToken = self.lexer.getNextToken()
+				if self.currentToken == "<IDENTIFIER>":
+					self.currentToken = self.lexer.getNextToken()
+					if self.currentToken == "<SEMI_COLON>":
+						self.out.write('\nSuccesfully recognised parameter group!\n')
+					else:
+						self.synErr(';')
+				else:
+					#este error se podria cambiar por "VALID DATA TYPE"
+					self.synErr('identifier')
+			else:
+				self.synErr(':')
+		else:
+			self.synErr('; or )')
 
 	def statement_part(self):
 		pass
