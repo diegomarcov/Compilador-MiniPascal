@@ -690,28 +690,63 @@ class SynAn():
 	def multiplying_operator(self):
 		self.out.write('In multiplying_operator\n')
 		token=self.lexer.getNextToken()
-		if token in ('<MULTIPLY_OP>','<DIV_OP>','<AND_LOGOP>)':
+		if token in ('<MULTIPLY_OP>','<DIV_OP>','<AND_LOGOP>'):
 			self.out.write('multiplying_operator is finished\n')
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
 
 	def adding_operator(self):
-		pass
+		self.out.write('In adding_operator\n')
+		token=self.lexer.getNextToken()
+		if token in ('<ADD_OP>','<MINUS_OP>','<OR_LOGOP>'):
+			self.out.write('adding_operator is finished\n')
+		else:
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
 
 	def relational_operator(self):
-		pass
+		self.out.write('In relational_operator\n')
+		token=self.lexer.getNextToken()
+		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
+			self.out.write('relational_operator is finished\n')
+		else:
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
 
 	def procedure_statement(self):
-		pass
+		self.out.write('In procedure_statement\n')
+		token=self.lexer.getNextToken()
+		if token == '<IDENTIFIER>':
+			self.procedure_statement_rest()
+		else:
+			raise synErr('identifier')
 
 	def procedure_statement_rest(self):
-		pass
+		self.out.write('In procedure_statement_rest\n')
+		token=self.lexer.getNextToken()
+		if token == '<OPEN_PARENTHESIS>':
+			self.actual_parameter()
+			self.actual_parameter_restactual_parameter()
+		else:
+			self.pushLexeme()
 
 	def structured_statement(self):
-		pass
+		self.out.write('In structured_statement\n')
+		token=self.lexer.getNextToken()
+		if token == '<BEGIN>':
+			self.structured_statement_other()
+			self.conditional_statement()
+		else:
+			self.pushLexeme()
+			self.repetitive_statement()
 
 	def structured_statement_other(self):
-		pass
+		self.out.write('In structured_statement_other\n')
+		token=self.lexer.getNextToken()
+		self.pushLexeme()
+		if token in ('<SEMI_COLON>','<END>'):
+			self.statement_rest()
+		else:
+			self.statement()
+			self.statement_rest()
 
 	def conditional_statement(self):
 		pass
