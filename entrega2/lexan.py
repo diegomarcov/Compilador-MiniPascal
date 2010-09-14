@@ -71,7 +71,9 @@ class LexAn():
 	def getCurrentLine(self):
 		return self.lexer.lineno
 		
-	def getCurrentLexeme(self):
+	def getCurrentLexeme(self,file=None):
+		if file:
+			file.write('%s\n'%self.originalLexeme)
 		return self.originalLexeme
 		
 	def pushLexeme(self):

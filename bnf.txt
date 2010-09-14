@@ -34,9 +34,9 @@
 
 <type> ::= <simple_type> | <structured_type>
 
-<simple_type> ::= <subrange_type> | <IDENTIFIER>
+<simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest> | <IDENTIFIER> <simple_type_rest>
 
-<subrange_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest>
+<simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> | <LAMBDA>
 
 <subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
 

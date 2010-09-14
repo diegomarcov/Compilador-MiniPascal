@@ -306,19 +306,64 @@ class SynAn():
 			pass #lambda
 
 	def simple_expression(self):
-		pass
+		self.out.write('In simple_expression\n')
+		token=self.lexer.getNextToken()
+		self.out.write('In simple_expression\n')
+		self.pushLexeme()
+		if token in ('<ADD_OP>','<MINUS_OP>'):
+			self.sign()
+			self.term()
+			self.simple_expression_other()
+		else:
+			self.term()
+			self.simple_expression_other()
 
 	def simple_expression_other(self):
-		pass
+		self.out.write('In simple_expression_other\n')
+		token=self.lexer.getNextToken()
+		self.pushLexeme()
+		if token in ('<ADD_OP>','<MINUS_OP>','<OR_LOGOP>'):
+			self.adding_operator()
+			self.term()
+			self.simple_expression_other()
+		else
+			pass #lambda
 
 	def term(self):
-		pass
-
+		self.out.write('In term\n')
+		self.factor()
+		self.term_other()
+		
 	def term_other(self):
-		pass
+		self.out.write('In term_other\n')
+		token=self.lexer.getNextToken()
+		self.pushLexeme()
+		if token in ('<MULTIPLY_OP>','<DIV_OP>','<AND_LOGOP>'):
+			self.multiplying_operator()
+			self.factor()
+			self.term_other()
+		else:
+			pass #lambda
 
 	def factor(self):
-		pass
+		self.out.write('In factor\n')
+		token=self.lexer.getNextToken()
+		if token=='<IDENTIFIER>':
+			self.factor_rest()
+		elif token=='<NUMBER>':
+			self.out.write('factor is finished\n')
+		elif token=='<OPEN_PARENTHESIS>':
+			self.expression()
+			if self.lexer.getNextToken()=='<CLOSE_PARENTHESIS>':
+				self.out.write('factor is finished\n')
+			else:
+				raise synErr(')')
+		elif token=='<NOT_LOGOP>':
+			self.factor()
+		elif token=='<CHAR>':
+			self.out.write('factor is finished\n')
+		else:
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
 
 	def factor_rest(self):
 		pass
@@ -364,6 +409,9 @@ class SynAn():
 		
 	def synErr(self,s):
 		return SynError(self.lexer.errorLeader(),s,self.lexer.currentLexeme())
+		
+	def pushLexeme(self):
+		self.lexer.pushLexeme(self.out)
 
 
 
