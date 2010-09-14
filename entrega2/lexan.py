@@ -71,12 +71,12 @@ class LexAn():
 	def getCurrentLine(self):
 		return self.lexer.lineno
 		
-	def getCurrentLexeme(self,file=None):
-		if file:
-			file.write('%s\n'%self.originalLexeme)
+	def getCurrentLexeme(self):
 		return self.originalLexeme
 		
-	def pushLexeme(self):
+	def pushLexeme(self,file=None):
+		if file:
+			file.write('%s\n'%self.originalLexeme)
 		self.lexer.push_token(self.getCurrentLexeme)
 		
 	def errorLeader(self):

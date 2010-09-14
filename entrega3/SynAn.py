@@ -1,7 +1,7 @@
 import sys
 import argparse, io
 sys.path.append('../entrega2/')
-from lexan import LexAn
+from lexan import LexAn,LexError
 
 #esto fue creado para tener un "archivo" que no escriba nada, para no tener que hacer siempre un if en los writes de debug
 class VortexWriter(): # nombre sumamente cambiable
@@ -241,9 +241,9 @@ class SynAn():
 			self.pushLexeme()
 			self.sign()
 			self.subrange_type_rest()
-		elif self.currentToken == "<IDENTIFIER">:
+		elif self.currentToken == "<IDENTIFIER>":
 			self.simple_type_rest()
-		else self.synErr('simple type')
+		else: self.synErr('simple type')
 
 	def simple_type_rest(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -267,7 +267,7 @@ class SynAn():
 				self.constant()
 			else:
 				self.synErr('..')
-		else self.synErr('subrange declaration')
+		else: self.synErr('subrange declaration')
 			
 
 	def structured_type(self):
@@ -346,7 +346,7 @@ class SynAn():
 			else:
 				self.synErr(';')
 		else:
-		#lambda
+			pass#lambda
 
 	def procedure_or_function_declaration_part(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -495,7 +495,7 @@ class SynAn():
 
 	def statement_part(self):
 		self.out.write('In statement_part\n')
-		if self.lexer.getNextToken() = '<BEGIN>':
+		if self.lexer.getNextToken() == '<BEGIN>':
 			self.statement_part_rest()
 		else:
 			raise SysAn(self.lexer.errorLeader(),"begin",self.lexer.currentLexeme())
@@ -593,7 +593,7 @@ class SynAn():
 		self.out.write('In expression_rest\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
-		if token in ('<LESS_OP>','<LESS_EQUAL_OP>'.'<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
+		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
 			self.relational_operator()
 			self.simple_expression
 		else:
@@ -620,7 +620,7 @@ class SynAn():
 			self.adding_operator()
 			self.term()
 			self.simple_expression_other()
-		else
+		else:
 			pass #lambda
 
 	def term(self):
@@ -749,16 +749,50 @@ class SynAn():
 			self.statement_rest()
 
 	def conditional_statement(self):
-		pass
+		self.out.write('In conditional_statement\n')
+		token=self.lexer.getNextToken()
+
+		if token =='<IF>':
+			self.expression()
+			if self.lexer.getNextToken() =='<THEN>':
+				self.statement()
+				self.conditional_statement_rest()
+			else:
+				raise synErr('then')
+		else:
+			raise synErr('if')
 
 	def conditional_statement_other(self):
-		pass
+		self.out.write('In conditional_statement_other\n')
+		token=self.lexer.getNextToken()
+		if token =='<ELSE>':
+			self.statement()
+		else:
+			self.pushLexeme()
+
 
 	def repetitive_statement(self):
-		pass
+		self.out.write('In repetitive_statement\n')
+		token=self.lexer.getNextToken()
+
+		if token =='<WHILE>':
+			self.expression()
+			if self.lexer.getNextToken() =='<DO>':
+				self.repetitive_statement_rest()
+				
+			else:
+				raise synErr('do')
+		else:
+			raise synErr('while')
 
 	def repetitive_statement_rest(self):
-		pass
+		self.out.write('In repetitive_statement_rest\n')
+		token=self.lexer.getNextToken()
+		self.pushLexeme()
+		if token in('<BEGIN>','<WHILE>','<IF>','<IDENTIFIER>'):
+			self.statement()
+		else:
+			pass #lambda
 		
 	def synErr(self,s):
 		return SynError(self.lexer.errorLeader(),s,self.lexer.currentLexeme())
@@ -795,5 +829,9 @@ if __name__ == '__main__':
 		if output is not None:
 			output.write(msg)
 		print msg
-	except SynError,UnexpectedTokenError,LexError as e:
+	except SynError as e:
+		output.write(str(e))
+	except UnexpectedTokenError as e:
+		output.write(str(e))
+	except LexError as e:
 		output.write(str(e))
