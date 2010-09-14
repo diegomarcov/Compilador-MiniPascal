@@ -418,13 +418,11 @@ class SynAn():
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<VAR>":
 			self.parameter_group()
+		elif self.currentToken == "<IDENTIFIER>":
+			self.pushLexeme()
+			self.parameter_group()
 		else:
-			self.currentToken = self.lexer.getNextToken()
-			if self.currentToken == "<IDENTIFIER>":
-				self.pushLexeme()
-				self.parameter_group()
-			else:
-				self.synErr('parameter group')
+			self.synErr('a parameter group')
 
 	def parameter_group(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -458,6 +456,7 @@ class SynAn():
 		self.block()
 
 	def function_heading(self):
+		self.out.write('In function_heading\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<FUNCTION>":
 			self.currentToken = self.lexer.getNextToken()
@@ -469,6 +468,7 @@ class SynAn():
 			self.synErr('a function')
 
 	def function_heading_rest(self):
+		self.out.write('In function_heading_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<TYPE_DECLARATION>":
 			self.currentToken = self.lexer.getNextToken()
@@ -664,10 +664,11 @@ class SynAn():
 	def factor(self):
 		self.out.write('In factor\n')
 		token=self.lexer.getNextToken()
+		self.out.write('Current token == %s' % token)
 		if token=='<IDENTIFIER>':
 			self.factor_rest()
 		elif token=='<NUMBER>':
-			self.out.write('factor is finished\n')
+			self.out.write('Factor is finished\n')
 		elif token=='<OPEN_PARENTHESIS>':
 			self.expression()
 			if self.lexer.getNextToken()=='<CLOSE_PARENTHESIS>':
@@ -691,6 +692,7 @@ class SynAn():
 				self.out.write('factor_rest is finished\n')
 		elif token=='<OPEN_PARENTHESIS>':
 			self.actual_parameter()
+			self.actual_parameter_rest()
 		else:
 			self.pushLexeme() #lambda
 
@@ -703,12 +705,11 @@ class SynAn():
 		token=self.lexer.getNextToken()
 		if token=='<COMMA>':
 			self.actual_parameter()
-			self.actual_parameter_rest()
-			
+			self.actual_parameter_rest()			
 		elif token=='<CLOSE_PARENTHESIS>':
 			self.out.write('actual_parameter_restis finished\n')
 		else:
-			self.synErr('")"')
+			self.synErr('"," or ")"')
 
 	def multiplying_operator(self):
 		self.out.write('In multiplying_operator\n')
