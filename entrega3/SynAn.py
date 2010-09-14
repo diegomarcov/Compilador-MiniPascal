@@ -56,7 +56,7 @@ class SynAn():
 			self.thislexeme = self.lexer.getCurrentLexeme()
 			print self.thiserrorLeader
 			print self.thislexeme
-			self.currentError = SynError(self.lexer.errorLeader(),'.',self.lexer.getCurrentLexeme())
+			self.synErr('.')
 			
 			raise self.currentError
 
@@ -67,74 +67,164 @@ class SynAn():
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
 				else:
-					raise SynError(self.lexer.errorLeader(),';',self.lexer.currentLexeme())
-
+					self.synErr(';')
 			else:
 				pass
 
 	def block(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<CONST>":
-			self.lexer.pushToken(self.currentToken)
+			self.lexer.pushLexeme()
 			self.constant_definition_part()
 			self.block_cons_rest()
 		else:
-			self.lexer.pushToken(self.currentToken)
+			self.lexer.pushLexeme()
 			self.block_cons_rest()
 			
 		# or self.currentToken == "<VAR>" or self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 
 	def block_cons_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<TYPE>":
+			self.lexer.pushLexeme()
+			self.type_definition_part()
+			self.block_type_rest()
+		else:
+			self.lexer.pushLexeme()
+			self.block_type_rest()
 	
 	def block_type_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<VAR>":
+			self.lexer.pushLexeme()
+			self.variable_definition_part()
+			self.block_var_rest()
+		else:
+			self.lexer.pushLexeme()
+			self.block_var_rest()
 
 	def block_var_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		# en este caso controlo si viene el <statement_part> porque es mas sencillo
+		if self.currentToken == "<BEGIN>":
+			self.lexer.pushLexeme()
+			self.statement_part()
+		else:
+			self.lexer.pushLexeme()
+			self.procedure_and_function_declaration_part()
+			self.statement_part()
 
 	def constant_definition_part(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<CONST>":
 			self.constant_definition()
 			self.constant_definition_rest()
+		else:
+			self.synErr('constant')
 
 
 	def constant_definition_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<SEMI_COLON>":
+			self.constant_definition_rest_rest()
+		else:
+			self.synErr(';')
 
 	def constant_definition_rest_rest(self):
-		pass
-
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<IDENTIFIER>":
+			self.lexer.pushLexeme()
+			self.constant_definition()
+			self.constant_definition_rest()
+		else:
+			self.lexer.pushLexeme()
+			
 	def constant_definition(self):
-		pass
-
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<IDENTIFIER>":
+			self.currentToken = self.lexer.getNextToken()
+			if self.currentToken == "<EQUAL>":
+				self.constant()
+			else:
+				self.synErr('=')
+		else:
+			self.synErr('identifier')
+		
 	def constant(self):
-		pass
-
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<NUMBER>" or self.currentToken == "<IDENTIFIER>" or self.currentToken == "<CHAR>":
+			self.out.write("\nFound constant declaration succesfully!\n")
+		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
+			self.lexer.pushLexeme()
+			self.sign()
+			self.constant_rest()
+		else:
+			self.synErr('number, identifier or char')
+			
 	def constant_rest(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<NUMBER>" or self.currentToken == "<IDENTIFIER>":
+			self.out.write("\nFound constant declaration succesfully!\n")
+		else:
+			self.synErr('number or identifier')
 
 	def sign(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
+			pass
+		else:
+			self.synErr('sign')
 
 	def type_definition_part(self):
-		pass
+		self.currentToken = self.lexer.getNextToken()
+		if self.currentToken == "<TYPE>":
+			self.type_definition()
+			self.type_definition_rest()
+		else:
+			self.synErr('type')
 
 	def type_definition_rest(self):
-		pass
+		self.currentToken == self.lexer.getNextToken()
+		if self.currentToken == "<SEMI_COLON>":
+			self.type_definition_rest_rest()
+		else:
+			self.synErr(';')
 
 	def type_definition_rest_rest(self):
-		pass
+		self.currentToken == self.lexer.getNextToken()
+		if self.currentToken == "<IDENTIFIER>":
+			self.lexer.pushLexeme()
+			self.type_definition()
+			self.type_definition_rest()
+		else:
+			# si no es un IDENTIFIER es <LAMBDA>, asi que no hacemos nada, simplemente devolvemos el lexema
+			self.lexer.pushLexeme()
 
 	def type_definition(self):
-		pass
+		self.currentToken == self.lexer.getNextToken()
+		if self.currentToken == "<IDENTIFIER>":
+			self.currentToken == self.lexer.getNextToken()
+			if self.currentToken == "<EQUAL>":
+				self.type()
+			else:
+				self.synErr('=')
+		else:
+			self.synErr('identifier')
 
 	def type(self):
-		pass
-
+		self.currentToken == self.lexer.getNextToken()
+		#en este caso me resulta mas sencillo preguntar si es STRUCTURED TYPE
+		if self.currentToken == "<ARRAY>":
+			self.lexer.pushLexeme()
+			self.structured_type()
+		else:
+		#asumo que si no vino un token ARRAY, se viene un tipo simple...
+		#posiblemente este descartando casos de error!!!
+			self.lexer.pushLexeme()
+			self.simple_type()
+		
 	def simple_type(self):
-		pass
+		
 
 	def subrange_type(self):
 		pass
