@@ -135,7 +135,6 @@ class SynAn():
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<SEMI_COLON>":
 			self.constant_definition_rest_rest()
-			print "sali de constant_definition_rest"
 		else:
 			self.synErr('";"')
 
@@ -201,7 +200,7 @@ class SynAn():
 		if self.currentToken == "<SEMI_COLON>":
 			self.type_definition_rest_rest()
 		else:
-			self.synErr(';')
+			self.synErr('";"')
 
 	def type_definition_rest_rest(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -316,7 +315,7 @@ class SynAn():
 		if self.currentToken == "<SEMI_COLON>":
 			self.variable_declaration_rest_rest()
 		else:
-			self.synErr(';')
+			self.synErr('";"')
 
 	def variable_declaration_rest_rest(self):
 		self.currentToken = self.lexer.getNextToken()
@@ -350,14 +349,16 @@ class SynAn():
 
 	def procedure_and_function_declaration_part(self):
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write("@ procedure_and_function_declaration_part: %s" % self.currentToken)
 		if self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 			self.pushLexeme()
 			self.procedure_or_function_declaration_part()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SEMI_COLON>":
+				self.out.write("Hago la llamada recursiva a procedure_and_function_declaration_part")
 				self.procedure_and_function_declaration_part()
 			else:
-				self.synErr(';')
+				self.synErr('";"')
 		else:
 			pass#lambda
 
