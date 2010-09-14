@@ -5,7 +5,7 @@
 %\usepackage{listings}
 %\usepackage{fancyvrb}
 \usepackage{float}
-\usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}
+\usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
 \usepackage{gmverb}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
@@ -34,7 +34,7 @@ Se documentará también la modificación de la gramática, de manera tal que pase a
 \section{Tokens}
 
 En la tabla \ref{tab:tokens} se encuentran todos los tokens con sus respectivos lexemas, como fue presentada en la entrega anterior, con sus debidas modificaciones. 
-\begin{table}[htd]
+\begin{table}[htbp]
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Token}			& \textbf{Expresión Regular} \\ \hline
@@ -234,7 +234,167 @@ Antes de comenzar con la modificación, se corrigieron los errores marcados por l
 Como siguiente paso en la adaptación de la gramática, se reemplazaron los terminales por los tokens que devuelve \textbf{LexAn}. Para esto, se adoptó la convención de dejar los no terminales en minúscula, mientras que los tokens (terminales) se encuentran en MAYÚSCULA. Luego, se eliminaron las extenciones propias de la notación EBNF.
 
 \begin{verbatim}
+<program> ::= <program_heading> <block> <END_PROGRAM>
+
+<program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
+
+<block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
+
+<block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
+
+<block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
+
+<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part>
+
+<constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
+
+<constant_definition_rest> ::= <SEMI_COLON> <constant_definition_rest_rest>
+
+<constant_definition_rest_rest> ::= <constant_definition> <constant_definition_rest> | <LAMBDA>
+
+<constant_definition> ::= <IDENTIFIER> <EQUAL> <constant>
+
+<constant> ::= <NUMBER> | <IDENTIFIER> | <CHAR> | <sign> <constant_rest>
+
+<constant_rest> ::= <NUMBER> | <IDENTIFIER>
+
+<sign> ::= <ADD_OP> | <MINUS_OP>
+
+<type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
+
+<type_definition_rest> ::= <SEMI_COLON> <type_definition_rest_rest>
+
+<type_definition_rest_rest> ::= <type_definition> <type_definition_rest> | <LAMBDA>
+
+<type_definition> ::= <IDENTIFIER> <EQUAL> <type>
+
+<type> ::= <simple_type> | <structured_type>
+
+<simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest> | <IDENTIFIER> <simple_type_rest>
+
+<simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> | <LAMBDA>
+
+<subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
+
+<structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
+
+<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
+
+<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
+
+<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
+
+<variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
+
+<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
+
+<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
+
+<procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
+
+<procedure_declaration> ::= <procedure_heading> <block>
+
+<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest>
+
+<procedure_heading_rest> ::= <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
+
+<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest> | <CLOSE_PARENTHESIS> <SEMI_COLON>
+
+<formal_parameter_section> ::= <parameter_group> | <VAR> <parameter_group>
+
+<parameter_group> ::= <IDENTIFIER> <parameter_group_rest>
+
+<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest> | <TYPE_DECLARATION> <IDENTIFIER>
+
+<function_declaration> ::= <function_heading> <block>
+
+<function_heading> ::= <FUNCTION> <IDENTIFIER> <function_heading_rest>
+
+<function_heading_rest> ::= <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
+
+<formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
+
+<statement_part> ::= <BEGIN> <statement_part_rest>
+
+<statement_part_rest> ::= <statement> <statement_rest> | <statement_rest>
+
+<statement_rest> ::= <SEMI_COLON> <statement_rest_rest> | <END>
+
+<statement_rest_rest> ::= <statement> <statement_rest> | <statement_rest>
+
+<statement> ::= <simple_statement> | <structured_statement>
+
+<simple_statement> ::= <IDENTIFIER> <simple_statement_rest>
+
+<simple_statement_rest> ::= <ASSIGNMENT> <expression> | <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
+
+<expression> ::= <simple_expression> <expression_rest>
+
+<expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
+
+<simple_expression> ::= <term> <simple_expression_other> | <sign> <term> <simple_expression_other>
+
+<simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
+
+<term> ::= <factor> <term_other>
+
+<term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
+
+<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
+
+<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<actual_parameter> ::= <expression>
+
+<actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
+
+<multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
+
+<adding_operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
+
+<relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <EQUAL>
+
+<procedure_statement> ::= <IDENTIFIER> <procedure_statement_rest>
+
+<procedure_statement_rest> ::= <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<structured_statement> ::= <BEGIN> <structured_statement_other> | <conditional_statement> | <repetitive_statement>
+
+<structured_statement_other> ::= <statement> <statement_rest> | <statement_rest>
+
+<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_rest>
+
+<conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
+
+<repetitive_statement> ::= <WHILE> <expression> <DO> <repetitive_statement_rest>
+
+<repetitive_statement_rest> ::= <statement> | <LAMBDA>
+\end{verbatim}
+
+\section{Gramática final}
+Para llegar a la gramática utilizada para implementar el analizador léxico, se realizaron varios pasos:
+\begin{enumerate}
+	\item \textbf{Eliminar Ambiguedad}: Este tal vez sea la afirmación más peligrosa, ya que no se puede saber si una gramática es ambigua o no. De cualquier manera, se eliminaron todas las que se encontraron, salvo el caso del \verb|if then else|, que se resolverá en el análisis semántico.
+	\item \textbf{Eliminar Recursión a Izquierda}: Se utilizó el algoritmo explicado en \cite[pág. 212]{aho}.
+	\item \textbf{Factorizar a Izquierda}: Se utilizó el algoritmo explicado en el mismo libro, en la página 214.
+\end{enumerate}
+Luego de esta serie de pasos, se llegó a la siguiente gramática:
+
+\begin{verbatim}
 
 \end{verbatim}
+
+\begin{thebibliography}{9}
+
+\bibitem{aho}
+  Alfred V. Aho, Monica S. Lam, Ravi Sethi, Jeffrey D. Ullman
+  \emph{Compilers: principles, techniques, and tools}.
+  Addison Wesley
+  2nd Edition
+  2007.
+
+\end{thebibliography}
 
 \end{document}
