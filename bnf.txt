@@ -46,7 +46,7 @@
 
 <variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
 
-<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
+<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_part_rest> | <LAMBDA>
 
 <variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
 
