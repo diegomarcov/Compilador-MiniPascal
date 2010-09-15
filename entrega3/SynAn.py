@@ -755,7 +755,7 @@ class SynAn():
 	def relational_operator(self):
 		self.out.write('In relational_operator\n')
 		token=self.lexer.getNextToken()
-		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
+		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>','<NOT_EQUAL_OP>'):
 			self.out.write('relational_operator is finished\n')
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
