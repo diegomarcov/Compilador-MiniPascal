@@ -1,1 +1,2 @@
-preguntar si la salida si o si tiene que salir por pantalla, o si se da un file, se puede mandar ahi solo
+ - preguntar si la salida si o si tiene que salir por pantalla, o si se da un file, se puede mandar ahi solo
+ - la definicion de array, puede ser [4] o solo puede ser [1..4] (ejemplo7)

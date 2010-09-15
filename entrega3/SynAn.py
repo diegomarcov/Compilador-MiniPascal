@@ -14,7 +14,10 @@ class SynError (Exception):
 		super(SynError,self).__init__()
 		self.leader = leader
 		self.expected = expected
-		self.found = found
+		if found == '':
+			self.found = 'EOF'
+		else:
+			self.found = found
 		
 	def __str__(self):
 		return '\n%sSyntactical error found: Expecting %s, but "%s" was found' % (self.leader,self.expected,self.found)
@@ -25,10 +28,13 @@ class UnexpectedTokenError(Exception):
 	def __init__(self,leader,found):
 		super(UnexpectedTokenError,self).__init__()
 		self.leader = leader
-		self.found = found
+		if found == '':
+			self.found = 'EOF'
+		else:
+			self.found = found
 		
 	def __str__(self):
-		return '\n%sUnexpected token "%s" found.\n' % (self.leader, self.found)
+		return '\n%sUnexpected token: "%s" found.\n' % (self.leader, self.found)
 		
 class SynAn():
 	def __init__(self,lexer,debug,outputFile):
@@ -274,6 +280,7 @@ class SynAn():
 			self.pushLexeme()
 
 	def subrange_type_rest(self):
+		self.out.write('In subrange_type_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<NUMBER>":
 			self.currentToken = self.lexer.getNextToken()
@@ -291,6 +298,7 @@ class SynAn():
 			
 
 	def structured_type(self):
+		self.out.write('In structured_type\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<ARRAY>":
 			self.currentToken = self.lexer.getNextToken()
@@ -577,7 +585,7 @@ class SynAn():
 		elif token=="<BEGIN>" or token=="<IF>" or token =="<WHILE>":
 			self.structured_statement()
 		else:
-			self.synErr('an identifier')
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
 
 	def simple_statement(self):
 		self.out.write('In simple_statement\n')

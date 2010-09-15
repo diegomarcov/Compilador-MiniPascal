@@ -1,4 +1,6 @@
 {programa incorrecto - error en linea 7, (falta el begin de la funcion)}
+
+//Este error no quedo muy claro
 program ejemplo2;
 var a,b:integer;
 function sumaEnteros(a:integer;var b:integer):integer;
