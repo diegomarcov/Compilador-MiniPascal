@@ -635,7 +635,7 @@ class SynAn():
 		self.out.write('In expression_rest\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
-		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
+		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>','<NOT_EQUAL_OP>'):
 			self.relational_operator()
 			self.simple_expression()
 		else:
@@ -706,7 +706,7 @@ class SynAn():
 			self.out.write('factor is finished\n')
 		else:
 			print "Este error no esta del todo bien definido... ver!"
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
 
 	def factor_rest(self):
 		self.out.write('In factor_rest\n')
@@ -742,7 +742,7 @@ class SynAn():
 		if token in ('<MULTIPLY_OP>','<DIV_OP>','<AND_LOGOP>'):
 			self.out.write('multiplying_operator is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
 
 	def adding_operator(self):
 		self.out.write('In adding_operator\n')
@@ -750,7 +750,7 @@ class SynAn():
 		if token in ('<ADD_OP>','<MINUS_OP>','<OR_LOGOP>'):
 			self.out.write('adding_operator is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
 
 	def relational_operator(self):
 		self.out.write('In relational_operator\n')
@@ -758,7 +758,7 @@ class SynAn():
 		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
 			self.out.write('relational_operator is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.currentLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
 
 	def procedure_statement(self):
 		self.out.write('In procedure_statement\n')
