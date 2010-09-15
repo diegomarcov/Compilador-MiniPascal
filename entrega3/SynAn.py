@@ -635,7 +635,7 @@ class SynAn():
 		self.out.write('In expression_rest\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
-		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
+		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>','<NOT_EQUAL_OP>'):
 			self.relational_operator()
 			self.simple_expression()
 		else:
@@ -755,7 +755,7 @@ class SynAn():
 	def relational_operator(self):
 		self.out.write('In relational_operator\n')
 		token=self.lexer.getNextToken()
-		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
+		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>','<NOT_EQUAL_OP>'):
 			self.out.write('relational_operator is finished\n')
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
@@ -803,7 +803,7 @@ class SynAn():
 	def conditional_statement(self):
 		self.out.write('In conditional_statement\n')
 		token=self.lexer.getNextToken()
-
+		self.out.write('Current token == %s\n' % token)
 		if token =='<IF>':
 			self.expression()
 			if self.lexer.getNextToken() =='<THEN>':
