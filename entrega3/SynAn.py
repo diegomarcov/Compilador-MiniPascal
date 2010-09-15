@@ -637,7 +637,7 @@ class SynAn():
 		self.pushLexeme()
 		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
 			self.relational_operator()
-			self.simple_expression
+			self.simple_expression()
 		else:
 			pass #lambda
 
