@@ -25,7 +25,7 @@
 \chapter*{Introducción}
 \addcontentsline{toc}{chapter}{Introducción}
 
-Esta entrega consiste en el desarrollo del \textbf{Analizador Sintáctico} que formará parte del Compilado de Mini-Pascal. Para esto, a partir de un código fuente, se lee la sucesión de lexemas, con el Analizador Léxico LexAn, de la entrega anterior, y se verifica que esta sucesión sea generada por la gramática previamente entregada.
+Esta entrega consiste en el desarrollo del \textbf{Analizador Sintáctico} que formará parte del Compilador de Mini-Pascal. Para esto, a partir de un archivo fuente  se lee la sucesión de lexemas utilizando el Analizador Léxico LexAn de la entrega anterior, y se verifica que esta sucesión sea generada por la gramática previamente entregada.
 
 Se documentará también la modificación de la gramática, de manera tal que pase a ser LL(1).
 
@@ -86,7 +86,7 @@ EOF 								&  \\ \hline
 \caption{Tokens}
 \end{table}
 \section{Corrección de la gramática}
-Antes de comenzar con la modificación, se corrigieron los errores marcados por la cátedra. 
+Antes de comenzar con la modificación, se corrigieron los errores marcados por la cátedra.
 
 \begin{verbatim}
 <program> ::= <program heading> <block>.
@@ -233,7 +233,7 @@ Antes de comenzar con la modificación, se corrigieron los errores marcados por l
 
 \section{Pasaje a notación BNF}
 
-Como siguiente paso en la adaptación de la gramática, se reemplazaron los terminales por los tokens que devuelve \textbf{LexAn}. Para esto, se adoptó la convención de dejar los no terminales en minúscula, mientras que los tokens (terminales) se encuentran en MAYÚSCULA. Luego, se eliminaron las extenciones propias de la notación EBNF.
+Como siguiente paso en la adaptación de la gramática, se reemplazaron los terminales por los tokens que devuelve \textbf{LexAn}. Para esto, se adoptó la convención de dejar los no terminales en minúscula, mientras que los tokens (terminales) se encuentran en MAYÚSCULA. Luego, se eliminaron las extensiones propias de la notación EBNF.
 
 \begin{verbatim}
 <program> ::= <program_heading> <block> <END_PROGRAM>
@@ -284,7 +284,7 @@ Como siguiente paso en la adaptación de la gramática, se reemplazaron los termin
 
 <variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
 
-<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
+<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_part_rest> | <LAMBDA>
 
 <variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
 
@@ -378,7 +378,7 @@ Como siguiente paso en la adaptación de la gramática, se reemplazaron los termin
 \section{Gramática final}
 Para llegar a la gramática utilizada para implementar el analizador léxico, se realizaron varios pasos:
 \begin{enumerate}
-	\item \textbf{Eliminar Ambiguedad}: Este tal vez sea la afirmación más peligrosa, ya que no se puede saber si una gramática es ambigua o no. De cualquier manera, se eliminaron todas las que se encontraron, salvo el caso del \verb|if then else|, del cual se hablará más adelante.
+	\item \textbf{Eliminar Ambiguedad}: ésta tal vez sea la afirmación más peligrosa, ya que no se puede saber si una gramática es ambigua o no. De cualquier manera, se eliminaron todas las ambiguedades que se encontraron, salvo el caso del \verb|if then else|, del cual se hablará más adelante.
 	\item \textbf{Eliminar Recursión a Izquierda}: Se utilizó el algoritmo explicado en \cite[pág. 212]{aho}.
 	\item \textbf{Factorizar a Izquierda}: Se utilizó el algoritmo explicado en el mismo libro, en la página 214.
 \end{enumerate}
@@ -433,7 +433,7 @@ Luego de esta serie de pasos, se llegó a la siguiente gramática:
 
 <variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
 
-<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_rest> | <LAMBDA>
+<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_part_rest> | <LAMBDA>
 
 <variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
 
@@ -515,7 +515,7 @@ Luego de esta serie de pasos, se llegó a la siguiente gramática:
 
 <structured_statement_other> ::= <statement> <statement_rest> | <statement_rest>
 
-<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_rest>
+<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_other>
 
 <conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
 
@@ -525,13 +525,13 @@ Luego de esta serie de pasos, se llegó a la siguiente gramática:
 \end{verbatim}
 
 \section{¿Es LL(1)?}
-La gramática pasó por todos los pasos especificados, en un intento de lograr una gramática para ser utilizada como base de la implementación de un Analizador Sintáctico Descendente Predictivo Recursivo. Cada regla de tiene conjuntos disjuntos de la función \textsc{Primero} para cada producción, por lo que el analizador puede saber que producción optar, leyendo un token. Por esto, se podría decir que la gramática obtenida es LL(1).
+La gramática pasó por todos los pasos especificados, en un intento de lograr una gramática para ser utilizada como base de la implementación de un Analizador Sintáctico Descendente Predictivo Recursivo. Cada regla tiene conjuntos disjuntos de la función \textsc{Primero} para cada producción, por lo que el analizador puede saber que producción optar, leyendo un token. Por esto, se podría decir que la gramática obtenida es LL(1).
 
-Sin embargo, como fue dicho en la sección anterior, la gramática contiene por lo menos una ambigüedad: la del \verb|if then else|. La cadena de tokens \verb|<IF> ... <THEN> <IF> ... <THEN> ... <ELSE> ...| (donde los puntos suspensivos representan una cadena que sea válida) tiene dos árboles de derivación posibles. 
+Sin embargo, como fue dicho en la sección anterior, la gramática contiene por lo menos una ambigüedad: la del \verb|if then else|. La cadena de tokens \verb|<IF> ... <THEN> <IF> ... <THEN> ... <ELSE> ...| (donde los puntos suspensivos representan un grupo de statements válidos) tiene dos árboles de derivación posibles. 
 
-Una solución que se puede adoptar es la de utilizar precedencia, donde el \verb|<ELSE>| estaría ligado al \verb|<IF>| más cercano. Está solución será la que se adopte para la implementación del compilador de \textsc{Mini-Pascal}, y se llevará a cabo en la etapa de análisis semántico.
+Una solución que se puede adoptar es la de utilizar precedencia, donde el \verb|<ELSE>| quedará ligado al \verb|<IF> ... <THEN>| sin \verb|<ELSE>| más cercano. Ésta solución será la que se adopte para la implementación del compilador de \textsc{Mini-Pascal}, y se llevará a cabo en la etapa de análisis semántico.
 
-Se puede concluir entonces, que la gramática no es LL(1), pero de cualquier manera, sirve para realizar el Analizador Sintáctico.
+Se puede concluir entonces que la gramática no es LL(1), pero de cualquier manera, sirve para realizar el Analizador Sintáctico.
 
 
 \begin{thebibliography}{9}

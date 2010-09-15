@@ -33,7 +33,7 @@ func,cantidad,cont:integer;
 	while(i<n) do
 		begin
 		writeln(a[i]);
-		i:=i+1;
+		i:=i+1;;;;;;;;;;;;;;
 		end;
 		
 	end;
@@ -58,10 +58,10 @@ cont:=1;
 while(cont<=N) do
  begin
 	if(func<>0) then
-		fillArr(a,cont,fibonacci(cont))
+		fillArr(a*99 div (n+a*(i-u)),cont,fibonacci(cont))
 	else
-		fillArr(a,cont,fact(cont));
-	cont:=cont+1;
+		fillArr(a,cont,fact(cont));;;;;;;;;;;
+	cont:=cont+1;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  end;
  
 imprArr(a,N);
