@@ -224,7 +224,9 @@ class SynAn():
 			self.synErr('identifier')
 
 	def type(self):
+		self.out.write('In type\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write('Current token == %s\n' % self.currentToken)
 		#en este caso me resulta mas sencillo preguntar si es STRUCTURED TYPE
 		if self.currentToken == "<ARRAY>":
 			self.pushLexeme()
@@ -236,15 +238,19 @@ class SynAn():
 			self.simple_type()
 		
 	def simple_type(self):
+		self.out.write('In simple_type\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<NUMBER>":
 			self.currentToken = self.lexer.getNextToken()
+			self.out.write('Current token == %s\n' % self.currentToken)
 			if self.currentToken == "<SUBRANGE_SEPARATOR>":
 				self.constant()
 			else:
 				self.synErr('".."')
 		elif self.currentToken == "<CHAR>":
 			self.currentToken = self.lexer.getNextToken()
+			self.out.write('Current token == %s\n' % self.currentToken)
 			if self.currentToken == "<SUBRANGE_SEPARATOR>":
 				self.constant()
 			else:
@@ -258,7 +264,9 @@ class SynAn():
 		else: self.synErr('simple type')
 
 	def simple_type_rest(self):
+		self.out.write('In simple_type_rest\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<SUBRANGE_SEPARATOR>":
 			self.constant()
 		else:
@@ -303,49 +311,61 @@ class SynAn():
 			self.synErr('"array"')
 
 	def variable_definition_part(self):
+		self.out.write('In variable_definition_part\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<VAR>":
 			self.variable_declaration()
 			self.variable_declaration_part_rest()
 		else:
-			self.synErr('VAR')
+			self.synErr('"VAR"')
 
 	def variable_declaration_part_rest(self):
+		self.out.write('In variable_declaration_part_rest\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<SEMI_COLON>":
 			self.variable_declaration_rest_rest()
 		else:
 			self.synErr('";"')
 
 	def variable_declaration_rest_rest(self):
+		self.out.write('In variable_declaration_rest_rest\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<IDENTIFIER>":
 			self.pushLexeme()
 			self.variable_declaration()
-			self.variable_declaration_rest()
+			self.variable_declaration_part_rest()
 		else:
 		#lambda
 			self.pushLexeme()
 
 	def variable_declaration(self):
+		self.out.write('In variable_declaration\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<IDENTIFIER>":
 			self.variable_declaration_rest()
 		else:
 			self.synErr('an identifier')
 
 	def variable_declaration_rest(self):
+		self.out.write('In variable_declaration_rest\n')
 		self.currentToken = self.lexer.getNextToken()
+		self.out.write('PUTO EL QUE LEEEEEEEEEEEEEEEE == %s\n' % self.currentToken)
 		if self.currentToken == "<COMMA>":
 			self.currentToken = self.lexer.getNextToken()
+			self.out.write('Current token == %s\n' % self.currentToken)
 			if self.currentToken == "<IDENTIFIER>":
 				self.variable_declaration_rest()
 			else:
-				self.synErr('identifier')
+				self.synErr('an identifier')
 		elif self.currentToken == "<TYPE_DECLARATION>":
 			self.type()
 		else:
-			self.synErr(', or :')
+			print "This is ERRRORRRRRRRRRRRRRRRRRRRRRRRRRRRR!!!!!!!"
+			self.synErr('"," or ":"')
 
 	def procedure_and_function_declaration_part(self):
 		self.out.write("In procedure_and_function_declaration_part\n")
