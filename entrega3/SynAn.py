@@ -361,7 +361,7 @@ class SynAn():
 	def variable_declaration_rest(self):
 		self.out.write('In variable_declaration_rest\n')
 		self.currentToken = self.lexer.getNextToken()
-		self.out.write('PUTO EL QUE LEEEEEEEEEEEEEEEE == %s\n' % self.currentToken)
+		self.out.write('Current Token == %s\n' % self.currentToken)
 		if self.currentToken == "<COMMA>":
 			self.currentToken = self.lexer.getNextToken()
 			self.out.write('Current token == %s\n' % self.currentToken)
@@ -372,19 +372,17 @@ class SynAn():
 		elif self.currentToken == "<TYPE_DECLARATION>":
 			self.type()
 		else:
-			print "This is ERRRORRRRRRRRRRRRRRRRRRRRRRRRRRRR!!!!!!!"
 			self.synErr('"," or ":"')
 
 	def procedure_and_function_declaration_part(self):
 		self.out.write("In procedure_and_function_declaration_part\n")
 		self.currentToken = self.lexer.getNextToken()
-		print "Current token @proc: %s" % self.currentToken
+		self.out.write("Current token @proc: %s" % self.currentToken)
 		if self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 			self.pushLexeme()
 			self.procedure_or_function_declaration_part()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SEMI_COLON>":
-				self.out.write("Hago la llamada recursiva a procedure_and_function_declaration_part\n")
 				self.procedure_and_function_declaration_part()
 			else:
 				self.synErr('";"')
@@ -543,7 +541,6 @@ class SynAn():
 		if self.lexer.getNextToken() == '<BEGIN>':
 			self.statement_part_rest()
 		else:
-			print "THIS ERROR!"
 			self.synErr('"begin"')
 
 	def statement_part_rest(self):
@@ -713,7 +710,6 @@ class SynAn():
 		elif token=='<FALSE>':
 			self.out.write('factor is finished\n')
 		else:
-			print "Este error no esta del todo bien definido... ver!"
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
 
 	def factor_rest(self):
