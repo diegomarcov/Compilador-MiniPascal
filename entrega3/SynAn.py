@@ -637,7 +637,7 @@ class SynAn():
 		self.pushLexeme()
 		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>'):
 			self.relational_operator()
-			self.simple_expression
+			self.simple_expression()
 		else:
 			pass #lambda
 
@@ -803,7 +803,7 @@ class SynAn():
 	def conditional_statement(self):
 		self.out.write('In conditional_statement\n')
 		token=self.lexer.getNextToken()
-
+		self.out.write('Current token == %s\n' % token)
 		if token =='<IF>':
 			self.expression()
 			if self.lexer.getNextToken() =='<THEN>':
