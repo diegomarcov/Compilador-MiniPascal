@@ -1,52 +1,17 @@
 import sys
 import argparse, io
-sys.path.append('../entrega2/')
-from lexan import LexAn,LexError
+# sys.path.append('../entrega2/')
+from lexer.lexan import LexAn,LexError
+from utils import VortexWriter,SynError,UnexpectedTokenError
 
-#esto fue creado para tener un "archivo" que no escriba nada, para no tener que hacer siempre un if en los writes de debug
-class VortexWriter(): # nombre sumamente cambiable
-	def write(self,s):
-		pass
-		
-class SynError (Exception):
-
-	def __init__(self,leader,expected,found):
-		super(SynError,self).__init__()
-		self.leader = leader
-		self.expected = expected
-		if found == '':
-			self.found = 'EOF'
-		else:
-			self.found = found
-		
-	def __str__(self):
-		return '\n%sSyntactical error found: Expecting %s, but "%s" was found' % (self.leader,self.expected,self.found)
-
-		
-class UnexpectedTokenError(Exception):
-
-	def __init__(self,leader,found):
-		super(UnexpectedTokenError,self).__init__()
-		self.leader = leader
-		if found == '':
-			self.found = 'EOF'
-		else:
-			self.found = found
-		
-	def __str__(self):
-		return '\n%sUnexpected token: "%s" found.\n' % (self.leader, self.found)
-		
 class SynAn():
 	def __init__(self,lexer,debug,outputFile):
 		self.lexer = lexer
-		
-		self.debug = bool(debug)
-		
-		if self.debug:
+		if debug:
 			self.out = outputFile
 		else:
 			self.out = VortexWriter()
-		
+			
 	def execute(self):
 		return self.program()
 
@@ -60,12 +25,7 @@ class SynAn():
 		else:
 			self.thiserrorLeader = self.lexer.errorLeader()
 			self.thislexeme = self.lexer.getCurrentLexeme()
-			
-			print self.thiserrorLeader
-			print self.thislexeme
 			self.synErr('"."')
-			
-			# raise self.currentError
 
 	def program_heading(self):
 		self.out.write('In program_heading\n')
@@ -464,8 +424,7 @@ class SynAn():
 			if self.currentToken == "<IDENTIFIER>":
 				self.parameter_group_rest()
 			else:
-				# quizas este error se podria mejorar con algo como "current lexeme no es un parametro valido"
-				self.synErr('identifier')
+				raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
 		elif self.currentToken == "<TYPE_DECLARATION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
@@ -881,14 +840,8 @@ if __name__ == '__main__':
 	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,output)
 	try:
 		msg = syntacticalAnalyzer.execute()
-		# if output is not None:
-			# output.write(msg)
+		if output != sys.stdout:
+			output.write(msg)
 		print msg
-	except SynError as e:
+	except Exception as e:
 		output.write(str(e))
-	except UnexpectedTokenError as e:
-		output.write(str(e))
-	except LexError as e:
-		output.write(str(e))
-	# except Exception as e:
-		# output.write(str(e))

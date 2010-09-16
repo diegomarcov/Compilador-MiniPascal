@@ -29,6 +29,69 @@ Esta entrega consiste en el desarrollo del \textbf{Analizador Sintáctico} que fo
 
 Se documentará también la modificación de la gramática, de manera tal que pase a ser LL(1).
 
+\chapter{Modo de Uso}
+
+\section{Requerimientos}
+Al igual que en la entrega anterior, se necesitan la siguiente serie de librerías:
+
+\begin{itemize}\ttfamily
+	\item python27.dll
+	\item msvcr90.dll
+	\item bz2.pyd
+	\item select.pyd
+	\item unicodedata.pyd
+	\item library.zip \rmfamily (que contiene las librerías de Python utilizadas)
+\end{itemize}
+
+Todas están incluidas en la carpeta entregada.
+
+\section{Ejecución}
+
+\verb|SynAn.py [-h] [-d] IN_FILE [OUT_FILE]|
+
+\subsection*{Argumentos}
+
+\begin{description}
+	\item[{\ttfamily IN\_FILE}] El archivo de Pascal de entrada.
+\end{description}
+
+\subsection*{Argumentos opcionales}
+
+\begin{description}
+	\item[\ttfamily OUT\_FILE] El archivo opcional de salida. 
+	\item[\ttfamily -d]Modo \textit{debug} (utilizado durante el desarrollo, y dejado por la posible utilidad en el futuro).
+	\item[\ttfamily -h, --help]Muestra la ayuda por pantalla.
+\end{description}
+
+\section{Formato de la salida}
+A diferencia de la entrega anterior, la salida por pantalla sólo constará de un aviso de éxito o error, dependiendo del caso. 
+
+\begin{figure}[h]
+\begin{verbatim}
+Starting file lexical and syntactical analysis...
+
+
+The program is syntactically correct.
+\end{verbatim}
+\caption{Salida por pantalla de un programa sintácticamente correcto}
+\label{fig:correct}
+\end{figure}
+
+En caso de error, la salida será como la encontrada en la figura \ref{fig:error}. Comenzará con el nombre del archivo, y el número de línea en el que se detectó el error, en el formato estándar de un compilador Unix C. De esta manera, es parseable por herramientas como Emacs. 
+
+Luego, se especificará si el error es sintáctico o léxico. Finalmente, se dará una explicación más detallada del error, para facilitar su correción.
+
+\begin{figure}[h]
+\begin{verbatim}
+Starting file lexical and syntactical analysis...
+
+
+
+"bateria\ejemplo10.pas", line 9: Syntactical error found: Expecting "," or ":", but ":=" was found
+\end{verbatim}
+\caption{Salida por pantalla de un programa con un error sintáctico}
+\label{fig:error}
+\end{figure}
 
 \chapter{Gramática}
 
@@ -60,7 +123,7 @@ Assignment 					& {\ttfamily :=} \\ \hline
 Comma 							& {\ttfamily ,} \\ \hline
 Semicolon 					& {\ttfamily ;} \\ \hline
 End\_Program			 	& {\ttfamily .} \\ \hline
-Subrange\_Separator & {\ttfamily ..} \\ \hline
+Subrange\_Separator & {\ttfamily ..} \\ \hline 
 Open\_Parenthesis 	& {\ttfamily (} \\ \hline
 Close\_Parenthesis 	& {\ttfamily )} \\ \hline
 Open\_Bracket 			& {\ttfamily [} \\ \hline
@@ -533,6 +596,23 @@ Una solución que se puede adoptar es la de utilizar precedencia, donde el \verb|
 
 Se puede concluir entonces que la gramática no es LL(1), pero de cualquier manera, sirve para realizar el Analizador Sintáctico.
 
+\chapter{Errores detectados}
+Dado las características del Analizador Sintáctico solicitado por la cátedra, los errores detectados son disparados cuando se encuentra un \textit{token} distinto al que se esperaba. Por esto, el mensaje impreso por pantalla (o en el archivo de salida) muestra el dicho \textit{token}.
+
+Muchas veces, está información no es suficiente para el programador, por lo que, en la mayoría de los posibles errores, también se detalla cuál era el token (o los tokens) esperados, como se muestra en la figura \ref{fig:error}.
+
+
+\begin{figure}[h]
+\begin{verbatim}
+Starting file lexical and syntactical analysis...
+
+
+
+"bateria\ejemplo5.pas", line 22: Unexpected token: ")" found.
+\end{verbatim}
+\label{fig:error2}
+\caption{Error posible: Token inesperado}
+\end{figure}
 
 \begin{thebibliography}{9}
 \addcontentsline{toc}{chapter}{Bibliografía}

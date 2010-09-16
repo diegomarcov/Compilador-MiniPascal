@@ -1,0 +1,64 @@
+\documentclass[a4paper,oneside]{article}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{fullpage}
+\usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}%
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\title{Compiladores e Intérpretes\\Manual de Desarrollo}
+
+\author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
+
+\date{16 de Septiembre de 2010}
+
+\begin{document}
+
+\maketitle
+
+\section{Implementación}
+
+Para esta nueva etapa del Compilador de \textsc{Mini-Pascal}, se implementó un Analizador Sintáctico Descendente Predictivo Recursivo en el lenguaje \textbf{Python	2.7}. Se utilizó el Analizador Léxico \textit{LexAn} previamente entregado (con algunas modificaciones), así como nuevamente los módulos \texttt{argparse} e \texttt{io}, de la librería estándar del lenguaje.
+
+La creación del archivo binario ejecutable fue realizada con el programa \textbf{py2exe}.
+
+\section{Diseño General}
+En esta sección se detallará la arquitectura del Analizador Sintáctico \textbf{SynAn}, describiendo la serie de archivos y clases que lo componen, así como las decisiones de diseño tomadas. 
+
+El archivo \verb|setup.py| no contiene código del programa, sino que es un script utilizado para la creación del archivo binario ejecutable.
+
+\subsection{Programa principal}
+El código del programa principal se encuentra en el archivo \verb|SysAn.py|, debajo del código de la clase \verb|SysAn|. En Python, se puede poner código ejecutable a modo de script en el mismo archivo en el que se definen clases. Si se le antepone \verb|if __name__ == '__main__':|, este código sólo será ejecutado cuando se ejecute el archivo, pero no cuando se carge para leer una clase. Se decidió entonces colocar el código del programa principal en el mismo archivo, para tener un nombre representativo para ejecutar por consola.
+
+Se utiliza el módulo \verb|argparse| para obtener los argumentos entregados por línea de comandos. Con esta información, se abren los archivos correspondientes, y se crean las instancias de \verb|LexAn| y \verb|SynAn|. Luego, se imprime el resultado obtenido luego de realizar el análisis sintáctico, o, en caso de error, se captura la excepción y se imprime su mensaje.
+
+\subsection{LexAn}
+Nuevamente se utiliza el Analizador Léxico de la entrega anterior. Se le hicieron una serie de modificaciones, entre las que se encuentran correcciones, y adaptaciones para una mejor interoperabilidad con el Analizador Sintáctico.
+
+\begin{itemize}
+	\item Se modificaron los tokens devueltos, como se encuentra especificado en la tabla de tokens, del \textit{Informe}.
+	\item Los errores devueltos ahora están encabezados por el nombre del archivo, y el número de línea donde se encontró el error.
+	\item Se agregó una función para retornar dicho encabezado.
+	\item Se agregó una función para colocar el último lexema leído nuevamente en el buffer, de manera tal de que cuando se realize un \verb|getNextToken|, devuelva el mismo token.
+\end{itemize}
+
+\subsection{VortexWriter}
+Se encuentra en \verb|utils.py|. Su única función es la de ser una clase con un método \textit{write}, que no hace nada (como escribir en \verb|/dev/null| en los sistemas GNU/Linux). En la sección siguiente se detallará su uso.
+
+
+\subsection{SysAn}
+La clase se encuentra, como se especificó antes, en el archivo \verb|SynAn.py|. Para su inicialización, requiere el Analizador Léxico \textbf{LexAn}. Se le puede pasar un flag de debug, y un archivo en el cual escribir la salida (que puede ser \textit{stdout}). Si el flag es falso, se asigna la salida a una clase que no escribe nada. Esta decisión se tomó para no tener que siempre realizar un \textsl{if} cada vez que se escriba un mensaje, sino que directamente se escriba siempre, y dependiendo del tipo de objeto escribirá o no.
+
+El método \verb|execute| inicializa el proceso de análisis sintáctico, y devuevle el mensaje de éxito.
+
+Los siguientes procedimientos serían los que se mapean a los no-terminales de la gramática. Básicamente su funcionamiento es la de pedir un token al analizador léxico, para decidir que regla tomar, y luego se llama a los debidos procedimientos, o se piden más tokens, para chequear que sean los esperados.
+
+En los casos que esto no sucede, se levanta una excepción. Esta puede utilizar las dos posibles clases, que se explicaran en el siguiente sección.
+
+\subsection{Excepciones}
+Estas se encuentran en el archivo \verb|utils.py|. La primera es \verb|SynError|, que devuelve errores precisos, en el sentido que dice tanto lo que se obtuvo, como lo que se esperaba. Es utilizada en los casos que las posibilidades de cambio son acotadas. Los mensajes precisos pueden servir en aquellos casos que sólo se haya producido un error de tipeo, por ejemplo.
+
+La segunda excepción es \verb|UnexpectedTokenError|, y devuelve un mensaje más vago, ya que sólo indica el token inesperado. Se devuevle en los casos que la serie de tokens válidos posibles es muy extensa, y no tiene sentido listarlos.
+
+Los dos tipos de excepciones toman el recaudo de imprimir ``EOF'' cuando el lexema devuelto por LexAn es la cadena vacía (que es únicamente devuelto cuando se llega al final del archivo).
+
+\end{document}
