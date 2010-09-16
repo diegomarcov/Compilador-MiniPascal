@@ -1,0 +1,70 @@
+\documentclass[a4paper,oneside]{article}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{fullpage}
+\usepackage[colorlinks=true,urlcolor=black,linkcolor=black]{hyperref}%
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\title{Compiladores e Intérpretes\\Manual de Desarrollo}
+
+\author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
+
+\date{16 de Septiembre de 2010}
+\begin{document}
+
+\maketitle
+
+\section{Casos de prueba}
+
+Los siguientes son los casos de prueba entregados para ser ejecutados junto con el programa, con sus respectivos comportamientos.
+\subsection{Casos de prueba correctos}
+
+\subsubsection{\ttfamily min.pas}
+Es el mínimo programa posible.
+
+\subsubsection{\ttfamily boolean.pas}
+Se declara un booleano con una expresión booleana.
+
+\subsubsection{\ttfamily control.pas}
+Se utilizan los distintos tipos de contructores de estructuras de control.
+
+\subsubsection{\ttfamily expression.pas}
+Se asigna una variable a una expresión aritmética compleja.
+
+\subsubsection{\ttfamily programa\_normal.pas}
+Se declaran arreglos, procedimiento y función, además de varias asignaciones.
+
+\subsubsection{\ttfamily ejemplo\_full.pas}
+El mismo de la entrega anterior, el cual utiliza todos los componenetes del lenguaje.
+
+\subsubsection{\ttfamily declaracion\_subrango.pas}
+Se declaran varias variables, tipos, constantes. Se declaran procedimiento y función.
+
+
+\subsection{Casos de prueba incorrectos}
+
+\subsubsection{\ttfamily caracter\_erroneo.pas}
+Este pertenece a los de la entrega anterior. Contiene un error léxico.
+
+\subsubsection{\ttfamily expresion\_invalida.pas}
+Contiene una expresión mal formada en la línea 21.
+
+\subsubsection{\ttfamily separador\_erroneo.pas}
+En la línea 22 contiene un punto y coma sobrante en el bloque del if.
+
+\subsubsection{\ttfamily sin\_begin.pas}
+Falta el begin en la declaración de la función. En este caso, toma el primer token de la línea 8 como parte de la declaración de variables.
+
+\subsubsection{\ttfamily sin\_end.pas}
+Falta el end del bloque del programa.
+
+\subsubsection{\ttfamily sin\_program.pas}
+Falta el token program en el inicio del programa.
+
+\subsubsection{\ttfamily sin\_puntoycoma.pas}
+Falta un punto y coma en la parte de declaración de tipos.
+
+\subsubsection{\ttfamily sin\_tipo.pas}
+Falta el tipo de la declaración de un par de variables.
+
+\end{document}

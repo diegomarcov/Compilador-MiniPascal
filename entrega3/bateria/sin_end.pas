@@ -1,5 +1,4 @@
-{programa incorrecto - error en linea 19, (falta end.) }
-program ejemplo2;
+program sin_end;
 var a,b:integer;
 function sumaEnteros(a:integer;var b:integer):integer;
 		var c:integer;

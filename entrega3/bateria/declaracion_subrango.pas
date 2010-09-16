@@ -1,6 +1,4 @@
-{programa correcto - declaracion de variables, definicion de tipos incluyendo subrango, declaracion de funcion y procedimiento, pasaje de parametros
-llamadas a funcion y procedimiento, expresiones}
-program ejemplo2;
+program declaracion_subrango;
 const c1=2;
 c2=3;
 type

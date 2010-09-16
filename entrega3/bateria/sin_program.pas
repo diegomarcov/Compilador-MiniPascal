@@ -1,5 +1,4 @@
-{programa incorrecto - error en linea 2, (falta la palabra reservada program)}
- ejemplo3;
+ sin_program;
 const c1=2;
 c2=3;
 type

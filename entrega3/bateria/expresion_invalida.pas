@@ -1,5 +1,4 @@
-{programa incorrecto - error en linea 22, (expresion mal formada)}
-program ejemplo5;
+program expresion_invalida;
 const c1=2;
 c2=3;
 type

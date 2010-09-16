@@ -1,5 +1,4 @@
-{programa incorrecto - error en linea 3, (falta el identificador del tipo de las variables)}
-program ejemplo2;
+program sin_tipo;
 var a,b:
 function sumaEnteros(a:integer;var b:integer):integer;
 		var c:integer;

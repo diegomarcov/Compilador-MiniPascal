@@ -1,5 +1,4 @@
-{programa incorrecto - error en linea 4, (falta punto y coma)}
-program ejemplo7;
+program sin_puntoycoma;
 type entero=integer
 var A: array[5] of entero;
 

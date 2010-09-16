@@ -1,5 +1,4 @@
-{programa incorrecto - error en linea 24, (hay un punto y coma antes del else)}
-program ejemplo7;
+program separador_erroneo;
 type entero=integer;
 var A: array[boolean] of entero;
 
