@@ -494,54 +494,37 @@ class SynAn():
 				self.synErr('":"')
 		else:
 			self.synErr('";" or ")"')
-
+			
 	def statement_part(self):
+		self.compound_statement()
+
+	def compound_statement(self):
 		self.out.write('In statement_part\n')
 		if self.lexer.getNextToken() == '<BEGIN>':
-			self.statement_part_rest()
+			self.statement()
+			self.compound_statement_rest()
+			if self.lexer.getNextToken() != '<END>':
+				self.synErr('"end"')
 		else:
 			self.synErr('"begin"')
 
-	def statement_part_rest(self):
-		self.out.write('In statement_part_rest\n')
-		token=self.lexer.getNextToken()
-		self.pushLexeme()
-		if token=='<SEMI_COLON>' or token=='<END>':
-			self.statement_rest()
-		else:
-			self.statement()
-			self.statement_rest()
-
-	def statement_rest(self):
-		self.out.write('In statement_rest\n')
+	def compound_statement_rest(self):
+		self.out.write('In compound_statement_rest\n')
 		token=self.lexer.getNextToken()
 		if token=='<SEMI_COLON>':
-			self.statement_rest_rest()
-		elif token=='<END>':
-			self.out.write('Statement_rest is finished\n')
-		else:
-			self.synErr('";" or "end"')
-
-	def statement_rest_rest(self):
-		self.out.write('In statement_rest_rest\n')
-		token=self.lexer.getNextToken()
-		self.pushLexeme()
-		if token=='<SEMI_COLON>' or token=='<END>':
-			self.statement_rest()
-		else:
 			self.statement()
-			self.statement_rest()
-
+			self.compound_statement_rest()
+		else:
+			self.pushLexeme()
+		
 	def statement(self):
 		self.out.write('In statement\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
-		if token=='<IDENTIFIER>':
-			self.simple_statement()
-		elif token=="<BEGIN>" or token=="<IF>" or token =="<WHILE>":
+		if token=="<BEGIN>" or token=="<IF>" or token =="<WHILE>":
 			self.structured_statement()
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
+			self.simple_statement()
 
 	def simple_statement(self):
 		self.out.write('In simple_statement\n')
@@ -550,7 +533,7 @@ class SynAn():
 		if token=='<IDENTIFIER>' :
 			self.simple_statement_rest()
 		else:
-			self.synErr('an identifier')
+			self.pushLexeme()
 
 	def simple_statement_rest(self):
 		self.out.write('In simple_statement_rest\n')
@@ -743,14 +726,12 @@ class SynAn():
 	def structured_statement(self):
 		self.out.write('In structured_statement\n')
 		token=self.lexer.getNextToken()
+		self.pushLexeme()
 		if token == '<BEGIN>':
-			self.structured_statement_other()
-			
+			self.compound_statement()
 		elif token == '<IF>':
-			self.pushLexeme()
 			self.conditional_statement()
 		else:
-			self.pushLexeme()
 			self.repetitive_statement()
 
 	def structured_statement_other(self):
