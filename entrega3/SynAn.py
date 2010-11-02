@@ -20,11 +20,14 @@ class SynAn():
 		self.program_heading()
 		self.block()
 		if self.lexer.getNextToken() == '<END_PROGRAM>':
-			self.out.write('Success\n')
-			return 'The program is syntactically correct.'
+			if self.lexer.getNextToken() == '<EOF>':
+				self.out.write('Success\n')
+				return 'The program is syntactically correct.'
+			else: 
+				raise SynError(self.lexer.errorLeader(),msg="There are characters after the last character ('.')")
 		else:
-			self.thiserrorLeader = self.lexer.errorLeader()
-			self.thislexeme = self.lexer.getCurrentLexeme()
+			# self.thiserrorLeader = self.lexer.errorLeader()
+			# self.thislexeme = self.lexer.getCurrentLexeme()
 			self.synErr('"."')
 
 	def program_heading(self):
@@ -36,7 +39,9 @@ class SynAn():
 				else:
 					self.synErr('";"')
 			else:
-				pass
+				raise SynError(self.lexer.errorLeader(), msg="Expecting an identifier but %s was found" % self.lexer.getLexeme())
+		else:
+			self.synErr('"program"')
 
 	def block(self):
 		self.out.write('In block\n')

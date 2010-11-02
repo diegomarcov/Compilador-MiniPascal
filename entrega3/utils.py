@@ -5,17 +5,23 @@ class VortexWriter(): # nombre sumamente cambiable
 		
 class SynError(Exception):
 
-	def __init__(self,leader,expected,found):
+	def __init__(self,leader,expected="",found="",msg=""):
 		super(SynError,self).__init__()
-		self.leader = leader
-		self.expected = expected
-		if found == '':
-			self.found = 'EOF'
+		self.msg="\n%sSyntactical error found:" % leader
+		if msg=="":
+			# self.leader = leader
+			# self.expected = expected
+			# if found == '':
+				# self.found = 'EOF'
+			# else:
+				# self.found = found
+			self.msg += 'Expecting %s, but "%s" was found' % (self.leader,self.expected,self.found)
 		else:
-			self.found = found
+			self.msg += msg
 		
 	def __str__(self):
-		return '\n%sSyntactical error found: Expecting %s, but "%s" was found' % (self.leader,self.expected,self.found)
+		# return '\n%sSyntactical error found: Expecting %s, but "%s" was found' % (self.leader,self.expected,self.found)
+		return self.msg
 
 		
 class UnexpectedTokenError(Exception):
