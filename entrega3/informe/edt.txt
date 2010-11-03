@@ -1,0 +1,250 @@
+<program> ::= 	{
+					stStack = newSymbolTableStack()
+					ttStack = newTypeTableStack()
+					stStack.pushNewSymbolTable()
+					ttStack.pushNewTypeTable()
+				} 
+				<program_heading> 
+				<block>
+				<END_PROGRAM> <EOF>
+
+<program_heading> ::= <PROGRAM> <IDENTIFIER>
+						{
+							addNewID(<IDENTIFIER>.lex, "program")
+						}
+					<SEMI_COLON>
+
+<block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
+
+<block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
+
+<block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
+
+<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part>
+
+<constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
+
+<constant_definition_rest> ::= <SEMI_COLON> <constant_definition_rest_rest>
+
+<constant_definition_rest_rest> ::= <constant_definition> <constant_definition_rest> | <LAMBDA>
+
+<constant_definition> ::= <IDENTIFIER> <EQUAL> <constant> 
+							{
+								addNewID(<IDENTIFIER>.lex, newAttr(<constant>.tipo, <constant>.tipo, isConstant=true))
+							}
+
+<constant> ::= 	<NUMBER>
+				{
+					<constant>.tipo = "int"
+					<constant>.value = <NUMBER>.lex
+				}
+				|
+				<IDENTIFIER>
+				{
+					val = getGlobalValue(<IDENTIFIER>.lex)
+					if (val != None):
+						<constant>.tipo = val.tipo
+						<constant>.value = val.value
+					else:
+						error("Undeclared identifier " + <IDENTIFIER>.lex)
+				}
+				| 
+				<CHAR> 
+				{
+					<constant>.tipo = "char"
+					<constant>.value = <CHAR>.lex
+				}
+				| <sign> <constant_rest>
+				{
+					if <constant_rest>.tipo != "int":
+						error("Can not apply "+<sign>.lex+" operator to "+<constant_rest>.tipo)
+					else:
+						<constant>.tipo = "int"
+						<constant>.value = <sign>.value * <constant_rest>.value
+				}
+				
+
+<constant_rest> ::= <NUMBER> 
+					{
+						<constant_rest>.tipo = "int"
+						<constant_rest>.value = <NUMBER>.lex
+					}
+					|
+					<IDENTIFIER>
+					{
+						<constant_rest>.tipo = <IDENTIFIER>.tipo
+						<constant_rest>.value = <IDENTIFIER>.lex
+					}
+
+<sign> ::= <ADD_OP>
+			{
+				<sign>.value = 1
+			}
+			|
+			<MINUS_OP>
+			{
+				<sign>.value = -1
+			}
+
+<type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
+
+<type_definition_rest> ::= <SEMI_COLON> <type_definition_rest_rest>
+
+<type_definition_rest_rest> ::= <type_definition> <type_definition_rest> | <LAMBDA>
+
+<type_definition> ::= <IDENTIFIER> <EQUAL> <type>
+						{
+							addNewType(<IDENTIFIER>.lex, <type>.value)
+						}
+
+<type> ::= <simple_type> | <structured_type>
+
+<simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> 
+					{
+						if <constant>.tipo != "int":
+							error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
+						else:
+							if <NUMBER>.lex <= <constant>.value:
+								<simple_type>.value = newType("subrange", <NUMBER>.lex, <constant>.value)
+							else:
+								error("Invalid subrange: lower bound must be smaller than upper bound.")
+
+					|
+					<CHAR> <SUBRANGE_SEPARATOR> <constant> 
+					{
+						if <constant>.tipo != "char":
+							error("Non compatible subrange bounds (char expected, "+<constant>.tipo+" found).")
+						else:
+							if <CHAR>.lex <= <constant>.value:
+								<simple_type>.value = newType("subrange", <NUMBER>.lex, <constant>.value)
+							else:
+								error("Invalid subrange: lower bound must be smaller than upper bound.")
+					}
+					| 
+					<sign> <subrange_type_rest> 
+					{
+						<subrange_type_rest>.value.lowerBound = <sign>.value * <subrange_type_rest>.value.lowerBound
+						if <subrange_type_rest>.value.lowerBound <= <subrange_type_rest>.value.upperBound:
+							<simple_type>.value = <subrange_type_rest>.value
+						else:
+							error("Invalid subrange: lower bound must be smaller than upper bound.")
+					}
+					| 
+					<IDENTIFIER> <simple_type_rest>
+					{
+						//en este caso hay que pedir el tipo a la tabla de tipos
+						if <simple_type_rest>.value == None:
+							<simple_type>.value = <IDENTIFIER>.tipo
+					}
+
+<simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> 
+						{
+							<simple_type_rest>.value = newType("subrange", None, <constant>.value)
+						}
+					|
+					<LAMBDA>
+					{
+						<simple_type_rest>.value = None
+					}
+
+<subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> 
+						{
+							if <constant>.tipo != "int":
+								error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
+							else:
+								<subrange_type_rest>.value = newType("subrange", <NUMBER>.lex, <constant>.value)
+						}
+						| 
+						<IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
+
+<structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
+
+<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
+
+<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
+
+<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_part_rest> | <LAMBDA>
+
+<variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
+
+<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
+
+<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
+
+<procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
+
+<procedure_declaration> ::= <procedure_heading> <block>
+
+<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest>
+
+<procedure_heading_rest> ::= <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
+
+<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest> | <CLOSE_PARENTHESIS> <SEMI_COLON>
+
+<formal_parameter_section> ::= <parameter_group> | <VAR> <parameter_group>
+
+<parameter_group> ::= <IDENTIFIER> <parameter_group_rest>
+
+<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest> | <TYPE_DECLARATION> <IDENTIFIER>
+
+<function_declaration> ::= <function_heading> <block>
+
+<function_heading> ::= <FUNCTION> <IDENTIFIER> <function_heading_rest>
+
+<function_heading_rest> ::= <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
+
+<formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
+
+<statement_part> ::= <compound_statement>
+
+<compound_statement> ::= <BEGIN> <statement> <statement_part_rest> <END>
+
+<statement_part_rest> ::= <SEMI_COLON> <statement> <statement_part_rest> | <LAMBDA>
+
+<statement> ::= <simple_statement> | <structured_statement>
+
+<simple_statement> ::= <IDENTIFIER> <simple_statement_rest> | <LAMBDA>
+
+<simple_statement_rest> ::= <ASSIGNMENT> <expression> | <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
+
+<expression> ::= <simple_expression> <expression_rest>
+
+<expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
+
+<simple_expression> ::= <term> <simple_expression_other> | <sign> <term> <simple_expression_other>
+
+<simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
+
+<term> ::= <factor> <term_other>
+
+<term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
+
+<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
+
+<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<actual_parameter> ::= <expression>
+
+<actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
+
+<multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
+
+<adding_operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
+
+<relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <NOT_EQUAL_OP> | <EQUAL>
+
+<procedure_statement> ::= <IDENTIFIER> <procedure_statement_rest>
+
+<procedure_statement_rest> ::= <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
+
+<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_other>
+
+<conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
+
+<repetitive_statement> ::= <WHILE> <expression> <DO> <repetitive_statement_rest>
+
+<repetitive_statement_rest> ::= <statement> | <LAMBDA>

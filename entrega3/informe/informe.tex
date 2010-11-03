@@ -444,7 +444,7 @@ Para llegar a la gramática utilizada para implementar el analizador sintáctico, 
 Luego de esta serie de pasos, se llegó a la siguiente gramática:
 
 \begin{verbatim}
-<program> ::= <program_heading> <block> <END_PROGRAM>
+<program> ::= <program_heading> <block> <END_PROGRAM> <EOF>
 
 <program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
 
