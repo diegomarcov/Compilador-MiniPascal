@@ -1,8 +1,6 @@
 <program> ::= 	{
 					stStack = newSymbolTableStack()
-					ttStack = newTypeTableStack()
 					stStack.pushNewSymbolTable()
-					ttStack.pushNewTypeTable()
 				} 
 				<program_heading> 
 				<block>
@@ -10,7 +8,7 @@
 
 <program_heading> ::= <PROGRAM> <IDENTIFIER>
 						{
-							addNewID(<IDENTIFIER>.lex, "program")
+							addNewID(<IDENTIFIER>.lex, type="program")
 						}
 					<SEMI_COLON>
 
@@ -30,7 +28,9 @@
 
 <constant_definition> ::= <IDENTIFIER> <EQUAL> <constant> 
 							{
-								addNewID(<IDENTIFIER>.lex, newAttr(<constant>.tipo, <constant>.tipo, isConstant=true))
+                                // addNewID deberá tener un identificador, y un objeto;
+                                // dicho objeto tendrá las propiedades: TIPO, VALOR, y un valor booleano indicando si es constante
+								addNewID(<IDENTIFIER>.lex, newAttr(type=<constant>.tipo, value=<constant>.value, isConstant=True))
 							}
 
 <constant> ::= 	<NUMBER>
@@ -94,10 +94,21 @@
 
 <type_definition> ::= <IDENTIFIER> <EQUAL> <type>
 						{
-							addNewType(<IDENTIFIER>.lex, <type>.value)
+                            // incluimos en la tabla de símbolos el tipo, indicando que es un "TIPO" e
+                            // incluyendo la estructura que servirá para saber si es un subrango, un array,
+                            // o cualquier otro tipo simple
+							addNewID(<IDENTIFIER>.lex, newAttr(type="type", value=<type>.value, isConstant = False)
 						}
 
-<type> ::= <simple_type> | <structured_type>
+<type> ::= <simple_type> 
+            {
+                <type>.value = <simple_type>.value
+            }
+            |
+            <structured_type>
+            {
+                <type>.value = <structured_type>.value
+            }
 
 <simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> 
 					{
@@ -105,7 +116,9 @@
 							error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
 						else:
 							if <NUMBER>.lex <= <constant>.value:
-								<simple_type>.value = newType("subrange", <NUMBER>.lex, <constant>.value)
+                                // la estructura devuelta por newType contendrá el TIPO,
+                                // y las referencias a los valores lowerBound y upperBound
+								<simple_type>.value = newType("subrange", lowerBound=<NUMBER>, upperBound=<constant>)
 							else:
 								error("Invalid subrange: lower bound must be smaller than upper bound.")
 
@@ -116,7 +129,9 @@
 							error("Non compatible subrange bounds (char expected, "+<constant>.tipo+" found).")
 						else:
 							if <CHAR>.lex <= <constant>.value:
-								<simple_type>.value = newType("subrange", <NUMBER>.lex, <constant>.value)
+                                // la estructura devuelta por newType contendrá el TIPO,
+                                // y las referencias a los valores lowerBound y upperBound
+								<simple_type>.value = newType("subrange", lowerBound=<NUMBER>, upperBound=<constant>)
 							else:
 								error("Invalid subrange: lower bound must be smaller than upper bound.")
 					}
@@ -133,31 +148,58 @@
 					<IDENTIFIER> <simple_type_rest>
 					{
 						//en este caso hay que pedir el tipo a la tabla de tipos
-						if <simple_type_rest>.value == None:
-							<simple_type>.value = <IDENTIFIER>.tipo
+                        if <simple_type_rest>.value.tipo == "subrange":
+                            if <IDENTIFIER>.tipo == <simple_type_rest>.value.upperBound.tipo:
+                                if <IDENTIFIER>.value <= <simple_type_rest>.value.upperBound.value:
+                                    <simple_type_rest>.value.lowerBound = <IDENTIFIER>
+                                else:
+                                    error("Invalid subrange: lower bound must be smaller than upper bound.")
+                            else:
+                                error("Non compatible subrange bounds ("+ <IDENTIFIER>.tipo +" expected, "+ <simple_type_rest>.value.upperBound.tipo +" found).")
+                        else:
+                            if <simple_type_rest>.value == None:
+                                <simple_type>.tipo = <IDENTIFIER>.tipo
+                                <simple_type>.value = <IDENTIFIER>.value
 					}
 
 <simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> 
 						{
-							<simple_type_rest>.value = newType("subrange", None, <constant>.value)
+                            // la estructura devuelta por newType contendrá el TIPO,
+                            // y las referencias a los valores lowerBound y upperBound
+							<simple_type_rest>.value = newType("subrange", lowerBound=None, upperBound=<constant>)
 						}
-					|
-					<LAMBDA>
-					{
-						<simple_type_rest>.value = None
-					}
+                        |
+                        <LAMBDA>
+                        {
+                            <simple_type_rest>.value = None
+                        }
 
 <subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> 
 						{
 							if <constant>.tipo != "int":
 								error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
 							else:
-								<subrange_type_rest>.value = newType("subrange", <NUMBER>.lex, <constant>.value)
+                                // la estructura devuelta por newType contendrá el TIPO,
+                                // y las referencias a los valores lowerBound y upperBound
+								<subrange_type_rest>.value = newType("subrange", lowerBound=<NUMBER>, upperBound=<constant>)
 						}
 						| 
+                        // únicamente se puede llegar a este caso con un signo + o -
+                        // así que los identificadores deben ser enteros!
 						<IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
+                        {
+                            if (<IDENTIFIER>.tipo == "int") and (<constant>.tipo == "int"):
+                                // la estructura devuelta por newType contendrá el TIPO,
+                                // y las referencias a los valores lowerBound y upperBound
+                                <subrange_type_rest>.value = newType("subrange", lowerBound=<IDENTIFIER>, upperBound=<constant>)
+                        }
 
-<structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
+<structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type1>
+                        { // dado este caso, si simple_type NO es un subrango, entonces debe ser un TIPO;
+                          // de cualquier manera, alcanza con indicar que dicho tipo definirá el rango de valores
+                          // que pueden ser índice en el array
+                            <structured_type>.value = newType("array", indexRange=<simple_type>, type = <simple_type1>
+                        }
 
 <variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
 
