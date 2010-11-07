@@ -1,18 +1,24 @@
 <program> ::= 	{
 					stStack = newSymbolTableStack()
-					stStack.pushNewSymbolTable()
 				} 
 				<program_heading> 
 				<block>
+                {
+                    addNewID(program_heading.title, type="program")
+                }
 				<END_PROGRAM> <EOF>
 
 <program_heading> ::= <PROGRAM> <IDENTIFIER>
 						{
-							addNewID(<IDENTIFIER>.lex, type="program")
+							<program_heading>.title = <IDENTIFIER>.lex
 						}
 					<SEMI_COLON>
 
-<block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
+<block> ::= { stStack.pushNewSymbolTable() }
+            <constant_definition_part> <block_cons_rest> 
+            | 
+            { stStack.pushNewSymbolTable() }
+            <block_cons_rest>
 
 <block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
 
@@ -235,17 +241,67 @@
 
 <procedure_declaration> ::= <procedure_heading> <block>
 
-<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest>
+<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> 
+                        {
+                            // parameterList es un atributo heredado y sintetizado
+                            <procedure_heading_rest>.parameterList = []
+                        }
+                        <procedure_heading_rest>
+                        {
+                            // <procedure_heading_rest>.parameterList es una lista de listas de parámetros con un tipo asociado; ejemplo:
+                            // [ [p1, p2, p3:int], [p4,p5:char] ]
+                            // dependiendo de la decisión que tomemos, ésto se puede modificar para indicar si dichos grupos de parámetros 
+                            // son pasados por referencia o no... POR EJEMPLO:
+                            // [ [p1, p2, p3: int : referencia], [p4, p5: char: valor] ]
+                            addNewID(<IDENTIFIER>.lex, type = "procedure", parameterList = <procedure_heading_rest>.parameterList)
+                            // nótese que éste ID se agrega en la tabla de nivel "superior", porque se apila una nueva tabla al comenzar
+                            // a parsear <block>
+                        }
 
-<procedure_heading_rest> ::= <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
+<procedure_heading_rest> ::= <SEMI_COLON> 
+                            |
+                            <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
+                            {
+                                <procedure_heading_rest>.procedureParameterList = (<formal_parameter_section>.parameterList, <formal_parameter_section>) + [<formal_parameter_rest>.parameterList]
+                            }
 
-<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest> | <CLOSE_PARENTHESIS> <SEMI_COLON>
+<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest1> 
+                            {
+                                // el resultado va a ser una lista de listas de parámetros, cada una con un tipo asociado
+                                <procedure_heading_rest>.parameterList = (<formal_parameter_section>.parameterList, <formal_parameter_section>) + [<formal_parameter_rest1>.parameterList]
+                            }
+                            |
+                            <CLOSE_PARENTHESIS> <SEMI_COLON>
 
-<formal_parameter_section> ::= <parameter_group> | <VAR> <parameter_group>
+<formal_parameter_section> ::= <parameter_group> 
+                                { 
+                                    <formal_parameter_section>.parameterList = <parameter_group>.parameterList
+                                    <formal_parameter_section>.tipo = <parameter_group>.tipo
+                                }
+                                |
+                                // cómo afecta en la TS que sean por valor o referencia? quizás un booleano porValor, que se consultará
+                                // al momento de asignarle un valor a la variable?
+                                <VAR> <parameter_group>
+                                { 
+                                    <formal_parameter_section>.parameterList = <parameter_group>.parameterList
+                                    <formal_parameter_section>.tipo = <parameter_group>.tipo
+                                }
 
-<parameter_group> ::= <IDENTIFIER> <parameter_group_rest>
+<parameter_group> ::=   <IDENTIFIER> 
+                        { <parameter_group_rest>.parameterList = [] }
+                        <parameter_group_rest>
+                        { 
+                            <parameter_group>.parameterList = <parameter_group_rest>.parameterList.append(<IDENTIFIER>.lex)
+                            <parameter_group>.tipo = <parameter_group_rest>.tipo
+                        }
 
-<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest> | <TYPE_DECLARATION> <IDENTIFIER>
+<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest1> 
+                            {
+                                <parameter_group_rest>.parameterList = <parameter_group_rest1>.parameterList.append(<IDENTIFIER>.lex)
+                                <parameter_group_rest>.tipo = <parameter_group_rest1>.tipo
+                            }
+                            |
+                            <TYPE_DECLARATION> <IDENTIFIER> { <parameter_group_rest>.tipo = <IDENTIFIER>.tipo }
 
 <function_declaration> ::= <function_heading> <block>
 
