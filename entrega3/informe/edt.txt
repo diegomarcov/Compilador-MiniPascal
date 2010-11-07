@@ -97,7 +97,7 @@
                             // incluimos en la tabla de símbolos el tipo, indicando que es un "TIPO" e
                             // incluyendo la estructura que servirá para saber si es un subrango, un array,
                             // o cualquier otro tipo simple
-							addNewID(<IDENTIFIER>.lex, newAttr(type="type", value=<type>.value, isConstant = False)
+							addNewID(<IDENTIFIER>.lex, newAttr(type="type", value=<type>.value))
 						}
 
 <type> ::= <simple_type> 
@@ -198,7 +198,7 @@
                         { // dado este caso, si simple_type NO es un subrango, entonces debe ser un TIPO;
                           // de cualquier manera, alcanza con indicar que dicho tipo definirá el rango de valores
                           // que pueden ser índice en el array
-                            <structured_type>.value = newType("array", indexRange=<simple_type>, type = <simple_type1>
+                            <structured_type>.value = newType("array", indexRange=<simple_type>, type = <simple_type1>)
                         }
 
 <variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
@@ -207,9 +207,27 @@
 
 <variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_part_rest> | <LAMBDA>
 
-<variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
+<variable_declaration> ::= <IDENTIFIER> 
+                            { <variable_declaration_rest>.idList = [] }
+                            // en este caso, idList es un atributo heredado Y sintetizado
+                            // el valor heredado es "lista vacía", y al volver, contendrá todos los ID después de la , en caso de que haya.
+                            <variable_declaration_rest>
+                            {
+                                <variable_declaration>.idList = <variable_declaration_rest>.idList.append(<IDENTIFIER>.lex)
+                                for var in <variable_declaration>.idList:
+                                    // el valor por defecto de las variables en la tabla de símbolos podría ser None
+                                    addNewID(var.lex, newAttr(type=<variable_declaration_rest>.tipo, value=None))
+                            }
 
-<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
+<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest1>
+                                {
+                                    <variable_declaration_rest>.idList = <variable_declaration_rest1>.idList.append(<IDENTIFIER>.lex)
+                                }
+                                |
+                                <TYPE_DECLARATION> <type>
+                                {
+                                    <variable_declaration_rest>.tipo = <type>.value
+                                }
 
 <procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
 
