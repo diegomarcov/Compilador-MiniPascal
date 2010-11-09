@@ -1,0 +1,17 @@
+Clases:
+
+Attrs: el objeto que VA A SER APUNTADO en la tabla de símbolos; es decir, en la tabla de símbolos estará el identificador del tipo/variable/constante, y un objeto Attrs.
+        Atributos:
+        - Clase: atributo que define si el identificador es un "type", una "variable", "function", "procedure" o "constant".
+        - Tipo: es una referencia a un objeto de la clase Type.
+        - Value: el valor de la variable/constante
+        
+Type: 
+        Atributos:
+        - Nombre: el nombre del tipo ("int", "array", "subrange", "function", "char")
+        - indexRange: utilizado en arreglos, indica el rango de valores que pueden ser índices.
+        - elementType: el tipo de elementos que contendrá el arreglo
+        - lowerBound: utilizado en subrangos, indica el valor mínimo.
+        - upperBound: utilizado en subrangos, indica el valor máximo.
+        - parameterList: usado en funciones/procedimientos; es una lista de los TIPOS de los parámetros esperados.
+        - returnType: una referencia a un objeto Type, que indica el tipo devuelto por una función.

@@ -1,5 +1,7 @@
 <program> ::= 	{
 					stStack = newSymbolTableStack()
+                    // falta pushear un nuevo nivel de la tabla, agregar todos los id predefinidos,
+                    // y ver qué hacer con el identificador del programa
 				} 
 				<program_heading> 
 				<block>
@@ -36,50 +38,50 @@
 							{
                                 // addNewID deberá tener un identificador, y un objeto;
                                 // dicho objeto tendrá las propiedades: TIPO, VALOR, y un valor booleano indicando si es constante
-								addNewID(<IDENTIFIER>.lex, newAttr(type=<constant>.tipo, value=<constant>.value, isConstant=True))
+								addNewID(<IDENTIFIER>.lex, <constant>.attr)
 							}
 
 <constant> ::= 	<NUMBER>
 				{
-					<constant>.tipo = "int"
-					<constant>.value = <NUMBER>.lex
+                    <constant>.attr = newAttr(clase="constant", type=newType("int"), value=<NUMBER>.lex)
 				}
 				|
 				<IDENTIFIER>
 				{
 					val = getGlobalValue(<IDENTIFIER>.lex)
 					if (val != None):
-						<constant>.tipo = val.tipo
-						<constant>.value = val.value
+                        <constant>.attr = val
 					else:
 						error("Undeclared identifier " + <IDENTIFIER>.lex)
 				}
 				| 
 				<CHAR> 
 				{
-					<constant>.tipo = "char"
-					<constant>.value = <CHAR>.lex
+                    <constant>.attr = newAttr(clase="constant", type=newType("char"), value=<CHAR>.lex)
 				}
 				| <sign> <constant_rest>
 				{
-					if <constant_rest>.tipo != "int":
+					if <constant_rest>.tipo.nombre != "int":
 						error("Can not apply "+<sign>.lex+" operator to "+<constant_rest>.tipo)
 					else:
-						<constant>.tipo = "int"
-						<constant>.value = <sign>.value * <constant_rest>.value
+                        <constant_rest>.attr.value = <sign>.value * <constant_rest>.attr.value
+                        <constant>.attr = <constant_rest>.attr
+						
 				}
 				
 
 <constant_rest> ::= <NUMBER> 
 					{
-						<constant_rest>.tipo = "int"
-						<constant_rest>.value = <NUMBER>.lex
+						<constant_rest>.attr = newAttr(clase="constant", type=newType("int"), value=<NUMBER>.lex)
 					}
 					|
 					<IDENTIFIER>
 					{
-						<constant_rest>.tipo = <IDENTIFIER>.tipo
-						<constant_rest>.value = <IDENTIFIER>.lex
+                        val = getGlobalValue(<IDENTIFIER>.lex)
+                        if (val != None):
+                            <constant>.attr = val
+                        else:
+                            error("Undeclared identifier " + <IDENTIFIER>.lex)
 					}
 
 <sign> ::= <ADD_OP>
@@ -103,50 +105,54 @@
                             // incluimos en la tabla de símbolos el tipo, indicando que es un "TIPO" e
                             // incluyendo la estructura que servirá para saber si es un subrango, un array,
                             // o cualquier otro tipo simple
-							addNewID(<IDENTIFIER>.lex, newAttr(type="type", value=<type>.value))
+							addNewID(<IDENTIFIER>.lex, newAttr(clase="type", type=<type>.tipo))
 						}
 
 <type> ::= <simple_type> 
             {
-                <type>.value = <simple_type>.value
+                <type>.tipo = <simple_type>.tipo
             }
             |
             <structured_type>
             {
-                <type>.value = <structured_type>.value
+                <type>.tipo = <structured_type>.tipo
             }
 
 <simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> 
 					{
-						if <constant>.tipo != "int":
+						if <constant>.tipo.nombre != "int":
 							error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
 						else:
 							if <NUMBER>.lex <= <constant>.value:
                                 // la estructura devuelta por newType contendrá el TIPO,
                                 // y las referencias a los valores lowerBound y upperBound
-								<simple_type>.value = newType("subrange", lowerBound=<NUMBER>, upperBound=<constant>)
+                                lower = newAttr("constant",type = newType("int"),value=<NUMBER>.lex)
+                                upper = newAttr("constant",type = newType("int"),value=constant.value)
+								<simple_type>.tipo = newType("subrange", lowerBound=lower, upperBound=upper)
 							else:
 								error("Invalid subrange: lower bound must be smaller than upper bound.")
 
 					|
 					<CHAR> <SUBRANGE_SEPARATOR> <constant> 
 					{
-						if <constant>.tipo != "char":
+						if <constant>.tipo.nombre != "char":
 							error("Non compatible subrange bounds (char expected, "+<constant>.tipo+" found).")
 						else:
 							if <CHAR>.lex <= <constant>.value:
                                 // la estructura devuelta por newType contendrá el TIPO,
                                 // y las referencias a los valores lowerBound y upperBound
-								<simple_type>.value = newType("subrange", lowerBound=<NUMBER>, upperBound=<constant>)
+                                lower = newAttr("constant",type = newType("int"),value=<NUMBER>.lex)
+                                upper = newAttr("constant",type = newType("int"),value=constant.value)
+								<simple_type>.tipo = newType("subrange", lowerBound=lower, upperBound=upper)
 							else:
 								error("Invalid subrange: lower bound must be smaller than upper bound.")
 					}
 					| 
 					<sign> <subrange_type_rest> 
 					{
-						<subrange_type_rest>.value.lowerBound = <sign>.value * <subrange_type_rest>.value.lowerBound
-						if <subrange_type_rest>.value.lowerBound <= <subrange_type_rest>.value.upperBound:
-							<simple_type>.value = <subrange_type_rest>.value
+						<subrange_type_rest>.tipo.lowerBound.value = <sign>.value * <subrange_type_rest>.tipo.lowerBound.value
+						if <subrange_type_rest>.value.lowerBound.value <= <subrange_type_rest>.tipo.upperBound.value:
+							<simple_type>.tipo = <subrange_type_rest>.tipo
 						else:
 							error("Invalid subrange: lower bound must be smaller than upper bound.")
 					}
@@ -154,57 +160,58 @@
 					<IDENTIFIER> <simple_type_rest>
 					{
 						//en este caso hay que pedir el tipo a la tabla de tipos
-                        if <simple_type_rest>.value.tipo == "subrange":
-                            if <IDENTIFIER>.tipo == <simple_type_rest>.value.upperBound.tipo:
-                                if <IDENTIFIER>.value <= <simple_type_rest>.value.upperBound.value:
-                                    <simple_type_rest>.value.lowerBound = <IDENTIFIER>
+                        val = getGlobalValue(<IDENTIFIER>.lex)
+                        if <simple_type_rest>.value.tipo == "subrange":                            
+                            if <val.tipo.nombre == <simple_type_rest>.value.nombre:
+                                if val.value <= <simple_type_rest>.value.upperBound.value:
+                                    <simple_type_rest>.value.lowerBound = val
                                 else:
                                     error("Invalid subrange: lower bound must be smaller than upper bound.")
                             else:
-                                error("Non compatible subrange bounds ("+ <IDENTIFIER>.tipo +" expected, "+ <simple_type_rest>.value.upperBound.tipo +" found).")
+                                error("Non compatible subrange bounds ("+ <IDENTIFIER>.tipo +" expected, "+ <simple_type_rest>.value.upperBound.tipo.nombre +" found).")
                         else:
-                            if <simple_type_rest>.value == None:
-                                <simple_type>.tipo = <IDENTIFIER>.tipo
-                                <simple_type>.value = <IDENTIFIER>.value
+                            if <simple_type_rest>.tipo == None:
+                                <simple_type>.tipo = val.tipo
 					}
 
 <simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> 
 						{
                             // la estructura devuelta por newType contendrá el TIPO,
-                            // y las referencias a los valores lowerBound y upperBound
-							<simple_type_rest>.value = newType("subrange", lowerBound=None, upperBound=<constant>)
+                            // que a su vez contendrá las referencias a los valores lowerBound y upperBound
+                            <simple_type_rest>.tipo = newType("subrange", lowerBound=None, upperBound=<constant>.attr)
 						}
                         |
                         <LAMBDA>
                         {
-                            <simple_type_rest>.value = None
+                            <simple_type_rest>.tipo = None
                         }
 
 <subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> 
 						{
-							if <constant>.tipo != "int":
+							if <constant>.attr.tipo.nombre != "int":
 								error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
 							else:
                                 // la estructura devuelta por newType contendrá el TIPO,
                                 // y las referencias a los valores lowerBound y upperBound
-								<subrange_type_rest>.value = newType("subrange", lowerBound=<NUMBER>, upperBound=<constant>)
+								<subrange_type_rest>.tipo = newType("subrange", lowerBound=<NUMBER>.lex, upperBound=<constant>.attr)
 						}
 						| 
                         // únicamente se puede llegar a este caso con un signo + o -
                         // así que los identificadores deben ser enteros!
 						<IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
                         {
-                            if (<IDENTIFIER>.tipo == "int") and (<constant>.tipo == "int"):
+                            id = getGlobalValue(<IDENTIFIER>.lex)
+                            if (id.tipo.nombre == "int") and (<constant>.attr.tipo.nombre == "int"):
                                 // la estructura devuelta por newType contendrá el TIPO,
                                 // y las referencias a los valores lowerBound y upperBound
-                                <subrange_type_rest>.value = newType("subrange", lowerBound=<IDENTIFIER>, upperBound=<constant>)
+                                <subrange_type_rest>.tipo = newType("subrange", lowerBound=id, upperBound=<constant>.attr)
                         }
 
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type1>
                         { // dado este caso, si simple_type NO es un subrango, entonces debe ser un TIPO;
                           // de cualquier manera, alcanza con indicar que dicho tipo definirá el rango de valores
                           // que pueden ser índice en el array
-                            <structured_type>.value = newType("array", indexRange=<simple_type>, type = <simple_type1>)
+                            <structured_type>.tipo = newType("array", indexRange=<simple_type>.tipo, elementType = <simple_type1>.tipo)
                         }
 
 <variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
@@ -222,7 +229,7 @@
                                 <variable_declaration>.idList = <variable_declaration_rest>.idList.append(<IDENTIFIER>.lex)
                                 for var in <variable_declaration>.idList:
                                     // el valor por defecto de las variables en la tabla de símbolos podría ser None
-                                    addNewID(var.lex, newAttr(type=<variable_declaration_rest>.tipo, value=None))
+                                    addNewID(var.lex, newAttr(clase="variable", type=<variable_declaration_rest>.tipo, value=None))
                             }
 
 <variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest1>
@@ -232,7 +239,7 @@
                                 |
                                 <TYPE_DECLARATION> <type>
                                 {
-                                    <variable_declaration_rest>.tipo = <type>.value
+                                    <variable_declaration_rest>.tipo = <type>.tipo
                                 }
 
 <procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
@@ -248,12 +255,9 @@
                         }
                         <procedure_heading_rest>
                         {
-                            // <procedure_heading_rest>.parameterList es una lista de listas de parámetros con un tipo asociado; ejemplo:
-                            // [ [p1, p2, p3:int], [p4,p5:char] ]
-                            // dependiendo de la decisión que tomemos, ésto se puede modificar para indicar si dichos grupos de parámetros 
-                            // son pasados por referencia o no... POR EJEMPLO:
-                            // [ [p1, p2, p3: int : referencia], [p4, p5: char: valor] ]
-                            addNewID(<IDENTIFIER>.lex, type = "procedure", parameterList = <procedure_heading_rest>.parameterList)
+                            // <procedure_heading_rest>.parameterList es una lista de listas de parámetros con un tipo asociado, e indicando si es por refer; ejemplo:
+                            // [ ([p1, p2, p3], int, referencia), ([p4, p5], char, valor) ]
+                            addNewID(<IDENTIFIER>.lex, newAttr(clase = "procedure", type=newType("procedure", parameterList = <procedure_heading_rest>.parameterList)))
                             // nótese que éste ID se agrega en la tabla de nivel "superior", porque se apila una nueva tabla al comenzar
                             // a parsear <block>
                         }
@@ -262,13 +266,13 @@
                             |
                             <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
                             {
-                                <procedure_heading_rest>.procedureParameterList = (<formal_parameter_section>.parameterList, <formal_parameter_section>) + [<formal_parameter_rest>.parameterList]
+                                <procedure_heading_rest>.procedureParameterList = [(<formal_parameter_section>.parameterList, <formal_parameter_section>, <formal_parameter_section>.byReference)] + <formal_parameter_rest>.parameterList
                             }
 
 <formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest1> 
                             {
                                 // el resultado va a ser una lista de listas de parámetros, cada una con un tipo asociado
-                                <procedure_heading_rest>.parameterList = (<formal_parameter_section>.parameterList, <formal_parameter_section>) + [<formal_parameter_rest1>.parameterList]
+                                <procedure_heading_rest>.parameterList = [(<formal_parameter_section>.parameterList, <formal_parameter_section>.tipo, <formal_parameter_section>.byReference)] + <formal_parameter_rest1>.parameterList
                             }
                             |
                             <CLOSE_PARENTHESIS> <SEMI_COLON>
@@ -277,31 +281,38 @@
                                 { 
                                     <formal_parameter_section>.parameterList = <parameter_group>.parameterList
                                     <formal_parameter_section>.tipo = <parameter_group>.tipo
+                                    <formal_parameter_section>.byReference = False
                                 }
                                 |
-                                // cómo afecta en la TS que sean por valor o referencia? quizás un booleano porValor, que se consultará
-                                // al momento de asignarle un valor a la variable?
                                 <VAR> <parameter_group>
                                 { 
                                     <formal_parameter_section>.parameterList = <parameter_group>.parameterList
                                     <formal_parameter_section>.tipo = <parameter_group>.tipo
+                                    <formal_parameter_section>.byReference = True
                                 }
 
 <parameter_group> ::=   <IDENTIFIER> 
                         { <parameter_group_rest>.parameterList = [] }
                         <parameter_group_rest>
                         { 
-                            <parameter_group>.parameterList = <parameter_group_rest>.parameterList.append(<IDENTIFIER>.lex)
+                            <parameter_group>.parameterList = [<IDENTIFIER>.lex] + <parameter_group_rest>.parameterList
                             <parameter_group>.tipo = <parameter_group_rest>.tipo
                         }
 
 <parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest1> 
                             {
-                                <parameter_group_rest>.parameterList = <parameter_group_rest1>.parameterList.append(<IDENTIFIER>.lex)
+                                <parameter_group_rest>.parameterList = [<IDENTIFIER>.lex] + <parameter_group_rest1>.parameterList
                                 <parameter_group_rest>.tipo = <parameter_group_rest1>.tipo
                             }
                             |
-                            <TYPE_DECLARATION> <IDENTIFIER> { <parameter_group_rest>.tipo = <IDENTIFIER>.tipo }
+                            <TYPE_DECLARATION> <IDENTIFIER>
+                            {
+                                id = getGlobalValue(<IDENTIFIER>.lex)
+                                if id.clase = "type":
+                                    <parameter_group_rest>.tipo = id.tipo
+                                else:
+                                    error("Type expected, but " + <IDENTIFIER>.lex + " found.")
+                            }
 
 <function_declaration> ::= <function_heading> <block>
 
@@ -319,9 +330,34 @@
 
 <statement> ::= <simple_statement> | <structured_statement>
 
-<simple_statement> ::= <IDENTIFIER> <simple_statement_rest> | <LAMBDA>
+<simple_statement> ::= <IDENTIFIER> 
+                        {
+                            simple_statement_rest.ID = <IDENTIFIER>.lex
+                        }
+                        <simple_statement_rest> | <LAMBDA>
 
-<simple_statement_rest> ::= <ASSIGNMENT> <expression> | <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+<simple_statement_rest> ::= <ASSIGNMENT> <expression> 
+                            {
+                                identifier = getGlobalValue(<simple_statement_rest>.ID)
+                                if identifier.clase == "variable":
+                                    if checkTypes(identifier.tipo, <expression>.tipo):
+                                        // se asigna el valor de la expresión a la variable
+                                    else:
+                                        error("Incompatible types: "+identifier.tipo.nombre+" expected, but "+<expression>.tipo.nombre+" found.")
+                                else:
+                                    error("Left side of assignment must be a variable!")
+                            }
+                            |
+                            <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression1>
+                            {
+                                if checkTypes(id.tipo, newType("array", indexRange=<expression>.tipo, elementType=<expression1>.tipo)):
+                                    // estamos asignando una expresión a un elemento de un arreglo
+                                else:
+                                    // habría que controlar este mensaje de error: puede ser un problema del índice, o de la expresión que asignamos
+                                    error("Non compatible types in assignment: "
+                            }
+                            |
+                            <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
 
 <component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
 
