@@ -1,6 +1,4 @@
-constantes, crear objeto nuevo
 tipos: cuando usamos typedeclaration controlar que sea un tipo.
-tamaño de los tipos, para despues usar en los registros de activación
 heredar si un parametro es un parametro por referencia, para checkear que la expresion es solo una variable
 mirar todos loscasos en el uso de variables en las expresiones.
 checkear el retorno de funcion. fijar su lugar en el registro de activacion. pensar si ponerlo en la tabla de simbolos de la funcion

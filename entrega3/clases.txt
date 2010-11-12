@@ -15,3 +15,20 @@ Type:
         - upperBound: utilizado en subrangos, indica el valor máximo.
         - parameterList: usado en funciones/procedimientos; es una lista de los TIPOS de los parámetros esperados.
         - returnType: una referencia a un objeto Type, que indica el tipo devuelto por una función.
+		
+ahora va a ser:
+
+Tipo:--Nombre: el nombre del tipo ("int", "array", "subrange", "function", "char") (se puede obviar por el nombre de la clase...
+|    |-Tamaño:
+|-Simple:
+| |-Subrango:--upperBound: utilizado en subrangos, indica el valor máximo.
+| | |        |-lowerBound: utilizado en subrangos, indica el valor mínimo.
+| | |-Caracter:Va a heredar de caracter simple
+| | |-Entero:Va a heredar de entero simple
+| |-Caracter
+| |-Entero
+|-Estructurado
+| |-Arreglo:--indexRange: utilizado en arreglos, indica el rango de valores que pueden ser índices.
+|           |-elementType: el tipo de elementos que contendrá el arreglo
+|-Procedimiento:--parameterList: usado en funciones/procedimientos; es una lista de los TIPOS de los parámetros esperados.
+  |-Funcion:--returnType: una referencia a un objeto Type, que indica el tipo devuelto por una función.

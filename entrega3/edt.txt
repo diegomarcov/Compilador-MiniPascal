@@ -6,7 +6,7 @@
 				<program_heading> 
 				<block>
                 {
-                    addNewID(program_heading.title, type="program")
+                    addNewID(program_heading.title, Program())
                 }
 				<END_PROGRAM> <EOF>
 
@@ -37,32 +37,41 @@
 <constant_definition> ::= <IDENTIFIER> <EQUAL> <constant> 
 							{
                                 // addNewID deberá tener un identificador, y un objeto;
-                                // dicho objeto tendrá las propiedades: TIPO, VALOR, y un valor booleano indicando si es constante
+                                // dicho objeto tendrá las propiedades: TIPO, VALOR, y un valor booleano que indica si es constante
 								addNewID(<IDENTIFIER>.lex, <constant>.attr)
 							}
 
 <constant> ::= 	<NUMBER>
 				{
-                    <constant>.attr = newAttr(clase="constant", type=newType("int"), value=<NUMBER>.lex)
+                    <constant>.attr = newAttr(clase="constant", type=Entero(), value=<NUMBER>.lex)
 				}
 				|
 				<IDENTIFIER>
 				{
 					val = getGlobalValue(<IDENTIFIER>.lex)
-					if (val != None):
-                        <constant>.attr = val
+					if ((val != None)):
+						if (val.clase=="constant"):
+							<constant>.attr = copy(val) //copio el attr
+						else:
+							if (val.clase=="variable"):
+								if val.tipo.instancia(Simple):
+									<constant>.attr = Attr(clase="constant",type = val.tipo, value=val.value)
+								else:
+									error(<IDENTIFIER>.lex + "must be of a simple type") //no se si está bien dicho eso
+							else:
+								error(<IDENTIFIER>.lex + "is not a valid identifier")
 					else:
 						error("Undeclared identifier " + <IDENTIFIER>.lex)
 				}
 				| 
 				<CHAR> 
 				{
-                    <constant>.attr = newAttr(clase="constant", type=newType("char"), value=<CHAR>.lex)
+                    <constant>.attr = newAttr(clase="constant", type=Char(), value=<CHAR>.lex)
 				}
 				| <sign> <constant_rest>
 				{
-					if <constant_rest>.tipo.nombre != "int":
-						error("Can not apply "+<sign>.lex+" operator to "+<constant_rest>.tipo)
+					if !<constant_rest>.tipo.instancia(Entero):
+						error("Can not apply "+<sign>.lex+" operator to "+<constant_rest>.tipo) //como redefino __str__ de todos los tipos puedo hacer cosas como esa
 					else:
                         <constant_rest>.attr.value = <sign>.value * <constant_rest>.attr.value
                         <constant>.attr = <constant_rest>.attr
@@ -72,16 +81,22 @@
 
 <constant_rest> ::= <NUMBER> 
 					{
-						<constant_rest>.attr = newAttr(clase="constant", type=newType("int"), value=<NUMBER>.lex)
+						<constant_rest>.attr = newAttr(clase="constant", type=Entero(), value=<NUMBER>.lex)
 					}
 					|
 					<IDENTIFIER>
 					{
-                        val = getGlobalValue(<IDENTIFIER>.lex)
-                        if (val != None):
-                            <constant>.attr = val
-                        else:
-                            error("Undeclared identifier " + <IDENTIFIER>.lex)
+						val = getGlobalValue(<IDENTIFIER>.lex)
+						if ((val != None)):
+							if (val.clase=="constant"):
+								<constant>.attr = copy(val) //copio el attr
+							else:
+								if (val.clase=="variable"):
+									<constant>.attr = Attr(clase="constant",type = val.tipo, value=val.value)
+								else:
+									error(<IDENTIFIER>.lex + "is not a valid identifier")
+						else:
+							error("Undeclared identifier " + <IDENTIFIER>.lex)
 					}
 
 <sign> ::= <ADD_OP>
@@ -126,9 +141,9 @@
 							if <NUMBER>.lex <= <constant>.value:
                                 // la estructura devuelta por newType contendrá el TIPO,
                                 // y las referencias a los valores lowerBound y upperBound
-                                lower = newAttr("constant",type = newType("int"),value=<NUMBER>.lex)
-                                upper = newAttr("constant",type = newType("int"),value=constant.value)
-								<simple_type>.tipo = newType("subrange", lowerBound=lower, upperBound=upper)
+                                lower = newAttr("constant",type = Entero(),value=<NUMBER>.lex) //no se si tiene sentido mandar attrs, porque ya sabemos que son del mismo tipo... estamos haciendo los controles antes de agregarlos
+                                upper = newAttr("constant",type = Entero(),value=constant.value)
+								<simple_type>.tipo = SubEntero(lowerBound=lower, upperBound=upper)
 							else:
 								error("Invalid subrange: lower bound must be smaller than upper bound.")
 
@@ -141,9 +156,9 @@
 							if <CHAR>.lex <= <constant>.value:
                                 // la estructura devuelta por newType contendrá el TIPO,
                                 // y las referencias a los valores lowerBound y upperBound
-                                lower = newAttr("constant",type = newType("int"),value=<NUMBER>.lex)
-                                upper = newAttr("constant",type = newType("int"),value=constant.value)
-								<simple_type>.tipo = newType("subrange", lowerBound=lower, upperBound=upper)
+                                lower = newAttr("constant",type = Caracter(),value=<CHAR>.lex)
+                                upper = newAttr("constant",type = Caracter(),value=constant.value)
+								<simple_type>.tipo = SubCaracter(lowerBound=lower, upperBound=upper)
 							else:
 								error("Invalid subrange: lower bound must be smaller than upper bound.")
 					}
@@ -161,17 +176,20 @@
 					{
 						//en este caso hay que pedir el tipo a la tabla de tipos
                         val = getGlobalValue(<IDENTIFIER>.lex)
-                        if <simple_type_rest>.value.tipo == "subrange":                            
-                            if <val.tipo.nombre == <simple_type_rest>.value.nombre:
-                                if val.value <= <simple_type_rest>.value.upperBound.value:
-                                    <simple_type_rest>.value.lowerBound = val
-                                else:
-                                    error("Invalid subrange: lower bound must be smaller than upper bound.")
-                            else:
-                                error("Non compatible subrange bounds ("+ <IDENTIFIER>.tipo +" expected, "+ <simple_type_rest>.value.upperBound.tipo.nombre +" found).")
+						if <simple_type_rest>.tipo is not None:
+							if <simple_type_rest>.tipo.instancia(Subrango):
+								if val.tipo.nombre == <simple_type_rest>.value.nombre:
+									if val.value <= <simple_type_rest>.value.upperBound.value:
+										<simple_type_rest>.value.lowerBound = val
+									else:
+										error("Invalid subrange: lower bound must be smaller than upper bound.")
+								else:
+									error("Non compatible subrange bounds ("+ <IDENTIFIER>.tipo +" expected, "+ <simple_type_rest>.value.upperBound.tipo.nombre +" found).")
+							else:
+								//esto no puede pasar
+								pass
                         else:
-                            if <simple_type_rest>.tipo == None:
-                                <simple_type>.tipo = val.tipo
+							<simple_type>.tipo = val.tipo
 					}
 
 <simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> 

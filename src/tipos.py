@@ -19,6 +19,9 @@ class Caracter(Simple):
 		
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or tipo == SubCaracter
+		
+	def __str__(self):
+		return "Character"
 	
 class Entero(Simple):
 	def __init__(self):
@@ -27,12 +30,18 @@ class Entero(Simple):
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or tipo == SubEntero
 		
+	def __str__(self):
+		return "Integer"
+		
 class Booleano(Simple):
 	def __init__(self):
 		Simple.__init__(self)
 		
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or tipo == SubBooleano
+		
+	def __str__(self):
+		return "Boolean"
 	
 class Subrango(Simple):
 	#upperBound y lowerBound
@@ -46,13 +55,22 @@ class SubCaracter(Subrango,Caracter):
 	def __init__(self):
 		Simple.__init__(self)
 		
+	def __str__(self):
+		return "Character subrange"
+		
 class SubEntero(Subrango,Entero):
 	def __init__(self):
 		Simple.__init__(self)
 		
+	def __str__(self):
+		return "Integer subrange"
+		
 class SubBooleano(Subrango,Booleano):
 	def __init__(self):
 		Simple.__init__(self)
+		
+	def __str__(self):
+		return "Boolean subrange"
 		
 class Estructurado(Tipo):
 	pass
@@ -61,10 +79,16 @@ class Arreglo(Estructurado):
 	def __init__(self,tamanio):
 		self.tamanio=tamanio
 		
+	def __str__(self):
+		return "Array"
+		
 class Procedimiento(Elemento): #no puse que hereda de tipo porque no es un tipo
 	#params:lista de parametros (son tipos)
 	def __init__(self,params):
 		self.params = params
+		
+	def __str__(self):
+		return "Procedure"
 		
 class Funcion(Procedimiento):
 	#ret:tipo que devuelve
@@ -74,9 +98,13 @@ class Funcion(Procedimiento):
 		
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or self.ret==tipo
+		
+	def __str__(self):
+		return ret
 	
 class Program(Elemento):#no puse que hereda de tipo porque no es un tipo
-	pass
+	def __str__(self):
+		return "Program identifier"
 	
 if __name__ == '__main__':
 	#testeo de la herencia
