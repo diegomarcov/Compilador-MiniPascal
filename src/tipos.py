@@ -76,8 +76,12 @@ class Estructurado(Tipo):
 	pass
 	
 class Arreglo(Estructurado):
-	def __init__(self,tamanio):
+	#index: tipo del indice
+	#element: tipo de los elementos
+	def __init__(self,tamanio,index,element):
 		self.tamanio=tamanio
+		self.index = index
+		self.element = element
 		
 	def __str__(self):
 		return "Array"
