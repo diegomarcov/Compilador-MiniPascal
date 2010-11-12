@@ -11,3 +11,4 @@ dist/
 /*/informe/*.pdf
 .project
 .pydevproject
+*.bak
