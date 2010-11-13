@@ -288,6 +288,9 @@
                         {
                             # <procedure_heading_rest>.parameterList es una lista de listas de parámetros con un tipo asociado, e indicando si es por refer; ejemplo:
                             # [ ([p1, p2, p3], int, referencia), ([p4, p5], char, valor) ]
+							# CAMBIADOOO
+							# para facilidad en la parte de las expresiones, puse que la lista va a tener una serie de tuplas con parametro, tipo y booleano que indica si es por referencia
+							# [(p1,int,referencia),(p2,int, referencia)...]
                             addNewID(<IDENTIFIER>.lex, newAttr(clase = "procedure", Procedimiento( parameterList = <procedure_heading_rest>.parameterList)))
                             # nótese que éste ID se agrega en la tabla de nivel "superior", porque se apila una nueva tabla al comenzar
                             # a parsear <block>
@@ -297,29 +300,29 @@
                             |
                             <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
                             {
-                                <procedure_heading_rest>.procedureParameterList = [(<formal_parameter_section>.parameterList, <formal_parameter_section>, <formal_parameter_section>.byReference)] + <formal_parameter_rest>.parameterList
+                                <procedure_heading_rest>.parameterList = <formal_parameter_section>.parameterList + <formal_parameter_rest>.parameterList
                             }
 
 <formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest1> 
                             {
                                 # el resultado va a ser una lista de listas de parámetros, cada una con un tipo asociado
-                                <procedure_heading_rest>.parameterList = [(<formal_parameter_section>.parameterList, <formal_parameter_section>.tipo, <formal_parameter_section>.byReference)] + <formal_parameter_rest1>.parameterList
+                                <procedure_heading_rest>.parameterList = <formal_parameter_section>.parameterList + <formal_parameter_rest1>.parameterList
                             }
                             |
                             <CLOSE_PARENTHESIS> <SEMI_COLON>
 
 <formal_parameter_section> ::= <parameter_group> 
                                 { 
-                                    <formal_parameter_section>.parameterList = <parameter_group>.parameterList
-                                    <formal_parameter_section>.tipo = <parameter_group>.tipo
-                                    <formal_parameter_section>.byReference = False
+									<formal_parameter_section>.parameterList=[]
+									for x in <parameter_group>.parameterList:
+										<formal_parameter_section>.parameterList += (x,<parameter_group>.tipo,False)
                                 }
                                 |
                                 <VAR> <parameter_group>
                                 { 
-                                    <formal_parameter_section>.parameterList = <parameter_group>.parameterList
-                                    <formal_parameter_section>.tipo = <parameter_group>.tipo
-                                    <formal_parameter_section>.byReference = True
+									<formal_parameter_section>.parameterList=[]
+									for x in <parameter_group>.parameterList:
+										<formal_parameter_section>.parameterList += (x,<parameter_group>.tipo,True)
                                 }
 
 <parameter_group> ::=   <IDENTIFIER> 
@@ -410,9 +413,11 @@
 
 <simple_statement> ::= <IDENTIFIER> 
                         {
-                            simple_statement_rest.ID = <IDENTIFIER>.lex
+                            <simple_statement_rest>.ID = <IDENTIFIER>.lex
                         }
-                        <simple_statement_rest> | <LAMBDA>
+                        <simple_statement_rest> 
+						| 
+						<LAMBDA>
 
 <simple_statement_rest> ::= <ASSIGNMENT> <expression> 
                             {
@@ -422,38 +427,180 @@
                                         # se asigna el valor de la expresión a la variable
                                     else:
                                         error("Incompatible types: "+identifier.tipo.nombre+" expected, but "+<expression>.tipo.nombre+" found.")
-                                else:
+                                elif identifier.clase == "funcion" and <simple_statement_rest>.ID==<simple_statement_rest>.functionID: 	
+									#este es el caso que se le asigne un return a la funcion... habria que propagar siempre el functionID
+									# se asigna el valor de la expresion al retorno de funcion
+									
+								else:
                                     error("Left side of assignment must be a variable!")
                             }
                             |
                             <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression1>
                             {
-                                if checkTypes(id.tipo, newType("array", indexRange=<expression>.tipo, elementType=<expression1>.tipo)):
-                                    # estamos asignando una expresión a un elemento de un arreglo
+                                if checkTypes(id.tipo, Arreglo(indexRange=<expression>.tipo, elementType=<expression1>.tipo)):
+                                    # estamos asignando una expresión que estará en la pila a un elemento de un arreglo
                                 else:
                                     # habría que controlar este mensaje de error: puede ser un problema del índice, o de la expresión que asignamos
-                                    error("Non compatible types in assignment: "
+                                    error("Non compatible types in assignment"
                             }
                             |
-                            <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+                            <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> 
+							{
+								identifier = getGlobalValue(<simple_statement_rest>.ID)
+								if identifier.clase== "procedure":
+									#armar el nuevo entorno, con su registro de activacion, guardar las variables, y apuntar la ejecucion al codigo del procedimiento
+								else:
+									error(<simple_statement_rest>.ID+ " is not a procedure")
+									
+							}
+							| 
+							<LAMBDA>
+							{
+								identifier = getGlobalValue(<simple_statement_rest>.ID)
+								if identifier.clase== "procedure":
+									#armar el nuevo entorno, con su registro de activacion, guardar las variables, y apuntar la ejecucion al codigo del procedimiento
+								else:
+									error(<simple_statement_rest>.ID+ " is not a procedure")
+							}
 
-<component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
+<expression> ::= <simple_expression> 
+				{
+					<expression_rest>.attr = <simple_expression>.attr
+					#expression_rest debe heredar el valor de simple_expression
+					
+				}
+				<expression_rest>
+				{
+					<expression_rest>.attr = <expression_rest>.attr
+				}
+				
 
-<expression> ::= <simple_expression> <expression_rest>
+<expression_rest> ::= <relational_operator> <simple_expression> 
+					  {
+						if checkTypes(<expression_rest>.attr.tipo,<simple_expression>.attr.tipo) and <simple_expression>.attr.tipo.instancia(Simple):
+							#se debe apilar el valor de simple_expression, y luego aplicar el operador relacional de relational_operator
+						else:
+							error("invalid types")
+					  }
+					  | 
+					  <LAMBDA>
 
-<expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
+<simple_expression> ::= <term> 
+						{
+							<simple_expression_other>.attr=<term>.attr
+						}
+						<simple_expression_other> 
+						{
+							<simple_expression>.attr = <simple_expression_other>.attr
+						}
 
-<simple_expression> ::= <term> <simple_expression_other> | <sign> <term> <simple_expression_other>
+<simple_expression_other> ::= <adding_operator> <term> 
+							  {
+								if checkTypes(<simple_expression_other>.attr.tipo,<term>.attr.tipo) and <term>.attr.tipo.instancia(<adding_operator>.tipo):
+									# apilar term, y aplicar adding_operator
+									<simple_expression_other1>.attr = newAttr(tipo=<adding_operator>.tipo,clase="subexpresion")
+								else:
+									error("invalid types") #estos mensajes pueden mejorar
+							  }
+							  <simple_expression_other1> 
+							  {	
+								<simple_expression_other>.attr = <simple_expression_other1>.attr
+							  }
+							  | 
+							  <LAMBDA>
 
-<simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
+<term> ::= <factor>
+		   {
+			<term_other>.attr = <factor>.attr
+		   }
+		   <term_other>
+		   {
+			<term>.attr = <term_other>.attr
+		   }
 
-<term> ::= <factor> <term_other>
+<term_other> ::= <multiplying_operator> <factor> 
+				 {
+					if checkTypes(<term_other>.attr.tipo,<factor>.attr.tipo) and <factor>.attr.tipo.instancia(multiplying_operator.tipo):
+						#apilar factor, aplicar el operador
+						<term_other1>.attr = newAttr(tipo=<multiplying_operator>.tipo,clase="subexpresion")
+					else:
+						error("invalid types")
+				 }
+				 <term_other1> 
+				 {
+					<term_other>.attr = <term_other1>.attr
+				 }
+				 | 
+				 <LAMBDA>
 
-<term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
+<factor> ::= <IDENTIFIER> 
+			 {
+				<factor_rest>.id=<IDENTIFIER>.lex
+			 }
+			 <factor_rest> 
+			 {
+				<factor>.attr=<factor_rest>.attr
+			 }
+			 | 
+			 <NUMBER> 
+			 {
+				<factor>.attr = newAttr(valor=<NUMBER>.lex,tipo=Entero(),clase="literal")
+			 }
+			 | 
+			 <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> 
+			 {
+				<factor>.attr = <expression>.attr
+			 }
+			 | 
+			 <NOT_LOGOP> <factor1> 
+			 {
+				if <factor1>.attr.tipo.instancia(Booleano):
+					<factor>.attr = newAttr(tipo=Booleano(),clase="subexpresion")
+				else:
+					error("Boolean expected but "+<factor1>.tipo+" found")
+			 }
+			 | 
+			 <CHAR>
+			 {
+				<factor>.attr = newAttr(valor=<CHAR>.lex,tipo=Caracter(),clase="literal")
+			 }
+			 |
+			 <sign> <factor1>
+			 {
+				if <factor1>.attr.tipo.instancia(Entero):
+					<factor>.attr = newAttr(tipo=Entero(),clase="subexpresion")
+				else:
+					error("Integer expected but  "+<factor1>.tipo+" found")
+			 }
+			 # modifique esto de la gramatica y simple_expression porque sino habia que heredar el signo y era un quilombo
 
-<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
-
-<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> 
+				  {
+					array = getGlobalValue(<factor_rest>.id)
+					if array.clase=="variable" and array.tipo.instancia(Arreglo):
+						if checkTypes(<expression>.attr.tipo,array.tipo.index):
+							#chequear que el resultado de la expresion este dentro del rango, sino tirar index out of bounds
+							#devolver el contenido del arreglo
+							<factor_rest>.attr = newAttr(tipo=array.tipo.element,clase="subexpresion")
+						else:
+							error(array.tipo + " expected as index but " + <expression>.attr.tipo + " found")
+					else:
+						error(<factor_rest>.id + " is not a valid array")
+						
+				  }
+				  | 
+				  <OPEN_PARENTHESIS> 
+				  {
+					fun = getGlobalValue(<factor_rest>.id)
+					if fun.clase=="function":
+						parameterList = fun.tipo.parameterList
+						<actual_parameter>.expected = parameterList[0][1:2] #esto seria el tipo esperado por el parametro
+					else:
+						error(<factor_rest>.id + " is not a function")
+				  } 
+				  <actual_parameter> <actual_parameter_rest> 
+				  | 
+				  <LAMBDA>
 
 <actual_parameter> ::= <expression>
 

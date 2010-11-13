@@ -542,7 +542,7 @@ Luego de esta serie de pasos, se llegó a la siguiente gramática:
 
 <expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
 
-<simple_expression> ::= <term> <simple_expression_other> | <sign> <term> <simple_expression_other>
+<simple_expression> ::= <term> <simple_expression_other> 
 
 <simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
 
@@ -550,7 +550,7 @@ Luego de esta serie de pasos, se llegó a la siguiente gramática:
 
 <term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
 
-<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
+<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR> | <sign> <factor>
 
 <factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
 
