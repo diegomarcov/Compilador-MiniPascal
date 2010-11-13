@@ -601,8 +601,21 @@
 				  <actual_parameter> <actual_parameter_rest> 
 				  | 
 				  <LAMBDA>
+				  {
+					id = getGlobalValue(<factor_rest>.id)
+					if id.clase=="function":
+						#llamar a la funcion
+						<factor_rest>.attr = 
+				  }
 
-<actual_parameter> ::= <expression>
+<actual_parameter> ::= {
+						<expression>.porReferencia=<actual_parameter>.expected[1]#aca viene el booleano
+					   }
+					   <expression>
+					   {
+						if <actual_parameter>.expected[1]:
+							<actual_parameter>. 
+					   }
 
 <actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
 
@@ -624,4 +637,4 @@
 
 <repetitive_statement> ::= <WHILE> <expression> <DO> <repetitive_statement_rest>
 
-<repetitive_statement_rest> ::= <statement> | <LAMBDA>
+<repetitive_statement_rest> ::= <statement> | <LAMBDA> 
