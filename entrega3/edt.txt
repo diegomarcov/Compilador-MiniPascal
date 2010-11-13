@@ -606,6 +606,7 @@
 				  <actual_parameter_rest> 
 				  {
 					# llamar a la funcion con los parametros que estaran debidamente apilados
+					<factor_rest>.attr=newAttr(valor="""valor donde se colocara el resultado de la funcion"""tipo=id.tipo.ret,clase="subexpresion")
 				  }
 				  | 
 				  <LAMBDA>
@@ -734,20 +735,43 @@
 							<EQUAL>
 							{
 								<multiplying_operator>.op = "CMIG"
-								<multiplying_operator>.tipo = Simple()
+								<multiplying_operator>.tipo = Tipo()#no estoy seguro si se pueden comparar tipos estructurados tmb ...
 							
 							}
 
-<procedure_statement> ::= <IDENTIFIER> <procedure_statement_rest>
-
-<procedure_statement_rest> ::= <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
-
 <structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
 
-<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_other>
+<conditional_statement> ::= <IF> <expression> 
+							{
+								if <expression>.tipo.instancia(Booleano):
+									#apilar su valor en la lista..
+									#aplicar desvio si falso a la etiqueta de despues del if
+								else:
+									error("Boolean expected")
+							}
+							<THEN> <statement> <conditional_statement_other>
 
-<conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
+<conditional_statement_other> ::= <ELSE>
+								  {
+									#desvio si verdadero a la etiqueta de despues del if
+								  } 
+								  <statement> 
+								  | 
+								  <LAMBDA>
 
-<repetitive_statement> ::= <WHILE> <expression> <DO> <repetitive_statement_rest>
-
-<repetitive_statement_rest> ::= <statement> | <LAMBDA> 
+<repetitive_statement> ::= <WHILE> 
+							{
+								#poner un label de inicio de expresion
+							}
+							<expression> 
+							{
+								if <expression>.tipo.instancia(Booleano):
+									#apilar su valor en la lista..
+									#aplicar desvio si falso a la etiqueta de despues del while
+								else:
+									error("Boolean expected")
+							}
+							<DO> <statement> #saque el repetitive_statement_rest porque statement ya tiene un lambda... o sea, teniamos una gramatica ambigua
+							{
+								#en el apunte de mepa dice que va desvio si verdadero. Para mi es desvio siempre... al label de inicio del while
+							}

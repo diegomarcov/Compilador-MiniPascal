@@ -564,19 +564,13 @@ Luego de esta serie de pasos, se llegó a la siguiente gramática:
 
 <relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <NOT_EQUAL_OP> | <EQUAL>
 
-<procedure_statement> ::= <IDENTIFIER> <procedure_statement_rest>
-
-<procedure_statement_rest> ::= <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
-
 <structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
 
 <conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_other>
 
 <conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
 
-<repetitive_statement> ::= <WHILE> <expression> <DO> <repetitive_statement_rest>
-
-<repetitive_statement_rest> ::= <statement> | <LAMBDA>
+<repetitive_statement> ::= <WHILE> <expression> <DO> <statement>
 \end{verbatim}
 
 \section{¿Es LL(1)?}
