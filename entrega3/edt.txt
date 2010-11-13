@@ -581,7 +581,7 @@
 						if checkTypes(<expression>.attr.tipo,array.tipo.index):
 							#chequear que el resultado de la expresion este dentro del rango, sino tirar index out of bounds
 							#devolver el contenido del arreglo
-							<factor_rest>.attr = newAttr(tipo=array.tipo.element,clase="subexpresion")
+							<factor_rest>.attr = newAttr(valor="""valor de la posicion del arreglo""",tipo=array.tipo.element,clase="subexpresion")
 						else:
 							error(array.tipo + " expected as index but " + <expression>.attr.tipo + " found")
 					else:
@@ -598,32 +598,145 @@
 					else:
 						error(<factor_rest>.id + " is not a function")
 				  } 
-				  <actual_parameter> <actual_parameter_rest> 
+				  <actual_parameter>
+				  {
+					<actual_parameter_rest>.parameterList=parameterList[1:] #le paso los siguientes parametros
+					#colocar el parametro en su debido lugar en la pila
+				  }
+				  <actual_parameter_rest> 
+				  {
+					# llamar a la funcion con los parametros que estaran debidamente apilados
+				  }
 				  | 
 				  <LAMBDA>
 				  {
 					id = getGlobalValue(<factor_rest>.id)
 					if id.clase=="function":
-						#llamar a la funcion
-						<factor_rest>.attr = 
+						#llamar a la funcion sin parametros
+						<factor_rest>.attr = newAttr(valor="""valor donde se colocara el resultado de la funcion"""tipo=id.tipo.ret,clase="subexpresion")
+					elif id.tipo.instancia(Tipo): #es una variable o una constante.
+						# se coloca el valor del id en la pila
+						<factor_rest>.attr = id
+					else:
+						error("Function, variable or constant expected, but "+id.tipo+" found")
+					
 				  }
 
 <actual_parameter> ::= {
 						<expression>.porReferencia=<actual_parameter>.expected[1]#aca viene el booleano
+						#capaz que no sea necesario, si se viene levantando el attr con la clase variable...
 					   }
 					   <expression>
 					   {
 						if <actual_parameter>.expected[1]:
-							<actual_parameter>. 
+							if <expression>.attr.clase=="variable":
+								<actual_parameter>.attr=<expression>.attr
+							else:
+								error("Variable expected")
+						else:
+							<actual_parameter>.attr=<expression>.attr
 					   }
 
-<actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
+<actual_parameter_rest> ::= <COMMA> 
+							{
+								if len(<actual_parameter_rest>.parameterList)>0:
+									<actual_parameter>.expected = <actual_parameter_rest>.parameterList[0][1:2]
+								else:
+									error("More parameters than expected")
+							}
+							<actual_parameter>
+							{
+								#colocar el parametro en la pila
+								<actual_parameter_rest>.parameterList=parameterList[1:]
+							}
+							<actual_parameter_rest> 
+							| 
+							<CLOSE_PARENTHESIS>
+							{
+								if len(<actual_parameter_rest>.parameterList)>0:
+									error("Less parameters than expected")
+							}
 
-<multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
+<multiplying_operator> ::= <MULTIPLY_OP> 
+							{
+								<multiplying_operator>.op = "MULT"
+								<multiplying_operator>.tipo = Entero()
+							
+							}
+							| 
+							<DIV_OP> 
+							{
+								<multiplying_operator>.op = "DIVI"
+								<multiplying_operator>.tipo = Entero()
+							}
+							| 
+							<AND_LOGOP>
+							{
+								<multiplying_operator>.op = "DISJ"
+								<multiplying_operator>.tipo = Booleano()
+							}
 
-<adding_operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
+<adding_operator> ::= <ADD_OP> 
+						{
+							<multiplying_operator>.op = "SUMA"
+							<multiplying_operator>.tipo = Entero()
+						
+						}
+						|
+						<MINUS_OP> 
+						{
+							<multiplying_operator>.op = "SUST"
+							<multiplying_operator>.tipo = Entero()
+						
+						}
+						|
+						<OR_LOGOP>
+						{
+							<multiplying_operator>.op = "CONJ"
+							<multiplying_operator>.tipo = Booleano()
+						
+						}
 
-<relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <NOT_EQUAL_OP> | <EQUAL>
+<relational_operator> ::= <LESS_OP> 
+							{
+								<multiplying_operator>.op = "CMME"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
+							| 
+							<LESS_EQUAL_OP> 	
+							{
+								<multiplying_operator>.op = "CMNI"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
+							| 
+							<GREATER_OP> 
+							{
+								<multiplying_operator>.op = "CMMA"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
+							| 
+							<GREATER_EQUAL_OP> 
+							{
+								<multiplying_operator>.op = "CMYI"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
+							| 
+							<NOT_EQUAL_OP> 
+							{
+								<multiplying_operator>.op = "CMDG"
+								<multiplying_operator>.tipo = Tipo() #no estoy seguro si se pueden comparar tipos estructurados tmb ...
+							}
+							| 
+							<EQUAL>
+							{
+								<multiplying_operator>.op = "CMIG"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
 
 <procedure_statement> ::= <IDENTIFIER> <procedure_statement_rest>
 
