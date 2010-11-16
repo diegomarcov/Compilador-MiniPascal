@@ -1,10 +1,23 @@
-import sys
+﻿import sys
 import argparse, io
 # sys.path.append('../entrega2/')
 from lexer.lexan import LexAn,LexError
 from utils import VortexWriter,SynError,UnexpectedTokenError
+from tipos import *
 
 class SynAn():
+
+	#stStack: pila de tablas de simbolos
+	
+	#########
+	def addNewID(self,key,element):
+		st = self.stStack[-1]
+		if not (key in st):
+			st[key] = element
+		else:
+			pass #errorrrrrrrrrrr
+	#########
+
 	def __init__(self,lexer,debug,outputFile):
 		self.lexer = lexer
 		if debug:
@@ -17,11 +30,19 @@ class SynAn():
 
 	def program(self):
 		self.out.write('In program\n')
-		self.program_heading()
-		self.block()
+		###########
+		self.stStack = [ ]
+		idPrograma = Ref()
+		###########
+		
+		self.program_heading(idPrograma)
+		self.block(idPrograma.ref)
 		if self.lexer.getNextToken() == '<END_PROGRAM>':
 			if self.lexer.getNextToken() == '<EOF>':
 				self.out.write('Success\n')
+				###########
+				# finalizar el programa
+				###########
 				return 'The program is syntactically correct.'
 			else: 
 				raise SynError(self.lexer.errorLeader(),msg="There are characters after the last character ('.')")
@@ -30,10 +51,13 @@ class SynAn():
 			# self.thislexeme = self.lexer.getCurrentLexeme()
 			self.synErr('"."')
 
-	def program_heading(self):
+	def program_heading(self,idPrograma):
 		self.out.write('In program_heading\n')
 		if self.lexer.getNextToken() == '<PROGRAM>':
 			if self.lexer.getNextToken() == '<IDENTIFIER>':
+				#############
+				idPrograma.ref = self.lexer.getLexeme()
+				#############
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
 				else:
@@ -43,10 +67,19 @@ class SynAn():
 		else:
 			self.synErr('"program"')
 
-	def block(self):
+	def block(self,idPrograma=None):
 		self.out.write('In block\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write(self.currentToken)
+		################
+		st = self.stStack[-1]
+		st['true']  = Attr(valor=1,tipo=Booleano(),clase="constant")
+		st['false'] = Attr(valor=0,tipo=Booleano(),clase="constant")
+		#procedimientos...
+		
+		if idPrograma!=None:
+			st[idPrograma] = Attr(valor=idPrograma,tipo=Programa(),clase="program")
+		################
 		if self.currentToken == "<CONST>":
 			self.pushLexeme()
 			self.constant_definition_part()
@@ -54,8 +87,6 @@ class SynAn():
 		else:
 			self.pushLexeme()
 			self.block_cons_rest()
-			
-		# or self.currentToken == "<VAR>" or self.currentToken == "<PROCEDURE>" or self.currentToken == "<FUNCTION>":
 
 	def block_cons_rest(self):
 		self.out.write('In block_cons_rest\n')
@@ -595,16 +626,8 @@ class SynAn():
 
 	def simple_expression(self):
 		self.out.write('In simple_expression\n')
-		token=self.lexer.getNextToken()
-		self.out.write('Current token == %s\n' % token)
-		self.pushLexeme()
-		if token in ('<ADD_OP>','<MINUS_OP>'):
-			self.sign()
-			self.term()
-			self.simple_expression_other()
-		else:
-			self.term()
-			self.simple_expression_other()
+		self.term()
+		self.simple_expression_other()
 
 	def simple_expression_other(self):
 		self.out.write('In simple_expression_other\n')
@@ -711,22 +734,22 @@ class SynAn():
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
 
-	def procedure_statement(self):
-		self.out.write('In procedure_statement\n')
-		token=self.lexer.getNextToken()
-		if token == '<IDENTIFIER>':
-			self.procedure_statement_rest()
-		else:
-			self.synErr('an identifier')
+	# def procedure_statement(self):
+		# self.out.write('In procedure_statement\n')
+		# token=self.lexer.getNextToken()
+		# if token == '<IDENTIFIER>':
+			# self.procedure_statement_rest()
+		# else:
+			# self.synErr('an identifier')
 
-	def procedure_statement_rest(self):
-		self.out.write('In procedure_statement_rest\n')
-		token=self.lexer.getNextToken()
-		if token == '<OPEN_PARENTHESIS>':
-			self.actual_parameter()
-			self.actual_parameter_restactual_parameter()
-		else:
-			self.pushLexeme()
+	# def procedure_statement_rest(self):
+		# self.out.write('In procedure_statement_rest\n')
+		# token=self.lexer.getNextToken()
+		# if token == '<OPEN_PARENTHESIS>':
+			# self.actual_parameter()
+			# self.actual_parameter_restactual_parameter()
+		# else:
+			# self.pushLexeme()
 
 	def structured_statement(self):
 		self.out.write('In structured_statement\n')

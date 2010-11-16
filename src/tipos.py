@@ -109,6 +109,21 @@ class Funcion(Procedimiento):
 class Program(Elemento):#no puse que hereda de tipo porque no es un tipo
 	def __str__(self):
 		return "Program identifier"
+		
+class Attr:
+	
+	def __init__(self,valor,tipo,clase):
+		self.valor=valor
+		#valor: puede ser el valor de la constante... o el lugar fisico donde se encontrara
+		self.tipo=tipos
+		#tipo: objeto de clase tipo con el tipo del valor
+		self.clase=clase
+		#clase:tributo que define si el identificador es un "type", una "variable", "function", "procedure" o "constant". Agregué tambien subexpresion, para cuando solo se trata de un valor que viene en una expresion
+		
+class Ref:
+	#clase utilizada para pasar variables por referencia (o sea, serán utilizadas para pasar atributos sintetizados)
+	def __init__(self,ref=None):
+		self.ref = ref
 	
 if __name__ == '__main__':
 	#testeo de la herencia
@@ -122,7 +137,7 @@ if __name__ == '__main__':
 
 	print "caracter es tipo simple", caracter.instancia(Simple)
 	print "subcaracter es tipo estructurado", subCaracter.instancia(Estructurado)
-	arreglo = Arreglo(3)
+	arreglo = Arreglo(3,caracter,subCaracter)
 	print "arreglo es de tipo estructurado", arreglo.instancia(Estructurado)
 	print "tamaño arreglo", arreglo.tamanio
 	proc = Procedimiento([])
