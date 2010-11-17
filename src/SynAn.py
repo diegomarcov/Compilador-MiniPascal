@@ -1,23 +1,15 @@
 ﻿import sys
-import argparse, io
+import argparse, io, traceback
 # sys.path.append('../entrega2/')
 from lexer.lexan import LexAn,LexError
 from utils import VortexWriter,SynError,UnexpectedTokenError
-from tipos import *
+from tipos import Elemento,Tipo,Simple,Caracter,Entero,Booleano,Subrango,SubCaracter,SubEntero,SubBooleano,Estructurado,Arreglo,Procedimiento,Funcion,Programa,Attr,Ref
+from hashstack import HashStack
 
 class SynAn():
 
 	#stStack: pila de tablas de simbolos
 	
-	#########
-	def addNewID(self,key,element):
-		st = self.stStack[-1]
-		if not (key in st):
-			st[key] = element
-		else:
-			pass #errorrrrrrrrrrr
-	#########
-
 	def __init__(self,lexer,debug,outputFile):
 		self.lexer = lexer
 		if debug:
@@ -31,8 +23,9 @@ class SynAn():
 	def program(self):
 		self.out.write('In program\n')
 		###########
-		self.stStack = [ ]
+		self.stStack = HashStack()
 		idPrograma = Ref()
+		self.out.write("\tSymbol Table Stack: " + str(self.stStack) + "\n")
 		###########
 		
 		self.program_heading(idPrograma)
@@ -48,7 +41,7 @@ class SynAn():
 				raise SynError(self.lexer.errorLeader(),msg="There are characters after the last character ('.')")
 		else:
 			# self.thiserrorLeader = self.lexer.errorLeader()
-			# self.thislexeme = self.lexer.getCurrentLexeme()
+			# self.thislexeme = self.lexer.getLexeme()
 			self.synErr('"."')
 
 	def program_heading(self,idPrograma):
@@ -57,6 +50,7 @@ class SynAn():
 			if self.lexer.getNextToken() == '<IDENTIFIER>':
 				#############
 				idPrograma.ref = self.lexer.getLexeme()
+				self.out.write("\tprogram heading ID: " + idPrograma.ref + "\n")
 				#############
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
@@ -72,9 +66,11 @@ class SynAn():
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write(self.currentToken)
 		################
-		st = self.stStack[-1]
+		self.stStack.push({})
+		st = self.stStack.top()
 		st['true']  = Attr(valor=1,tipo=Booleano(),clase="constant")
 		st['false'] = Attr(valor=0,tipo=Booleano(),clase="constant")
+		self.out.write("\tdefault constants added\n")
 		#procedimientos...
 		
 		if idPrograma!=None:
@@ -154,23 +150,40 @@ class SynAn():
 		self.out.write('In constant_definition\n')		
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
+			id = self.lexer.getLexeme()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<EQUAL>":
-				self.constant()
+				#########
+				attr = Ref()
+				#########
+				
+				self.constant(attr)
+				
+				#########
+				self.stStack.addNewID(id,attr.ref)
+				self.out.write("\tConstant: "+id + ": " + str(attr.ref) +"\n")
+				#########				
 			else:
 				self.synErr('"="')
 		else:
 			self.synErr('an identifier')
 		
-	def constant(self):
+	def constant(self,attr):
 		self.out.write('In constant\n')	
 		self.currentToken = self.lexer.getNextToken()
-		if self.currentToken == "<NUMBER>" or self.currentToken == "<IDENTIFIER>" or self.currentToken == "<CHAR>":
-			self.out.write("\nFound a constant declaration succesfully!\n")
+		#################
+		if self.currentToken == "<NUMBER>":
+			attr.ref = Attr(int(self.lexer.getLexeme()),Entero(),"constant")
+			self.out.write("\t Integer constant found: " + attr.ref)
+		elif self.currentToken == "<IDENTIFIER>":
+			pass
+		elif self.currentToken == "<CHAR>":
+			pass
 		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
 			self.pushLexeme()
 			self.sign()
 			self.constant_rest()
+		################
 		else:
 			self.synErr('a number, identifier or char')
 			
@@ -460,7 +473,7 @@ class SynAn():
 			if self.currentToken == "<IDENTIFIER>":
 				self.parameter_group_rest()
 			else:
-				raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
+				raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 		elif self.currentToken == "<TYPE_DECLARATION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
@@ -680,7 +693,7 @@ class SynAn():
 		elif token=='<FALSE>':
 			self.out.write('factor is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 
 	def factor_rest(self):
 		self.out.write('In factor_rest\n')
@@ -716,7 +729,7 @@ class SynAn():
 		if token in ('<MULTIPLY_OP>','<DIV_OP>','<AND_LOGOP>'):
 			self.out.write('multiplying_operator is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 
 	def adding_operator(self):
 		self.out.write('In adding_operator\n')
@@ -724,7 +737,7 @@ class SynAn():
 		if token in ('<ADD_OP>','<MINUS_OP>','<OR_LOGOP>'):
 			self.out.write('adding_operator is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 
 	def relational_operator(self):
 		self.out.write('In relational_operator\n')
@@ -732,7 +745,7 @@ class SynAn():
 		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>','<NOT_EQUAL_OP>'):
 			self.out.write('relational_operator is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getCurrentLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 
 	# def procedure_statement(self):
 		# self.out.write('In procedure_statement\n')
@@ -819,7 +832,7 @@ class SynAn():
 			pass #lambda
 		
 	def synErr(self,s):
-		raise SynError(self.lexer.errorLeader(),s,self.lexer.getCurrentLexeme())
+		raise SynError(self.lexer.errorLeader(),s,self.lexer.getLexeme())
 		
 	def pushLexeme(self):
 		self.lexer.pushLexeme(self.out)
@@ -853,4 +866,8 @@ if __name__ == '__main__':
 			output.write(msg)
 		print msg
 	except Exception as e:
-		output.write(str(e))
+		# output.write(str(e))
+		# traceback.print_stack()
+		# traceback,exctype, value = sys.exc_info()
+		# print exctype
+		traceback.print_exc()

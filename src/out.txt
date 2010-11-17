@@ -1,0 +1,12 @@
+In program
+	Symbol Table Stack: []
+In program_heading
+	program heading ID: ej
+program_heading succeeded
+In block
+<CONST>	default constants added
+pushed: const
+In constant_definition_part
+In constant_definition
+In constant
+cannot concatenate 'str' and 'instance' objects
