@@ -1,4 +1,5 @@
-﻿import sys
+# -*- coding: utf-8 -*-
+import sys
 import argparse, io, traceback
 # sys.path.append('../entrega2/')
 from lexer.lexan import LexAn,LexError
@@ -173,8 +174,8 @@ class SynAn():
 		self.currentToken = self.lexer.getNextToken()
 		#################
 		if self.currentToken == "<NUMBER>":
-			attr.ref = Attr(int(self.lexer.getLexeme()),Entero(),"constant")
-			self.out.write("\t Integer constant found: " + attr.ref)
+			attr.ref = Attr(valor=int(self.lexer.getLexeme()),tipo=Entero(),clase="constant")
+			self.out.write("\t Integer constant found: " + str(attr.ref) + "\n")
 		elif self.currentToken == "<IDENTIFIER>":
 			pass
 		elif self.currentToken == "<CHAR>":

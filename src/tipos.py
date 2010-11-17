@@ -1,4 +1,5 @@
-﻿# toda la herencia de tipos
+# -*- coding: utf-8 -*-
+# toda la herencia de tipos
 
 class Elemento: #todos los elementos que pueden aparecer como tipo de un attr en la tabla de simbolos
 	def instancia(self,tipo):
@@ -112,7 +113,7 @@ class Programa(Elemento):#no puse que hereda de tipo porque no es un tipo
 		
 class Attr:
 	
-	def __init__(self,valor,tipo,clase):
+	def __init__(self,tipo,clase, valor=None):
 		self.valor=valor
 		#valor: puede ser el valor de la constante... o el lugar fisico donde se encontrara
 		self.tipo=tipo
@@ -121,7 +122,7 @@ class Attr:
 		#clase:tributo que define si el identificador es un "type", una "variable", "function", "procedure" o "constant". Agregué tambien subexpresion, para cuando solo se trata de un valor que viene en una expresion
 		
 	def __str__(self):
-		return str(valor) + tipo + clase
+		return "value: " + str(self.valor) + ", type: " + str(self.tipo) + ",class:" + self.clase
 		
 class Ref:
 	#clase utilizada para pasar variables por referencia (o sea, serán utilizadas para pasar atributos sintetizados)

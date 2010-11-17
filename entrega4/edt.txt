@@ -1,7 +1,7 @@
 <program> ::= 	{
 					stStack = newSymbolTableStack()
                     # falta pushear un nuevo nivel de la tabla, agregar todos los id predefinidos,
-                    # y ver quÈ hacer con el identificador del programa
+                    # y ver qu√© hacer con el identificador del programa
 				} 
 				<program_heading>
 				{
@@ -47,8 +47,8 @@
 
 <constant_definition> ::= <IDENTIFIER> <EQUAL> <constant> 
 							{
-                                # addNewID deber· tener un identificador, y un objeto;
-                                # dicho objeto tendr· las propiedades: TIPO, VALOR, y un valor booleano que indica si es constante
+                                # addNewID deber√° tener un identificador, y un objeto;
+                                # dicho objeto tendr√° las propiedades: TIPO, VALOR, y un valor booleano que indica si es constante
 								addNewID(<IDENTIFIER>.lex, <constant>.attr)
 							}
 
@@ -68,7 +68,7 @@
 								if val.tipo.instancia(Simple):
 									<constant>.attr = Attr(clase="constant",type = val.tipo, value=val.value)
 								else:
-									error(<IDENTIFIER>.lex + "must be of a simple type") #no se si est· bien dicho eso
+									error(<IDENTIFIER>.lex + "must be of a simple type") #no se si est√° bien dicho eso
 							else:
 								error(<IDENTIFIER>.lex + "is not a valid identifier")
 					else:
@@ -128,8 +128,8 @@
 
 <type_definition> ::= <IDENTIFIER> <EQUAL> <type>
 						{
-                            # incluimos en la tabla de sÌmbolos el tipo, indicando que es un "TIPO" e
-                            # incluyendo la estructura que servir· para saber si es un subrango, un array,
+                            # incluimos en la tabla de s√≠mbolos el tipo, indicando que es un "TIPO" e
+                            # incluyendo la estructura que servir√° para saber si es un subrango, un array,
                             # o cualquier otro tipo simple
 							addNewID(<IDENTIFIER>.lex, newAttr(clase="type", type=<type>.tipo))
 						}
@@ -150,7 +150,7 @@
 							error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
 						else:
 							if <NUMBER>.lex <= <constant>.value:
-                                # la estructura devuelta por newType contendr· el TIPO,
+                                # la estructura devuelta por newType contendr√° el TIPO,
                                 # y las referencias a los valores lowerBound y upperBound
                                 lower = newAttr("constant",type = Entero(),value=<NUMBER>.lex) #no se si tiene sentido mandar attrs, porque ya sabemos que son del mismo tipo... estamos haciendo los controles antes de agregarlos
                                 upper = newAttr("constant",type = Entero(),value=constant.value)
@@ -165,7 +165,7 @@
 							error("Non compatible subrange bounds (char expected, "+<constant>.tipo+" found).")
 						else:
 							if <CHAR>.lex <= <constant>.value:
-                                # la estructura devuelta por newType contendr· el TIPO,
+                                # la estructura devuelta por newType contendr√° el TIPO,
                                 # y las referencias a los valores lowerBound y upperBound
                                 lower = newAttr("constant",type = Caracter(),value=<CHAR>.lex)
                                 upper = newAttr("constant",type = Caracter(),value=constant.value)
@@ -201,8 +201,8 @@
 
 <simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> 
 						{
-                            # la estructura devuelta por newType contendr· el TIPO,
-                            # que a su vez contendr· las referencias a los valores lowerBound y upperBound
+                            # la estructura devuelta por newType contendr√° el TIPO,
+                            # que a su vez contendr√° las referencias a los valores lowerBound y upperBound
 							if <constant>.tipo.instancia(Entero):
 								<simple_type_rest>.value = SubEntero(None,<constant>.value)
 							elif <constant>.tipo.instancia(Caracter):
@@ -224,7 +224,7 @@
 								error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
 							else:
 								if <NUMBER>.lex <= <constant>.value:
-									# la estructura devuelta por newType contendr· el TIPO,
+									# la estructura devuelta por newType contendr√° el TIPO,
 									# y las referencias a los valores lowerBound y upperBound
 									lower = newAttr("constant",type = Entero(),value=<NUMBER>.lex) #no se si tiene sentido mandar attrs, porque ya sabemos que son del mismo tipo... estamos haciendo los controles antes de agregarlos
 									upper = newAttr("constant",type = Entero(),value=constant.value)
@@ -233,19 +233,19 @@
 									error("Invalid subrange: lower bound must be smaller than upper bound.")
 						}
 						| 
-                        # ˙nicamente se puede llegar a este caso con un signo + o -
-                        # asÌ que los identificadores deben ser enteros!
+                        # √∫nicamente se puede llegar a este caso con un signo + o -
+                        # as√≠ que los identificadores deben ser enteros!
 						<IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
                         {
                             id = getGlobalValue(<IDENTIFIER>.lex)
                             if (id.tipo.instancia(Entero)) and (<constant>.attr.tipo.instancia(Entero)):
-                                # la estructura devuelta por newType contendr· el TIPO,
+                                # la estructura devuelta por newType contendr√° el TIPO,
                                 # y las referencias a los valores lowerBound y upperBound
                                 <subrange_type_rest>.tipo = SubEntero(lowerBound=id, upperBound=<constant>.attr)
                         }
 
 						
-						#consulta aca... sobre el tipo del Ìndice. SÛlo puede ser subrango no?
+						#consulta aca... sobre el tipo del √≠ndice. S√≥lo puede ser subrango no?
 <structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type1>
                         {	
 							if <simple_type>.tipo.instancia(Simple):
@@ -265,12 +265,12 @@
 								<variable_declaration_rest>.idList = [] 
 							}
                             # en este caso, idList es un atributo heredado Y sintetizado
-                            # el valor heredado es "lista vacÌa", y al volver, contendr· todos los ID despuÈs de la , en caso de que haya.
+                            # el valor heredado es "lista vac√≠a", y al volver, contendr√° todos los ID despu√©s de la , en caso de que haya.
                             <variable_declaration_rest>
                             {
                                 # <variable_declaration>.idList = <variable_declaration_rest>.idList.append(<IDENTIFIER>.lex) #porque esta esto aca? no va creo
                                 for var in <variable_declaration>.idList:
-                                    # el valor por defecto de las variables en la tabla de sÌmbolos podrÌa ser None
+                                    # el valor por defecto de las variables en la tabla de s√≠mbolos podr√≠a ser None
                                     addNewID(var.lex, newAttr(clase="variable", type=<variable_declaration_rest>.tipo, value=None))
                             }
 
@@ -297,13 +297,13 @@
                         }
                         <procedure_heading_rest>
                         {
-                            # <procedure_heading_rest>.parameterList es una lista de listas de par·metros con un tipo asociado, e indicando si es por refer; ejemplo:
+                            # <procedure_heading_rest>.parameterList es una lista de listas de par√°metros con un tipo asociado, e indicando si es por refer; ejemplo:
                             # [ ([p1, p2, p3], int, referencia), ([p4, p5], char, valor) ]
 							# CAMBIADOOO
 							# para facilidad en la parte de las expresiones, puse que la lista va a tener una serie de tuplas con parametro, tipo y booleano que indica si es por referencia
 							# [(p1,int,referencia),(p2,int, referencia)...]
                             addNewID(<IDENTIFIER>.lex, newAttr(clase = "procedure", Procedimiento( parameterList = <procedure_heading_rest>.parameterList)))
-                            # nÛtese que Èste ID se agrega en la tabla de nivel "superior", porque se apila una nueva tabla al comenzar
+                            # n√≥tese que √©ste ID se agrega en la tabla de nivel "superior", porque se apila una nueva tabla al comenzar
                             # a parsear <block>
                         }
 
@@ -316,7 +316,7 @@
 
 <formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest1> 
                             {
-                                # el resultado va a ser una lista de listas de par·metros, cada una con un tipo asociado
+                                # el resultado va a ser una lista de listas de par√°metros, cada una con un tipo asociado
                                 <procedure_heading_rest>.parameterList = <formal_parameter_section>.parameterList + <formal_parameter_rest1>.parameterList
                             }
                             |
@@ -361,7 +361,7 @@
 
 <function_declaration> ::=  <function_heading> 
 							{
-								<block>.functionID = <function_heading>.functionID #heredo el id de la funcion en bloque para despuÈs usarla en el retorno de la funcion
+								<block>.functionID = <function_heading>.functionID #heredo el id de la funcion en bloque para despu√©s usarla en el retorno de la funcion
 							}
 							<block>
 
@@ -372,7 +372,7 @@
                         }
 						<function_heading_rest>
 						{
-                            # <function_heading_rest>.parameterList es una lista de listas de par·metros con un tipo asociado, e indicando si es por refer; ejemplo:
+                            # <function_heading_rest>.parameterList es una lista de listas de par√°metros con un tipo asociado, e indicando si es por refer; ejemplo:
                             # [ ([p1, p2, p3], int, referencia), ([p4, p5], char, valor) ]
 							#<function_heading_rest>.returnType es el tipo que retorna la funcion. Debe ser simple
 							if <function_heading_rest>.returnType.instancia(Simple):
@@ -381,7 +381,7 @@
 								
 							else:	
 								error("Functions must return a simple type")
-                            # nÛtese que Èste ID se agrega en la tabla de nivel "superior", porque se apila una nueva tabla al comenzar
+                            # n√≥tese que √©ste ID se agrega en la tabla de nivel "superior", porque se apila una nueva tabla al comenzar
                             # a parsear <block>
                         }
 
@@ -435,7 +435,7 @@
                                 identifier = getGlobalValue(<simple_statement_rest>.ID)
                                 if identifier.clase == "variable":
                                     if checkTypes(identifier.tipo, <expression>.tipo):
-                                        # se asigna el valor de la expresiÛn a la variable
+                                        # se asigna el valor de la expresi√≥n a la variable
                                     else:
                                         error("Incompatible types: "+identifier.tipo.nombre+" expected, but "+<expression>.tipo.nombre+" found.")
                                 elif identifier.clase == "funcion" and <simple_statement_rest>.ID==<simple_statement_rest>.functionID: 	
@@ -449,9 +449,9 @@
                             <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression1>
                             {
                                 if checkTypes(id.tipo, Arreglo(indexRange=<expression>.tipo, elementType=<expression1>.tipo)):
-                                    # estamos asignando una expresiÛn que estar· en la pila a un elemento de un arreglo
+                                    # estamos asignando una expresi√≥n que estar√° en la pila a un elemento de un arreglo
                                 else:
-                                    # habrÌa que controlar este mensaje de error: puede ser un problema del Ìndice, o de la expresiÛn que asignamos
+                                    # habr√≠a que controlar este mensaje de error: puede ser un problema del √≠ndice, o de la expresi√≥n que asignamos
                                     error("Non compatible types in assignment"
                             }
                             |
