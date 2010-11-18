@@ -22,7 +22,7 @@ class SynError(CompilerError):
 				# self.found = 'EOF'
 			# else:
 				# self.found = found
-			self.msg += 'Expecting %s, but "%s" was found' % (self.expected,self.found)
+			self.msg += 'Expecting %s, but "%s" was found' % (expected,found)
 		else:
 			self.msg += msg
 		

@@ -2,16 +2,17 @@ import sys
 import string
 import re
 from myshlex import shlex
-from ../utils import CompilerError
+import utils
+from utils import CompilerError
 
 class LexError (CompilerError):
 
 	def __init__(self,msg,leader):
 		super(LexError,self).__init__(leader)
-		self.message = msg
+		self.msg = "Lexical error: " + msg
 
 class LexAn():
-	def __init__(self, file,filename):
+	def __init__(self, file, filename):
 
 		self.tokenDictionary = {"program" : "<PROGRAM>",
 									"type" : "<TYPE>",
@@ -92,7 +93,7 @@ class LexAn():
 			try:
 				self.forwardToken = self.lexer.get_token()
 			except EOFError:
-				raise LexError('\n%sLexical error: A comment in the source program was not closed!' % self.errorLeader())
+				raise LexError('A comment in the source program was not closed!', self.errorLeader())
 			
 			if (self.forwardToken == "."):
 				self.originalLexeme = ".."
@@ -135,6 +136,6 @@ class LexAn():
 		elif(self.charRE.match(self.currentLexeme)):
 			return "<CHAR>"
 		else:
-			raise LexError('\n%sLexical error: The lexeme "%s" couldn\'t be recognized' % (self.errorLeader(),self.originalLexeme))
+			raise LexError(msg = 'The lexeme "%s" could not be recognized' % self.originalLexeme, leader = self.errorLeader())
 			
 #######################################################################
