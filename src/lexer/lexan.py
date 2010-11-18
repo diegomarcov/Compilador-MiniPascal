@@ -2,16 +2,13 @@ import sys
 import string
 import re
 from myshlex import shlex
-from types import IntType, LongType
+from ../utils import CompilerError
 
-class LexError (Exception):
+class LexError (CompilerError):
 
-	def __init__(self,msg):
-		super(LexError,self).__init__()
+	def __init__(self,msg,leader):
+		super(LexError,self).__init__(leader)
 		self.message = msg
-		
-	def __str__(self):
-		return self.message
 
 class LexAn():
 	def __init__(self, file,filename):
@@ -86,7 +83,7 @@ class LexAn():
 		try:
 			self.originalLexeme = self.lexer.get_token()
 		except EOFError:
-			raise LexError('\n%sLexical error: A comment in the source program was not closed!'% self.errorLeader())
+			raise LexError('Lexical error: A comment in the source program was not closed!'% self.errorLeader())
 		
 		self.currentLexeme = self.originalLexeme.lower()
 		if (self.currentLexeme in self.tokenDictionary):

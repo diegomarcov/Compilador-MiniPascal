@@ -19,7 +19,10 @@ class SynAn():
 			self.out = VortexWriter()
 			
 	def execute(self):
-		return self.program()
+		try:
+			return self.program()
+		except SymbolTableError as e:
+			raise SemanticError(self.lexer.errorLeader(),e.msg)
 
 	def program(self):
 		self.out.write('In program\n')
@@ -866,7 +869,7 @@ if __name__ == '__main__':
 		if output != sys.stdout:
 			output.write(msg)
 		print msg
-	except Exception as e:
+	except CompilerError as e:
 		# output.write(str(e))
 		# traceback.print_stack()
 		# traceback,exctype, value = sys.exc_info()

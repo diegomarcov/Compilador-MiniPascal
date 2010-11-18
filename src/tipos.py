@@ -52,7 +52,7 @@ class Subrango(Simple):
 	def checkValue(self,value): #obviamente esta de onda este metodo
 		return (value < self.upperBound) and (value > self.lowerBound)
 		
-class SubCaracter(Subrango,Caracter):
+class SubCaracter(Subrango,Caracter): #herencia múltiple troska
 	def __init__(self):
 		Simple.__init__(self)
 		

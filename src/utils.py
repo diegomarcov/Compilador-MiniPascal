@@ -3,11 +3,18 @@ class VortexWriter(): # nombre sumamente cambiable
 	def write(self,s):
 		pass
 		
-class SynError(Exception):
-
+class CompilerError(Exception):
+	def __init__(self,leader):
+		super(CompilerError,self).__init__()
+		self.leader = leader
+		
+	def __str__(self):
+		return "\n" + self.leader + self.msg + "\n"
+		
+class SynError(CompilerError):
 	def __init__(self,leader,expected="",found="",msg=""):
-		super(SynError,self).__init__()
-		self.msg="\n%sSyntactical error found:" % leader
+		super(SynError,self).__init__(leader)
+		self.msg="Syntactical error found:"
 		if msg=="":
 			# self.leader = leader
 			# self.expected = expected
@@ -15,24 +22,19 @@ class SynError(Exception):
 				# self.found = 'EOF'
 			# else:
 				# self.found = found
-			self.msg += 'Expecting %s, but "%s" was found' % (self.leader,self.expected,self.found)
+			self.msg += 'Expecting %s, but "%s" was found' % (self.expected,self.found)
 		else:
 			self.msg += msg
 		
-	def __str__(self):
-		# return '\n%sSyntactical error found: Expecting %s, but "%s" was found' % (self.leader,self.expected,self.found)
-		return self.msg
-
-		
-class UnexpectedTokenError(Exception):
-
+class UnexpectedTokenError(CompilerError):
 	def __init__(self,leader,found):
 		super(UnexpectedTokenError,self).__init__()
 		self.leader = leader
 		if found == '':
-			self.found = 'EOF'
-		else:
-			self.found = found
+			found = 'EOF'
+		self.msg = 'Unexpected token: "%s" found.' % found
 		
-	def __str__(self):
-		return '\n%sUnexpected token: "%s" found.\n' % (self.leader, self.found)
+class SemanticError(CompilerError):
+	def __init__(self,leader,msg):
+		super(SemanticError,self).__init__(leader)
+		self.msg = msg
