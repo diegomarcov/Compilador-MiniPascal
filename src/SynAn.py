@@ -3,13 +3,20 @@ import sys
 import argparse, io, traceback
 # sys.path.append('../entrega2/')
 from lexer.lexan import LexAn,LexError
-from utils import VortexWriter,SynError,UnexpectedTokenError
+from utils import VortexWriter,SynError,UnexpectedTokenError,CompilerError, SemanticError
 from tipos import Elemento,Tipo,Simple,Caracter,Entero,Booleano,Subrango,SubCaracter,SubEntero,SubBooleano,Estructurado,Arreglo,Procedimiento,Funcion,Programa,Attr,Ref
-from hashstack import HashStack
+from hashstack import HashStack,SymbolTableError
+from copy import deepcopy
+
+	
 
 class SynAn():
 
 	#stStack: pila de tablas de simbolos
+	
+	def imprimirST(self,st):
+		for x in st:
+			self.out.write("\t|%s|%s|\n" % (x.center(20), str(st[x]).center(80)))
 	
 	def __init__(self,lexer,debug,outputFile):
 		self.lexer = lexer
@@ -69,17 +76,15 @@ class SynAn():
 		self.out.write('In block\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write(self.currentToken)
-		################
-		self.stStack.push({})
-		st = self.stStack.top()
-		st['true']  = Attr(valor=1,tipo=Booleano(),clase="constant")
-		st['false'] = Attr(valor=0,tipo=Booleano(),clase="constant")
-		self.out.write("\tdefault constants added\n")
-		#procedimientos...
 		
+		################		
+		self.imprimirST(self.stStack.top())
+		self.stStack.push() # agrega por default un diccionario, o sea una tabla de símbolos
 		if idPrograma!=None:
-			st[idPrograma] = Attr(valor=idPrograma,tipo=Programa(),clase="program")
+			self.stStack.addNewID(idPrograma, Attr(valor=idPrograma,tipo=Programa(),clase="program"))			
+			#procedimientos...
 		################
+		
 		if self.currentToken == "<CONST>":
 			self.pushLexeme()
 			self.constant_definition_part()
@@ -154,9 +159,14 @@ class SynAn():
 		self.out.write('In constant_definition\n')		
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
+		
+			#########
 			id = self.lexer.getLexeme()
+			#########
+			
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<EQUAL>":
+			
 				#########
 				attr = Ref()
 				#########
@@ -165,44 +175,82 @@ class SynAn():
 				
 				#########
 				self.stStack.addNewID(id,attr.ref)
-				self.out.write("\tConstant: "+id + ": " + str(attr.ref) +"\n")
-				#########				
+				self.out.write("\tConstant: "+id + ": " + str(attr.ref) +" at constant_definition\n")
+				self.imprimirST(self.stStack.top())
+				#########	
+				
 			else:
 				self.synErr('"="')
 		else:
 			self.synErr('an identifier')
 		
-	def constant(self,attr):
+	def constant(self,attr=None): #cambiar!!!!! sacar el None
 		self.out.write('In constant\n')	
 		self.currentToken = self.lexer.getNextToken()
+		
 		#################
 		if self.currentToken == "<NUMBER>":
 			attr.ref = Attr(valor=int(self.lexer.getLexeme()),tipo=Entero(),clase="constant")
-			self.out.write("\t Integer constant found: " + str(attr.ref) + "\n")
+			self.out.write("\tInteger constant found: " + str(attr.ref) + "\n")			
 		elif self.currentToken == "<IDENTIFIER>":
-			pass
+			attr.ref = self.stStack.getGlobalValue(self.lexer.getLexeme())
+			if attr.ref.clase=="constant":
+				attr.ref = deepcopy(attr.ref)
+				self.out.write("\tConstant %s assigned to constant\n" % self.lexer.getLexeme())
+			# elif attr.ref.clase=="variable":
+				# attr.ref = Attr(valor = attr.ref.valor,) 
+			else:
+				raise SemanticError(self.lexer.errorLeader(),"Constant value can only be assigned with another constant")
 		elif self.currentToken == "<CHAR>":
-			pass
+			attr.ref = Attr(valor = self.lexer.getLexeme()[1],tipo = Caracter(),clase="constant")
+			self.out.write("\tCharacter constant found: " + str(attr.ref) + "\n")	
 		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
 			self.pushLexeme()
-			self.sign()
-			self.constant_rest()
+			signValue = Ref()
+			self.sign(signValue)
+			# attr = Ref()
+			self.constant_rest(attr)
+			attr.ref.valor = signValue.ref * attr.ref.valor
 		################
+		
 		else:
 			self.synErr('a number, identifier or char')
 			
-	def constant_rest(self):
+	def constant_rest(self,attr):
 		self.out.write('In constant_rest\n')	
 		self.currentToken = self.lexer.getNextToken()
-		if self.currentToken == "<NUMBER>" or self.currentToken == "<IDENTIFIER>":
+		if self.currentToken == "<NUMBER>":
+			attr.ref = Attr(valor = int (self.lexer.getLexeme()),tipo = Entero(), clase ="constant")
+		elif self.currentToken == "<IDENTIFIER>":
+			
+			###########
+			attr.ref = self.stStack.getGlobalValue(self.lexer.getLexeme())
+			if attr.ref.clase=="constant":
+				if attr.ref.tipo.instancia(Entero):
+					attr.ref = deepcopy(attr.ref)
+					self.out.write("\tConstant %s assigned to constant\n" % self.lexer.getLexeme())
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Can not apply sign operator to " + self.lexer.getLexeme())
+			# elif attr.ref.clase=="variable":
+				# attr.ref = Attr(valor = attr.ref.valor,) 
+			else:
+				raise SemanticError(self.lexer.errorLeader(),"Constant value can only be assigned with another constant")
+			###########
+			
 			self.out.write("\nFound constant declaration succesfully!\n")
 		else:
 			self.synErr('a number or identifier')
 
-	def sign(self):
+	def sign(self,signValue):
 		self.currentToken = self.lexer.getNextToken()
-		if self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
-			pass
+		
+		###########
+		if self.currentToken == "<ADD_OP>": 
+			signValue.ref = 1
+		elif self.currentToken == "<MINUS_OP>":
+			signValue.ref = -1
+		##########
+		
 		else:
 			self.synErr('a sign')
 
@@ -871,7 +919,4 @@ if __name__ == '__main__':
 		print msg
 	except CompilerError as e:
 		# output.write(str(e))
-		# traceback.print_stack()
-		# traceback,exctype, value = sys.exc_info()
-		# print exctype
 		traceback.print_exc()

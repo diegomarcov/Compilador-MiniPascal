@@ -33,8 +33,6 @@ class LexAn():
 									"not" : "<NOT>",
 									"or" : "<OR>",
 									"and" : "<AND>",
-									"true" : "<TRUE>",
-									"false" : "<FALSE>",
 									"(" : "<OPEN_PARENTHESIS>",
 									")" : "<CLOSE_PARENTHESIS>",
 									"[" : "<OPEN_BRACKET>",

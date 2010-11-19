@@ -77,12 +77,12 @@ class Estructurado(Tipo):
 	pass
 	
 class Arreglo(Estructurado):
-	#index: tipo del indice
-	#element: tipo de los elementos
-	def __init__(self,tamanio,index,element):
+	#indexType: tipo del indice
+	#elementType: tipo de los elementos
+	def __init__(self,tamanio,indexType,elementType):
 		self.tamanio=tamanio
-		self.index = index
-		self.element = element
+		self.indexType = indexType
+		self.elementType = elementType
 		
 	def __str__(self):
 		return "Array"
@@ -105,7 +105,7 @@ class Funcion(Procedimiento):
 		return isinstance(self,tipo) or self.ret==tipo
 		
 	def __str__(self):
-		return ret
+		return ret + " Function"
 	
 class Programa(Elemento):#no puse que hereda de tipo porque no es un tipo
 	def __str__(self):
@@ -128,7 +128,7 @@ class Ref:
 	#clase utilizada para pasar variables por referencia (o sea, serán utilizadas para pasar atributos sintetizados)
 	def __init__(self,ref=None):
 		self.ref = ref
-	
+
 if __name__ == '__main__':
 	#testeo de la herencia
 	print "hola"
