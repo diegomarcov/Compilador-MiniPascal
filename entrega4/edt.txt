@@ -242,6 +242,8 @@
                                 # la estructura devuelta por newType contendrá el TIPO,
                                 # y las referencias a los valores lowerBound y upperBound
                                 <subrange_type_rest>.tipo = SubEntero(lowerBound=id, upperBound=<constant>.attr)
+                             else:
+								 error("Integer subrange expected")
                         }
 
 						

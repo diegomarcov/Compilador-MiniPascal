@@ -79,7 +79,7 @@ class SynAn():
 		
 		################		
 		self.imprimirST(self.stStack.top())
-		self.stStack.push() # agrega por default un diccionario, o sea una tabla de símbolos
+		self.stStack.push() # agrega por default un diccionario, o sea una tabla de sÃ­mbolos
 		if idPrograma!=None:
 			self.stStack.addNewID(idPrograma, Attr(valor=idPrograma,tipo=Programa(),clase="program"))			
 			#procedimientos...
@@ -348,17 +348,32 @@ class SynAn():
 					else:
 						raise SemanticError(self.lexer.errorLeader(),"Invalid subrange: lower bound must be smaller than upper bound.")
 				else:
-					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Character expected, but " + str(char	2.ref.tipo) + " found).")
+					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Character expected, but " + str(ref.tipo) + " found).")
 				#############
 				
 			else:
 				self.synErr('".."')
 		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
 			self.pushLexeme()
-			self.sign()
-			self.subrange_type_rest()
+			
+			################
+			valor = Ref()
+			self.sign(valor)
+			tipo2 = Ref()
+			self.subrange_type_rest(tipo2)
+			tipo2.ref.tipo.lowerBound.valor *= valor.ref
+			#print tipo2.ref.tipo.lowerBound.valor , tipo2.ref.tipo.upperBound.valor
+			if tipo2.ref.tipo.lowerBound.valor <= tipo2.ref.tipo.upperBound.valor:
+				tipo.ref = Attr(tipo = tipo2.ref, clase = "constant")
+			else:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid subrange: lower bound must be smaller than upper bound")
+			################
+			
 		elif self.currentToken == "<IDENTIFIER>":
+
+			#########
 			self.simple_type_rest()
+			#########
 		else: 
 			self.synErr('simple type')
 
@@ -372,22 +387,51 @@ class SynAn():
 		#lambda
 			self.pushLexeme()
 
-	def subrange_type_rest(self):
+	def subrange_type_rest(self, tipo):
 		self.out.write('In subrange_type_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<NUMBER>":
+			number = self.lexer.getLexeme()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SUBRANGE_SEPARATOR>":
-				self.constant()
+
+				##############
+				number2 = Ref()
+				self.constant(number2)
+				if number2.ref.tipo.instancia(Entero):
+					tipo.ref = Attr(tipo = SubEntero(Attr(valor = number,tipo = Entero(), clase = "constant"),number2.ref), clase = "type")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Integer expected, but " + str(number2.ref.tipo) + " found).")
+				##############
+				
 			else:
 				self.synErr('".."')
 		elif self.currentToken == "<IDENTIFIER>":
+			id = self.lexer.getLexeme()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SUBRANGE_SEPARATOR>":
-				self.constant()
+
+				###############
+				const = self.stStack.getGlobalValue(id)
+				if const.clase=="constant":
+					attr = Ref()
+					self.constant(attr)
+					if const.tipo.instancia(Entero):
+						if not attr.ref.tipo.instancia(Entero):
+							raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Integer expected, but " + str(attr.ref.tipo) + " found).")
+					else:
+						raise SemanticError(self.lexer.errorLeader(),"Integer subrange expected")
+					if const.valor > attr.ref.valor:
+						raise SemanticError(self.lexer.errorLeader(), "Invalid subrange: lower bound must be smaller than upper bound")
+					tipo.ref = Attr(tipo = SubEntero(lowerBound = deepcopy(const),	upperBound = attr.ref), clase = "constant")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Constant value expected, but %s identifier found" % const.clase)
+				###############
+				
 			else:
 				self.synErr('".."')
-		else: self.synErr('subrange declaration')
+		else:
+			self.synErr('subrange declaration')
 			
 
 	def structured_type(self):
