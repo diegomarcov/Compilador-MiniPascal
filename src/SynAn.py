@@ -282,44 +282,75 @@ class SynAn():
 	def type_definition(self):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
+			id = self.lexer.getLexeme()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<EQUAL>":
-				self.type()
+			
+				##########
+				tipo = Ref()
+				self.type(tipo)
+				self.stStack.addNewID(id, tipo.ref)
+				self.imprimirST(self.stStack.top())
+				#########
+				
 			else:
 				self.synErr('"="')
 		else:
 			self.synErr('identifier')
 
-	def type(self):
+	def type(self,tipo):
 		self.out.write('In type\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
 		#en este caso me resulta mas sencillo preguntar si es STRUCTURED TYPE
 		if self.currentToken == "<ARRAY>":
 			self.pushLexeme()
-			self.structured_type()
+			self.structured_type(tipo)
 		else:
 		#asumo que si no vino un token ARRAY, se viene un tipo simple...
 		#posiblemente este descartando casos de error!!!
 			self.pushLexeme()
-			self.simple_type()
+			self.simple_type(tipo)
 		
-	def simple_type(self):
+	def simple_type(self,tipo):
 		self.out.write('In simple_type\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<NUMBER>":
+			number = int(self.lexer.getLexeme())
 			self.currentToken = self.lexer.getNextToken()
-			self.out.write('Current token == %s\n' % self.currentToken)
 			if self.currentToken == "<SUBRANGE_SEPARATOR>":
-				self.constant()
+			
+				######
+				number2 = Ref()
+				self.constant(number2)
+				if number2.ref.tipo.instancia(Entero):
+					if number <= number2.ref.valor:
+						tipo.ref = Attr(tipo = SubEntero(Attr(valor = number,tipo = Entero(), clase = "constant"),number2.ref), clase = "type")
+					else:
+						raise SemanticError(self.lexer.errorLeader(),"Invalid subrange: lower bound must be smaller than upper bound.")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Integer expected, but " + str(number2.ref.tipo) + " found).")
+				##########
+				
 			else:
 				self.synErr('".."')
 		elif self.currentToken == "<CHAR>":
+			char = self.lexer.getLexeme()[1]
 			self.currentToken = self.lexer.getNextToken()
-			self.out.write('Current token == %s\n' % self.currentToken)
 			if self.currentToken == "<SUBRANGE_SEPARATOR>":
-				self.constant()
+				#############
+				char2 = Ref()
+				self.constant(char2)
+				if char2.ref.tipo.instancia(Caracter):
+					if char <= char2.ref.valor:
+						tipo.ref = Attr(tipo = SubCaracter(Attr(valor = char,tipo = Caracter(), clase = "constant"),char2.ref), clase = "type")
+					else:
+						raise SemanticError(self.lexer.errorLeader(),"Invalid subrange: lower bound must be smaller than upper bound.")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Character expected, but " + str(char	2.ref.tipo) + " found).")
+				#############
+				
 			else:
 				self.synErr('".."')
 		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
@@ -328,7 +359,8 @@ class SynAn():
 			self.subrange_type_rest()
 		elif self.currentToken == "<IDENTIFIER>":
 			self.simple_type_rest()
-		else: self.synErr('simple type')
+		else: 
+			self.synErr('simple type')
 
 	def simple_type_rest(self):
 		self.out.write('In simple_type_rest\n')

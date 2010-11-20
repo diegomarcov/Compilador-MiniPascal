@@ -46,32 +46,34 @@ class Booleano(Simple):
 	
 class Subrango(Simple):
 	#upperBound y lowerBound
-	def __init__(self):
+	def __init__(self, lowerBound, upperBound):
 		Simple.__init__(self)
+		self.lowerBound = lowerBound
+		self.upperBound = upperBound
 		
 	def checkValue(self,value): #obviamente esta de onda este metodo
 		return (value < self.upperBound) and (value > self.lowerBound)
 		
 class SubCaracter(Subrango,Caracter): #herencia múltiple troska
-	def __init__(self):
-		Simple.__init__(self)
+	def __init__(self, lowerBound, upperBound):
+		Subrango.__init__(self, lowerBound, upperBound)
 		
 	def __str__(self):
-		return "Character subrange"
+		return "Character subrange from %s to %s" %(self.lowerBound.valor,self.upperBound.valor)
 		
 class SubEntero(Subrango,Entero):
-	def __init__(self):
-		Simple.__init__(self)
+	def __init__(self,lowerBound, upperBound):
+		Subrango.__init__(self, lowerBound, upperBound)
 		
 	def __str__(self):
-		return "Integer subrange"
+		return "Integer subrange from %s to %s" % (self.lowerBound.valor,self.upperBound.valor)
 		
 class SubBooleano(Subrango,Booleano):
-	def __init__(self):
-		Simple.__init__(self)
+	def __init__(self, lowerBound, upperBound):
+		Subrango.__init__(self,lowerBound, upperBound)
 		
 	def __str__(self):
-		return "Boolean subrange"
+		return "Boolean subrange from %s to %s" % (self.lowerBound.valor,self.upperBound.valor)
 		
 class Estructurado(Tipo):
 	pass
