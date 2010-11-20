@@ -372,20 +372,51 @@ class SynAn():
 		elif self.currentToken == "<IDENTIFIER>":
 
 			#########
-			self.simple_type_rest()
+			id = self.stStack.getGlobalValue(self.lexer.getLexeme())
+			tipo2 = Ref()
+			self.simple_type_rest(tipo2)
+			if tipo2.ref==None:
+				if id.clase == "type":
+					tipo.ref = deepcopy(id)
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Type expected, but %s found" % id.clase)
+			else:
+				if tipo2.ref.tipo.instancia(type(id.tipo)):
+					if id.valor <= tipo2.ref.tipo.upperBound.valor:
+						tipo2.ref.tipo.lowerBound = deepcopy(id)
+						tipo.ref = tipo2.ref
+					else:
+						raise SemanticError(self.lexer.errorLeader(),"Invalid subrange: lower bound must be smaller than upper bound")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (%s expected, but %s found)" % (str(id.tipo),str(tipo2)))					
 			#########
+			
 		else: 
 			self.synErr('simple type')
 
-	def simple_type_rest(self):
+	def simple_type_rest(self,attr):
 		self.out.write('In simple_type_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<SUBRANGE_SEPARATOR>":
-			self.constant()
+
+			################
+			tipo = Ref()
+			self.constant(tipo)
+			if tipo.ref.tipo.instancia(Entero):
+				attr.ref = Attr(tipo = SubEntero(None,tipo.ref),clase = "constant")
+			elif tipo.ref.tipo.instancia(Caracter):
+				attr.ref = Attr(tipo = SubCaracter(None,tipo.ref),clase = "constant")
+			else:
+				attr.ref = Attr(tipo = SubBooleano(None,tipo.ref),clase = "constant")
+			################
 		else:
 		#lambda
 			self.pushLexeme()
+
+			############
+			attr.ref = None
+			############
 
 	def subrange_type_rest(self, tipo):
 		self.out.write('In subrange_type_rest\n')
@@ -434,18 +465,31 @@ class SynAn():
 			self.synErr('subrange declaration')
 			
 
-	def structured_type(self):
+	def structured_type(self,tipo):
 		self.out.write('In structured_type\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<ARRAY>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<OPEN_BRACKET>":
-				self.simple_type()
+				tipoIndice = Ref()
+				self.simple_type(tipoIndice)
 				self.currentToken = self.lexer.getNextToken()
 				if self.currentToken == "<CLOSE_BRACKET>":
 					self.currentToken = self.lexer.getNextToken()
 					if self.currentToken == "<OF>":
-						self.simple_type()
+
+						########
+						tipoElem = Ref()
+						self.simple_type(tipoElem)
+						if tipoIndice.ref.tipo.instancia(Subrango) or tipoIndice.ref.tipo.instancia(Booleano):
+							if tipoElem.ref.tipo.instancia(Simple):
+								tipo.ref = Attr(tipo = Arreglo(tamanio = tipoIndice.ref.tipo.getRange(), indexType=tipoIndice.ref.tipo, elementType=tipoElem.ref.tipo),clase = "type")
+							else:
+								raise SemanticError(self.lexer.errorLeader(),"Element type of an array must be a simple type, but %s found" % str(tipoElem.ref.tipo))
+						else:
+							raise SemanticError(self.lexer.errorLeader(),"Index type  of an array must be a subrange or a boolean type, but %s found" % str(tipoIndice.ref.tipo))
+						#########
+						
 					else:
 						self.synErr('"of"')
 				else:
@@ -491,11 +535,20 @@ class SynAn():
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<IDENTIFIER>":
-			self.variable_declaration_rest()
-		else:
+
+			#########
+			idList = Ref([self.lexer.getLexeme()])
+			tipo = Ref()
+			self.variable_declaration_rest(idList,tipo)
+			for var in idList.ref:
+				self.stStack.addNewID(var, Attr(clase = "variable", tipo = tipo.ref))
+			self.imprimirST(self.stStack.top())
+			#########
+			
+		else:	
 			self.synErr('an identifier')
 
-	def variable_declaration_rest(self):
+	def variable_declaration_rest(self,idList,tipo):
 		self.out.write('In variable_declaration_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current Token == %s\n' % self.currentToken)
@@ -503,11 +556,23 @@ class SynAn():
 			self.currentToken = self.lexer.getNextToken()
 			self.out.write('Current token == %s\n' % self.currentToken)
 			if self.currentToken == "<IDENTIFIER>":
-				self.variable_declaration_rest()
+
+				#########
+				id = self.lexer.getLexeme()
+				self.variable_declaration_rest(idList,tipo)
+				idList.ref.append(id)
+				#########
+				
 			else:
 				self.synErr('an identifier')
 		elif self.currentToken == "<TYPE_DECLARATION>":
-			self.type()
+
+			#########
+			attr = Ref()
+			self.type(attr)
+			tipo.ref = attr.ref.tipo
+			#########
+			
 		else:
 			self.synErr('"," or ":"')
 

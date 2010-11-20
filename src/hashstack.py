@@ -1,4 +1,5 @@
-from tipos import Attr,Booleano
+# -*- coding: utf-8 -*-
+from tipos import Attr,Booleano,Entero,Caracter
 import traceback
 
 class SymbolTableError(Exception):
@@ -16,6 +17,9 @@ class HashStack(list):
 						{
 							"true": Attr(valor = 1, tipo = Booleano(), clase = "constant"),
 							"false": Attr(valor = 0, tipo = Booleano(), clase = "constant"),
+							"integer": Attr(tipo = Entero(), clase = "type"),
+							"boolean": Attr (tipo = Booleano(), clase = "type"),
+							"char": Attr(tipo = Caracter(), clase = "type"),
 							# procedimientos
 						}
 					)

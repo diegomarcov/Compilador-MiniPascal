@@ -43,6 +43,9 @@ class Booleano(Simple):
 		
 	def __str__(self):
 		return "Boolean"
+
+	def getRange(self):
+		return 2
 	
 class Subrango(Simple):
 	#upperBound y lowerBound
@@ -53,6 +56,9 @@ class Subrango(Simple):
 		
 	def checkValue(self,value): #obviamente esta de onda este metodo
 		return (value < self.upperBound) and (value > self.lowerBound)
+
+	def getRange(self):
+		return int(self.upperBound.valor) - int(self.lowerBound.valor) + 1
 		
 class SubCaracter(Subrango,Caracter): #herencia múltiple troska
 	def __init__(self, lowerBound, upperBound):
@@ -87,7 +93,7 @@ class Arreglo(Estructurado):
 		self.elementType = elementType
 		
 	def __str__(self):
-		return "Array"
+		return "Array (index: %s, elements: %s)" % (str(self.indexType),str(self.elementType))
 		
 class Procedimiento(Elemento): #no puse que hereda de tipo porque no es un tipo
 	#params:lista de parametros (son tipos)
