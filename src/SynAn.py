@@ -364,7 +364,7 @@ class SynAn():
 			tipo2.ref.tipo.lowerBound.valor *= valor.ref
 			#print tipo2.ref.tipo.lowerBound.valor , tipo2.ref.tipo.upperBound.valor
 			if tipo2.ref.tipo.lowerBound.valor <= tipo2.ref.tipo.upperBound.valor:
-				tipo.ref = Attr(tipo = tipo2.ref, clase = "constant")
+				tipo.ref = Attr(tipo = tipo2.ref.tipo, clase = "constant")
 			else:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid subrange: lower bound must be smaller than upper bound")
 			################
@@ -404,12 +404,13 @@ class SynAn():
 			tipo = Ref()
 			self.constant(tipo)
 			if tipo.ref.tipo.instancia(Entero):
-				attr.ref = Attr(tipo = SubEntero(None,tipo.ref),clase = "constant")
+				attr.ref = Attr(tipo = SubEntero(None,tipo.ref),clase = "type")
 			elif tipo.ref.tipo.instancia(Caracter):
-				attr.ref = Attr(tipo = SubCaracter(None,tipo.ref),clase = "constant")
+				attr.ref = Attr(tipo = SubCaracter(None,tipo.ref),clase = "type")
 			else:
-				attr.ref = Attr(tipo = SubBooleano(None,tipo.ref),clase = "constant")
+				attr.ref = Attr(tipo = SubBooleano(None,tipo.ref),clase = "type")
 			################
+			
 		else:
 		#lambda
 			self.pushLexeme()
@@ -452,8 +453,6 @@ class SynAn():
 							raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Integer expected, but " + str(attr.ref.tipo) + " found).")
 					else:
 						raise SemanticError(self.lexer.errorLeader(),"Integer subrange expected")
-					if const.valor > attr.ref.valor:
-						raise SemanticError(self.lexer.errorLeader(), "Invalid subrange: lower bound must be smaller than upper bound")
 					tipo.ref = Attr(tipo = SubEntero(lowerBound = deepcopy(const),	upperBound = attr.ref), clase = "constant")
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Constant value expected, but %s identifier found" % const.clase)
@@ -481,6 +480,7 @@ class SynAn():
 						########
 						tipoElem = Ref()
 						self.simple_type(tipoElem)
+						print tipoIndice.ref, tipoIndice.ref.tipo
 						if tipoIndice.ref.tipo.instancia(Subrango) or tipoIndice.ref.tipo.instancia(Booleano):
 							if tipoElem.ref.tipo.instancia(Simple):
 								tipo.ref = Attr(tipo = Arreglo(tamanio = tipoIndice.ref.tipo.getRange(), indexType=tipoIndice.ref.tipo, elementType=tipoElem.ref.tipo),clase = "type")
