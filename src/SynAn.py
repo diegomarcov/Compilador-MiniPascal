@@ -17,6 +17,10 @@ class SynAn():
 	def __init__(self,lexer,debug,outputFile,mepa):
 		self.lexer = lexer
 		self.mepa = mepa
+		
+		self.relationals = {'<LESS_OP>':'CMME','<LESS_EQUAL_OP>':'CMNI','<GREATER_OP>':'CMMA','<GREATER_EQUAL_OP>':'CMYI','<EQUAL>':'CMIG','<NOT_EQUAL_OP>':'CMDG'}
+		self.adding = {'<ADD_OP>':'SUMA','<MINUS_OP>':'SUST','<OR_LOGOP>':'DISJ'}
+		self.multiplying = {'<MULTIPLY_OP>':'MULT','<DIV_OP>':'DIVI','<AND_LOGOP>':'CONJ'}
 		if debug:
 			self.out = outputFile
 		else:
@@ -25,6 +29,9 @@ class SynAn():
 	def imprimirST(self,st):
 		for x in st:
 			self.out.write("\t|%s|%s|\n" % (x.center(20), str(st[x]).center(80)))
+			
+	def checkTypes(self,tipo1,tipo2):
+		return tipo1.instancia(type(tipo2))
 			
 	def escribir(self, s):
 		self.mepa.write(s + '\n')
@@ -793,16 +800,30 @@ class SynAn():
 		token=self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % token)
 		if token=='<IDENTIFIER>' :
-			self.simple_statement_rest()
+			self.simple_statement_rest(self.lexer.getLexeme())
 		else:
 			self.pushLexeme()
 
-	def simple_statement_rest(self):
+	def simple_statement_rest(self, id):
 		self.out.write('In simple_statement_rest\n')
 		token=self.lexer.getNextToken()
 		
 		if token=='<ASSIGNMENT>' :
-			self.expression()
+		
+			############
+			identifier = self.stStack.getGlobalValue(id)
+			lexLevel = self.stStack.lastLexicalLevel()
+			attr = Ref()
+			self.expression(attr)
+			if identifier.clase == "variable":
+				if self.checkTypes(attr.ref.tipo,identifier.tipo):
+					self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment")
+			else:
+				raise SemanticError(self.lexer.errorLeader(), "Left side of assignment must be a variable")
+			############
+			
 		elif token=='<OPEN_BRACKET>' :
 			self.expression()
 			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
@@ -835,83 +856,155 @@ class SynAn():
 		else:
 			self.synErr('an identifier')
 
-	def expression(self):
+	def expression(self, attr = None):
 		self.out.write('In expression\n')
-		self.simple_expression()
-		self.expression_rest()
+		
+		########
+		# attr.ref = Attr(clase="subexpresion", tipo= Entero())
+		attr1 = Ref() 
+		# sintetizo attr1
+		self.simple_expression(attr1)		
+		self.expression_rest(attr1)
+		attr.ref = attr1.ref
 
-	def expression_rest(self):
+	def expression_rest(self,attr):
 		self.out.write('In expression_rest\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
-		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>','<NOT_EQUAL_OP>'):
-			self.relational_operator()
-			self.simple_expression()
+		
+		if token in self.relationals:
+		
+			###########
+			op = Ref()
+			self.relational_operator(op)
+			attr1 = Ref()
+			self.simple_expression(attr1)
+			if self.checkTypes(attr.ref.tipo,attr1.ref.tipo) and attr.ref.tipo.instancia(Simple):
+				self.escribir(op.ref)
+				attr.ref = Attr(clase="subexpression", tipo = Booleano())
+			else:
+				raise SemanticError(self.lexer.errorLeader(), "Non compatible types in expression")
+			##########
+			
 		else:
 			pass #lambda
 
-	def simple_expression(self):
+	def simple_expression(self,attr=None):
 		self.out.write('In simple_expression\n')
-		self.term()
-		self.simple_expression_other()
 
-	def simple_expression_other(self):
+		#########
+		attr1 = Ref()
+		self.term(attr1)
+		self.simple_expression_other(attr1)
+		attr.ref = attr1.ref
+		#########
+
+	def simple_expression_other(self,attr):
 		self.out.write('In simple_expression_other\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
-		if token in ('<ADD_OP>','<MINUS_OP>','<OR_LOGOP>'):
-			self.adding_operator()
-			self.term()
-			self.simple_expression_other()
+		if token in self.adding:
+		
+			###########
+			op = Ref()
+			tipo = Ref()
+			self.adding_operator(op,tipo)
+			attr1 = Ref()
+			self.term(attr1)
+			# print attr.ref.tipo, attr1.ref.tipo, tipo.ref()
+			if self.checkTypes(attr.ref.tipo, attr1.ref.tipo) and attr.ref.tipo.instancia(tipo.ref):
+				self.escribir(op.ref)
+			else:
+				raise SemanticError(self.lexer.errorLeader(), "Non compatible types in expression")
+			self.simple_expression_other(attr1)
+			attr.ref = attr1.ref
+			############
+			
 		else:
 			pass #lambda
 
-	def term(self):
+	def term(self,attr):
 		self.out.write('In term\n')
-		self.factor()
-		self.term_other()
 		
-	def term_other(self):
+		#########
+		attr1 = Ref()		
+		self.factor(attr1)
+		self.term_other(attr1)
+		attr.ref = attr1.ref
+		#########
+		
+	def term_other(self,attr):
 		self.out.write('In term_other\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
-		if token in ('<MULTIPLY_OP>','<DIV_OP>','<AND_LOGOP>'):
-			self.multiplying_operator()
-			self.factor()
-			self.term_other()
-		else:
-			self.out.write('Lambda @ term_other with token == %s\n' % token)
+		if token in self.multiplying:
+		
+			#########
+			op = Ref()
+			tipo = Ref()
+			self.multiplying_operator(op,tipo)
+			attr1 = Ref()
+			self.factor(attr1)
+			if self.checkTypes(attr.ref.tipo,attr1.ref.tipo) and attr.ref.tipo.instancia(tipo.ref):
+				self.escribir(op.ref)			
+			self.term_other(attr1)
+			attr.ref = attr1.ref
+			#########
+			
+		else:			
 			pass #lambda
 
-	def factor(self):
+	def factor(self,attr):
 		self.out.write('In factor\n')
+		
+		attr.ref = Attr(clase = "subexpression", tipo= Entero())
+		
 		token=self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % token)
 		if token=='<IDENTIFIER>':
-			self.factor_rest()
+			
+			########			
+			self.factor_rest(self.lexer.getLexeme(),attr)
+			########
+			
 		elif token=='<NUMBER>':
+		
+			########
+			self.escribir("APCT %s" % self.lexer.getLexeme())
+			########
+			
 			self.out.write('Factor is finished\n')
 		elif token=='<OPEN_PARENTHESIS>':
-			self.expression()
+
+			###########
+			self.expression(attr)
+			###########
+			
 			if self.lexer.getNextToken()=='<CLOSE_PARENTHESIS>':
 				self.out.write('factor is finished\n')
 			else:
 				self.synErr('")"')
 		elif token=='<NOT_LOGOP>':
-			self.factor()
+		
+			###########
+			attr1 = Ref()
+			self.factor(attr1)
+			if attr1.ref.tipo.instancia(Booleano):
+				self.escribir("NEGA")
+				attr.ref = attr1.ref
+			else:
+				raise SemanticError(self.lexer.errorLeader(),"Boolean expected but " + str(attr1.ref.tipo) + " found")
+			###########
+			
 		elif token=='<CHAR>':
-			self.out.write('factor is finished\n')
-		elif token=='<TRUE>':
-			self.out.write('factor is finished\n')
-		elif token=='<FALSE>':
 			self.out.write('factor is finished\n')
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 
-	def factor_rest(self):
+	def factor_rest(self,id,attr):
 		self.out.write('In factor_rest\n')
 		token=self.lexer.getNextToken()
-		if token=='<OPEN_BRACKET>':
+		if token=='<OPEN_BRACKET>': # TODOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 			self.expression()
 			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
 				self.out.write('factor_rest is finished\n')
@@ -920,6 +1013,28 @@ class SynAn():
 			self.actual_parameter_rest()
 		else:
 			self.pushLexeme() #lambda
+			
+			########
+			identifier = self.stStack.getGlobalValue(id)
+			nivel = self.stStack.lastLexicalLevel()
+			if identifier.clase == 'function':
+				pass
+			elif identifier.clase == 'variable':
+				if identifier.tipo.instancia(Simple):
+					
+					self.escribir("APVL %s,%s" % (nivel,identifier.pos))
+					attr.ref = deepcopy(identifier)
+					attr.ref.clase = "subexpression"
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Simple type expected, but %s found" % id)
+			elif identifier.clase == 'constant':
+				self.escribir("APCT %s" % identifier.valor)
+				attr.ref = deepcopy(identifier)
+				attr.ref.clase = "subexpression"
+			else:
+				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+identifier.ref.tipo+" found")
+			
+			########
 
 	def actual_parameter(self):
 		self.out.write('In actual_parameter\n')
@@ -936,26 +1051,49 @@ class SynAn():
 		else:
 			self.synErr('"," or ")"')
 
-	def multiplying_operator(self):
+	def multiplying_operator(self,op,tipo):
 		self.out.write('In multiplying_operator\n')
 		token=self.lexer.getNextToken()
-		if token in ('<MULTIPLY_OP>','<DIV_OP>','<AND_LOGOP>'):
+		if token in self.multiplying:
 			self.out.write('multiplying_operator is finished\n')
+			
+			########
+			if token=='<AND_LOGOP>':
+				tipo.ref = Booleano
+			else:
+				tipo.ref = Entero
+			op.ref = self.multiplying[token]
+			########
+			
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 
-	def adding_operator(self):
+	def adding_operator(self,op,tipo):
 		self.out.write('In adding_operator\n')
 		token=self.lexer.getNextToken()
-		if token in ('<ADD_OP>','<MINUS_OP>','<OR_LOGOP>'):
+		if token in self.adding:
+			
+			#############
+			if token == "<OR_LOGOP>":
+				tipo.ref = Booleano
+			else:
+				tipo.ref = Entero
+			op.ref = self.adding[token]
+			#############
+			
 			self.out.write('adding_operator is finished\n')
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 
-	def relational_operator(self):
+	def relational_operator(self,op):
 		self.out.write('In relational_operator\n')
 		token=self.lexer.getNextToken()
-		if token in ('<LESS_OP>','<LESS_EQUAL_OP>','<GREATER_OP>','<GREATER_EQUAL_OP>','<EQUAL>','<NOT_EQUAL_OP>'):
+		if token in self.relationals:
+		
+			#########
+			op.ref = self.relationals[token]
+			#########
+			
 			self.out.write('relational_operator is finished\n')
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())

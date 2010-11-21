@@ -491,7 +491,7 @@
 				}
 				<expression_rest>
 				{
-					<expression_rest>.attr = <expression_rest>.attr
+					<expression>.attr = <expression_rest>.attr
 				}
 				
 
@@ -499,6 +499,7 @@
 					  {
 						if checkTypes(<expression_rest>.attr.tipo,<simple_expression>.attr.tipo) and <simple_expression>.attr.tipo.instancia(Simple):
 							#se debe apilar el valor de simple_expression, y luego aplicar el operador relacional de relational_operator
+							<expression_rest>.attr = Attr(clase="subexpression", tipo = Booleano())
 						else:
 							error("invalid types")
 					  }
@@ -542,7 +543,7 @@
 				 {
 					if checkTypes(<term_other>.attr.tipo,<factor>.attr.tipo) and <factor>.attr.tipo.instancia(multiplying_operator.tipo):
 						#apilar factor, aplicar el operador
-						<term_other1>.attr = newAttr(tipo=<multiplying_operator>.tipo,clase="subexpresion")
+						<term_other1>.attr = <factor>.attr
 					else:
 						error("invalid types")
 				 }
@@ -634,7 +635,7 @@
 					id = getGlobalValue(<factor_rest>.id)
 					if id.clase=="function":
 						#llamar a la funcion sin parametros
-						<factor_rest>.attr = newAttr(valor="""valor donde se colocara el resultado de la funcion"""tipo=id.tipo.ret,clase="subexpresion")
+						<factor_rest>.attr = newAttr(tipo=id.tipo.ret,clase="subexpresion")
 					elif id.tipo.instancia(Tipo): #es una variable o una constante.
 						# se coloca el valor del id en la pila
 						<factor_rest>.attr = id

@@ -18,7 +18,9 @@ var
 	var1 : arreglo;	
 	var2 : entero;
 	var3 : caracteres;
-	var4 : boolean;
+	var4 : integer;
 begin
-	
+	var2 := 1;
+	var4 := 4;
+
 end.

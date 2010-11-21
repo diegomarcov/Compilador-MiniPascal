@@ -49,6 +49,9 @@ class HashStack(list):
 		if aux == None:
 			raise SymbolTableError(False,key)
 		return aux
+		
+	def lastLexicalLevel(self): # cuidado con efectos colaterales... usar siempre debajo de getGlobalValue
+		return len(self) + self.index
 			
 	def __iter__(self):
 		self.index = -1
