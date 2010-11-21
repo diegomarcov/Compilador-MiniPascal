@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+
 import sys
-import argparse, io, traceback
+import argparse, io, traceback, re
 # sys.path.append('../entrega2/')
 from lexer.lexan import LexAn,LexError
 from utils import VortexWriter,SynError,UnexpectedTokenError,CompilerError, SemanticError
@@ -8,22 +9,26 @@ from tipos import Elemento,Tipo,Simple,Caracter,Entero,Booleano,Subrango,SubCara
 from hashstack import HashStack,SymbolTableError
 from copy import deepcopy
 
-	
 
 class SynAn():
 
 	#stStack: pila de tablas de simbolos
 	
-	def imprimirST(self,st):
-		for x in st:
-			self.out.write("\t|%s|%s|\n" % (x.center(20), str(st[x]).center(80)))
-	
-	def __init__(self,lexer,debug,outputFile):
+	def __init__(self,lexer,debug,outputFile,mepa):
 		self.lexer = lexer
+		self.mepa = mepa
 		if debug:
 			self.out = outputFile
 		else:
 			self.out = VortexWriter()
+	
+	def imprimirST(self,st):
+		for x in st:
+			self.out.write("\t|%s|%s|\n" % (x.center(20), str(st[x]).center(80)))
+			
+	def escribir(self, s):
+		self.mepa.write(s + '\n')
+		
 			
 	def execute(self):
 		try:
@@ -33,10 +38,12 @@ class SynAn():
 
 	def program(self):
 		self.out.write('In program\n')
+		
 		###########
 		self.stStack = HashStack()
 		idPrograma = Ref()
 		self.out.write("\tSymbol Table Stack: " + str(self.stStack) + "\n")
+		self.escribir('INPP')		
 		###########
 		
 		self.program_heading(idPrograma)
@@ -44,9 +51,12 @@ class SynAn():
 		if self.lexer.getNextToken() == '<END_PROGRAM>':
 			if self.lexer.getNextToken() == '<EOF>':
 				self.out.write('Success\n')
+				
 				###########
 				# finalizar el programa
+				self.escribir('PARA')
 				###########
+				
 				return 'The program is syntactically correct.'
 			else: 
 				raise SynError(self.lexer.errorLeader(),msg="There are characters after the last character ('.')")
@@ -59,10 +69,12 @@ class SynAn():
 		self.out.write('In program_heading\n')
 		if self.lexer.getNextToken() == '<PROGRAM>':
 			if self.lexer.getNextToken() == '<IDENTIFIER>':
+			
 				#############
 				idPrograma.ref = self.lexer.getLexeme()
 				self.out.write("\tprogram heading ID: " + idPrograma.ref + "\n")
 				#############
+				
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
 				else:
@@ -504,8 +516,14 @@ class SynAn():
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<VAR>":
+			self.globalVarIndex = 0
 			self.variable_declaration()
 			self.variable_declaration_part_rest()
+			
+			#############
+			self.escribir("RMEM %s" % self.globalVarIndex)
+			#############
+			
 		else:
 			self.synErr('"VAR"')
 
@@ -541,8 +559,10 @@ class SynAn():
 			tipo = Ref()
 			self.variable_declaration_rest(idList,tipo)
 			for var in idList.ref:
-				self.stStack.addNewID(var, Attr(clase = "variable", tipo = tipo.ref))
+				self.stStack.addNewID(var, Attr(pos = self.globalVarIndex ,  clase = "variable", tipo = tipo.ref))
+				self.globalVarIndex += tipo.ref.tamanio
 			self.imprimirST(self.stStack.top())
+			# self.escribir("RMEM %s" %len(idList.ref))
 			#########
 			
 		else:	
@@ -1034,8 +1054,9 @@ class SynAn():
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Lexical analysis for the provided .pas file.')
 	parser.add_argument('inputFile', metavar='IN_FILE', help='The source .pas file')
-	parser.add_argument('outputFile', metavar='OUT_FILE', nargs='?', help='The optional output file.')
+	parser.add_argument('outputFile', metavar='OUT_FILE', nargs='?', help='The optional output file for the compiler messages.')
 	parser.add_argument('-d', help='Debug mode',action='store_const', const=True, dest='debug')
+	parser.add_argument('-o', dest = 'mepaFile', help='The output file for the generated program (.mepa file).', metavar='OUT_FILE', nargs='?')
 
 	args = parser.parse_args()
 	inputFile = io.BufferedReader(io.FileIO(args.inputFile))
@@ -1051,13 +1072,26 @@ if __name__ == '__main__':
 		except:
 			print "Error: The file %s could not be opened for writing" % outputFile
 			
+	if args.mepaFile == None:
+		mepaFile = args.inputFile[0:args.inputFile.rfind('.')] + ".mepa" #rfind busca la aparición más lejana del parámetro pasado
+	else:	
+		mepaFile = args.mepaFile
+	try:
+		mepa = open(mepaFile,'w')
+	except:
+		print "Error: The file %s could not be opened for writing" % args.mepaFile
+			
 	lexicalAnalyzer = LexAn(inputFile,args.inputFile)
-	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,output)
+	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,output,mepa)
 	try:
 		msg = syntacticalAnalyzer.execute()
 		if output != sys.stdout:
 			output.write(msg)
+			
 		print msg
 	except CompilerError as e:
 		# output.write(str(e))
 		traceback.print_exc()
+	finally:
+		output.close()
+		mepa.close()

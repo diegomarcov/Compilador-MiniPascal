@@ -1,11 +1,11 @@
 <program> ::= 	{
 					stStack = newSymbolTableStack()
-                    # falta pushear un nuevo nivel de la tabla, agregar todos los id predefinidos,
-                    # y ver qué hacer con el identificador del programa
+					
 				} 
 				<program_heading>
 				{
 					<block>.idPrograma = <program_heading>.id
+					#inicializar el programa con INPP
 				}
 				<block> <END_PROGRAM> <EOF>
 				{
@@ -29,7 +29,6 @@
 				stStack.pushNewSymbolTable() 
 				if <block>.idPrograma != None:
 					stStack[-1][<block>.idPrograma] = newAttr(tipo="program", type = Program())
-					
 			}
             <block_cons_rest>
 
@@ -256,7 +255,13 @@
 								error("The index type must be a simple type")
                         }
 
-<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
+<variable_definition_part> ::= <VAR> 
+								{
+									# globalVarIndex: es el índice actual de la variable, usada en la declaración
+									globalVarIndex = 0
+								}
+								<variable_declaration> <variable_declaration_part_rest>
+								{
 
 <variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
 
@@ -274,6 +279,8 @@
                                 for var in <variable_declaration>.idList:
                                     # el valor por defecto de las variables en la tabla de símbolos podría ser None
                                     addNewID(var.lex, newAttr(clase="variable", type=<variable_declaration_rest>.tipo, value=None))
+									globalVarIndex += <variable_declaration_rest>.tipo.tamanio
+								
                             }
 
 <variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest1>
