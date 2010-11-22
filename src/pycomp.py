@@ -31,8 +31,6 @@ class SynAn():
 			self.out.write("\t|%s|%s|\n" % (x.center(20), str(st[x]).center(80)))
 			
 	def checkTypes(self,tipo1,tipo2):
-		mient = Entero()
-		print "checkTypes",mient
 		return tipo1.instancia(type(tipo2))
 			
 	def escribir(self, s):
@@ -220,7 +218,7 @@ class SynAn():
 			# elif attr.ref.clase=="variable":
 				# attr.ref = Attr(valor = attr.ref.valor,) 
 			else:
-				raise SemanticError(self.lexer.errorLeader(),"Constant value can only be assigned with another constant")
+				raise SemanticError(self.lexer.errorLeader(),"Invalid assignment: constant expected")
 		elif self.currentToken == "<CHAR>":
 			attr.ref = Attr(valor = self.lexer.getLexeme()[1],tipo = Caracter(),clase="constant")
 			self.out.write("\tCharacter constant found: " + str(attr.ref) + "\n")	
@@ -368,7 +366,7 @@ class SynAn():
 					else:
 						raise SemanticError(self.lexer.errorLeader(),"Invalid subrange: lower bound must be smaller than upper bound.")
 				else:
-					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Character expected, but " + str(ref.tipo) + " found).")
+					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Character expected, but " + str(char2.ref.tipo) + " found).")
 				#############
 				
 			else:
@@ -382,7 +380,6 @@ class SynAn():
 			tipo2 = Ref()
 			self.subrange_type_rest(tipo2)
 			tipo2.ref.tipo.lowerBound.valor *= valor.ref
-			print tipo2.ref.tipo.lowerBound.valor , tipo2.ref.tipo.upperBound.valor
 			if tipo2.ref.tipo.lowerBound.valor <= tipo2.ref.tipo.upperBound.valor:
 				tipo.ref = Attr(tipo = tipo2.ref.tipo, clase = "constant")
 			else:
@@ -500,7 +497,6 @@ class SynAn():
 						########
 						tipoElem = Ref()
 						self.simple_type(tipoElem)
-						print tipoIndice.ref, tipoIndice.ref.tipo
 						if tipoIndice.ref.tipo.instancia(Subrango) or tipoIndice.ref.tipo.instancia(Booleano):
 							if tipoElem.ref.tipo.instancia(Simple):
 								tipo.ref = Attr(tipo = Arreglo(tamanio = tipoIndice.ref.tipo.getRange(), indexType=tipoIndice.ref.tipo, elementType=tipoElem.ref.tipo),clase = "type")
@@ -774,7 +770,7 @@ class SynAn():
 			self.statement()
 			self.compound_statement_rest()
 			if self.lexer.getNextToken() != '<END>':
-				self.synErr('"end"')
+				self.synErr('"end" or a valid statement')
 		else:
 			self.synErr('"begin"')
 
@@ -820,7 +816,7 @@ class SynAn():
 				if self.checkTypes(attr.ref.tipo,identifier.tipo):
 					self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
 				else:
-					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment")
+					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected, but %s found" % (identifier.tipo, attr.ref.tipo))
 			else:
 				raise SemanticError(self.lexer.errorLeader(), "Left side of assignment must be a variable")
 			############
@@ -844,11 +840,10 @@ class SynAn():
 					attr2 = Ref()
 					self.expression(attr2)					
 					if self.checkTypes(array.tipo.indexType,attr1.ref.tipo):
-						print array.tipo.elementType, "asd",attr2.ref
 						if self.checkTypes(array.tipo.elementType, attr2.ref.tipo):
 							self.escribir("ALAR %s,%s" % (lexLevel, array.pos))
 						else:
-							raise SemanticError(self.lexer.errorLeader(),"Non compatible types in assignment. %s expected, but %s found" % (array.tipo.indexType, attr2.ref.tipo))
+							raise SemanticError(self.lexer.errorLeader(),"Non compatible types in assignment. %s expected, but %s found" % (array.tipo.elementType, attr2.ref.tipo))
 					else:
 						raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
 					############
@@ -891,6 +886,7 @@ class SynAn():
 		self.simple_expression(attr1)		
 		self.expression_rest(attr1)
 		attr.ref = attr1.ref
+		#########
 
 	def expression_rest(self,attr):
 		self.out.write('In expression_rest\n')
@@ -904,11 +900,14 @@ class SynAn():
 			self.relational_operator(op)
 			attr1 = Ref()
 			self.simple_expression(attr1)
-			if self.checkTypes(attr.ref.tipo,attr1.ref.tipo) and attr.ref.tipo.instancia(Simple):
-				self.escribir(op.ref)
-				attr.ref = Attr(clase="subexpression", tipo = Booleano())
+			if attr.ref.tipo.instancia(Simple): #esto nunca va a dar false... ya se chequea en factor_rest
+				if self.checkTypes(attr.ref.tipo,attr1.ref.tipo):
+					self.escribir(op.ref)
+					attr.ref = Attr(clase="subexpression", tipo = Booleano())
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in expression: %s and %s" % (attr.ref.tipo, attr1.ref.tipo))
 			else:
-				raise SemanticError(self.lexer.errorLeader(), "Non compatible types in expression")
+				raise SemanticError(self.lexer.errorLeader(), "Invalid expression: Simple type expected, but %s found" % attr.ref.tipo)
 			##########
 			
 		else:
@@ -927,6 +926,7 @@ class SynAn():
 	def simple_expression_other(self,attr):
 		self.out.write('In simple_expression_other\n')
 		token=self.lexer.getNextToken()
+		operator = self.lexer.getLexeme()
 		self.pushLexeme()
 		if token in self.adding:
 		
@@ -936,11 +936,13 @@ class SynAn():
 			self.adding_operator(op,tipo)
 			attr1 = Ref()
 			self.term(attr1)
-			# print attr.ref.tipo, attr1.ref.tipo, tipo.ref()
-			if self.checkTypes(attr.ref.tipo, attr1.ref.tipo) and attr.ref.tipo.instancia(tipo.ref):
-				self.escribir(op.ref)
+			if attr.ref.tipo.instancia(tipo.ref):
+				if self.checkTypes(attr.ref.tipo,attr1.ref.tipo):
+					self.escribir(op.ref)
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in expression: %s and %s" % (attr.ref.tipo, attr1.ref.tipo))
 			else:
-				raise SemanticError(self.lexer.errorLeader(), "Non compatible types in expression")
+				raise SemanticError(self.lexer.errorLeader(),"Invalid expression: Can not apply '%s' operator to %s" % (operator, attr.ref.tipo))
 			self.simple_expression_other(attr1)
 			attr.ref = attr1.ref
 			############
@@ -961,6 +963,7 @@ class SynAn():
 	def term_other(self,attr):
 		self.out.write('In term_other\n')
 		token=self.lexer.getNextToken()
+		operator = self.lexer.getLexeme()
 		self.pushLexeme()
 		if token in self.multiplying:
 		
@@ -970,8 +973,13 @@ class SynAn():
 			self.multiplying_operator(op,tipo)
 			attr1 = Ref()
 			self.factor(attr1)
-			if self.checkTypes(attr.ref.tipo,attr1.ref.tipo) and attr.ref.tipo.instancia(tipo.ref):
-				self.escribir(op.ref)			
+			if attr.ref.tipo.instancia(tipo.ref):
+				if self.checkTypes(attr.ref.tipo,attr1.ref.tipo):
+					self.escribir(op.ref)
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in expression: %s and %s" % (attr.ref.tipo, attr1.ref.tipo))
+			else:
+				raise SemanticError(self.lexer.errorLeader(), "Invalid expression: Can not apply '%s' operator to %s" % (operator, attr.ref.tipo))
 			self.term_other(attr1)
 			attr.ref = attr1.ref
 			#########
@@ -985,7 +993,6 @@ class SynAn():
 		token=self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % token)
 		if token=='<IDENTIFIER>':
-			
 
 			########			
 			self.factor_rest(self.lexer.getLexeme(),attr)
@@ -993,7 +1000,6 @@ class SynAn():
 			
 		elif token=='<NUMBER>':
 		
-			
 			########
 			self.escribir("APCT %s" % self.lexer.getLexeme())
 			attr.ref = Attr(clase = "subexpression", tipo = Entero(), valor = int(self.lexer.getLexeme()))
@@ -1018,7 +1024,7 @@ class SynAn():
 				self.escribir("NEGA")
 				attr.ref = attr1.ref
 			else:
-				raise SemanticError(self.lexer.errorLeader(),"Boolean expected but " + str(attr1.ref.tipo) + " found")
+				raise SemanticError(self.lexer.errorLeader(),"Invalid expression: Cannot apply 'not' operator to %s" % str(attr1.ref.tipo))
 			###########
 			
 		elif token=='<CHAR>':
@@ -1035,7 +1041,7 @@ class SynAn():
 	def factor_rest(self,id,attr):
 		self.out.write('In factor_rest\n')
 		token=self.lexer.getNextToken()
-		if token=='<OPEN_BRACKET>': # TODOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+		if token=='<OPEN_BRACKET>':
 		
 			###############
 			attr1 = Ref()
@@ -1057,11 +1063,11 @@ class SynAn():
 					else:
 						raise SemanticError(self.lexer.errorLeader(), "%s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
 				else:
-					raise SemanticError(self.lexer.errorLeader(), "%s is not an array" % id)			
+					raise SemanticError(self.lexer.errorLeader(), "Invalid expression: '%s' is not an array" % id)			
 				###############
 				
 				self.out.write('factor_rest is finished\n')
-		elif token=='<OPEN_PARENTHESIS>':
+		elif token=='<OPEN_PARENTHESIS>': # TODOOOOOOOOOOOOOOOOOOOOOOO
 			self.actual_parameter()
 			self.actual_parameter_rest()
 		else:
@@ -1079,14 +1085,13 @@ class SynAn():
 					attr.ref = deepcopy(identifier)
 					attr.ref.clase = "subexpression"
 				else:
-					raise SemanticError(self.lexer.errorLeader(), "Simple type expected, but %s found" % id)
+					raise SemanticError(self.lexer.errorLeader(), "Invalid expression: Simple type expected, but %s found" % identifier.tipo)
 			elif identifier.clase == 'constant':
 				self.escribir("APCT %s" % identifier.valor)
 				attr.ref = deepcopy(identifier)
 				attr.ref.clase = "subexpression"
-				print "factor_rest",type(attr.ref.tipo)
 			else:
-				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+identifier.ref.tipo+" found")			
+				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+ str(identifier.clase)+" identifier found")			
 			########
 
 	def actual_parameter(self):
@@ -1150,23 +1155,6 @@ class SynAn():
 			self.out.write('relational_operator is finished\n')
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
-
-	# def procedure_statement(self):
-		# self.out.write('In procedure_statement\n')
-		# token=self.lexer.getNextToken()
-		# if token == '<IDENTIFIER>':
-			# self.procedure_statement_rest()
-		# else:
-			# self.synErr('an identifier')
-
-	# def procedure_statement_rest(self):
-		# self.out.write('In procedure_statement_rest\n')
-		# token=self.lexer.getNextToken()
-		# if token == '<OPEN_PARENTHESIS>':
-			# self.actual_parameter()
-			# self.actual_parameter_restactual_parameter()
-		# else:
-			# self.pushLexeme()
 
 	def structured_statement(self):
 		self.out.write('In structured_statement\n')

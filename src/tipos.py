@@ -140,7 +140,7 @@ class Arreglo(Estructurado):
 		self.elementType = elementType
 		
 	def __str__(self):
-		return "Array (index: %s, elements: %s)" % (str(self.indexType),str(self.elementType))
+		return "%s Array" % str(self.elementType)
 		
 class Procedimiento(Elemento): #no puse que hereda de tipo porque no es un tipo
 	#params:lista de parametros (son tipos)
