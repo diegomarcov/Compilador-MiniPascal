@@ -593,6 +593,7 @@
 			 {
 				if <factor1>.attr.tipo.instancia(Entero):
 					<factor>.attr = newAttr(tipo=Entero(),clase="subexpresion")
+					# multiplicar el valor que viene de sign
 				else:
 					error("Integer expected but  "+<factor1>.tipo+" found")
 			 }

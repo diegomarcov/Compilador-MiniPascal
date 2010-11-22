@@ -3,3 +3,4 @@ En la comparacion, si se puede comparar por igualdad los arreglos.
 SI definimos maxint, y en cuanto.
 Copiar arreglos en asignaciones.
 Cantidad de parametros de write y read. Si se permite el write de muchas cosas
+Borrar archivos mepa cuando encontramos error

@@ -28,8 +28,8 @@ class SynError(CompilerError):
 		
 class UnexpectedTokenError(CompilerError):
 	def __init__(self,leader,found):
-		super(UnexpectedTokenError,self).__init__()
-		self.leader = leader
+		super(UnexpectedTokenError,self).__init__(leader)
+		
 		if found == '':
 			found = 'EOF'
 		self.msg = 'Unexpected token: "%s" found.' % found

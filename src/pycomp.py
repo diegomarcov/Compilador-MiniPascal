@@ -17,6 +17,7 @@ class SynAn():
 	def __init__(self,lexer,debug,outputFile,mepa):
 		self.lexer = lexer
 		self.mepa = mepa
+		self.labelIndex = 0
 		
 		self.relationals = {'<LESS_OP>':'CMME','<LESS_EQUAL_OP>':'CMNI','<GREATER_OP>':'CMMA','<GREATER_EQUAL_OP>':'CMYI','<EQUAL>':'CMIG','<NOT_EQUAL_OP>':'CMDG'}
 		self.adding = {'<ADD_OP>':'SUMA','<MINUS_OP>':'SUST','<OR_LOGOP>':'DISJ'}
@@ -34,7 +35,12 @@ class SynAn():
 		return tipo1.instancia(type(tipo2))
 			
 	def escribir(self, s):
-		self.mepa.write(s + '\n')
+		self.mepa.write('\t\t' + s + '\n')
+		
+	def ponerLabel(self, label = None):
+		if label == None:
+			label = "L" + str(self.labelIndex)
+		self.mepa.write('%s\t\tNADA\n' % label)
 			
 	def execute(self):
 		try:
@@ -1034,6 +1040,22 @@ class SynAn():
 			attr.ref = Attr(clase = "subexpression", tipo = Caracter(),valor = self.lexer.getLexeme()[1])
 			########
 			
+		elif token == '<ADD_OP>' or token == '<MINUS_OP>':
+		
+			##########
+			self.pushLexeme()
+			valor = Ref()
+			self.sign(valor)			
+			attr1 = Ref()
+			self.factor(attr1)
+			if attr1.ref.tipo.instancia(Entero):
+				self.escribir("APCT %s" %valor.ref)
+				self.escribir("MULT")
+				attr.ref = attr1.ref
+			else:
+				raise SemanticError("Invalid expression: Integer expected, but %s found" % attr1.ref.tipo)
+			###########
+			
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 		self.out.write('factor is finished\n')
@@ -1167,36 +1189,54 @@ class SynAn():
 		else:
 			self.repetitive_statement()
 
-	def structured_statement_other(self):
-		self.out.write('In structured_statement_other\n')
-		token=self.lexer.getNextToken()
-		self.pushLexeme()
-		if token in ('<SEMI_COLON>','<END>'):
-			self.statement_rest()
-		else:
-			self.statement()
-			self.statement_rest()
-
 	def conditional_statement(self):
 		self.out.write('In conditional_statement\n')
 		token=self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % token)
 		if token =='<IF>':
-			self.expression()
+		
+			################
+			attr = Ref()
+			self.expression(attr)
+			if attr.ref.tipo.instancia(Booleano):
+				labelActual = "L" + str(self.labelIndex)
+				self.labelIndex += 1
+				self.escribir("DSVF %s"% labelActual)
+				
+			else:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid conditional statement. Boolean expected, but %s found" % attr.ref.tipo)
+			################
+			
 			if self.lexer.getNextToken() =='<THEN>':
+
 				self.statement()
-				self.conditional_statement_other()
+				self.conditional_statement_other(labelActual)
 			else:
 				self.synErr('"then"')
 		else:
 			self.synErr('"if"')
 
-	def conditional_statement_other(self):
+	def conditional_statement_other(self,label):
 		self.out.write('In conditional_statement_other\n')
 		token=self.lexer.getNextToken()
 		if token =='<ELSE>':
+			
+			#############
+			labelDpsIf = "L%s" % self.labelIndex
+			self.labelIndex+=1
+			self.escribir("DSVS %s" %labelDpsIf)
+			self.ponerLabel(label)
+			#############
+			
 			self.statement()
+			
+			###########
+			self.ponerLabel(labelDpsIf)
+			###########
+			
 		else:
+			self.ponerLabel(label)
+			
 			self.pushLexeme()
 
 
@@ -1205,24 +1245,34 @@ class SynAn():
 		token=self.lexer.getNextToken()
 
 		if token =='<WHILE>':
-			self.expression()
-			if self.lexer.getNextToken() =='<DO>':
-				self.repetitive_statement_rest()
+			
+			###########
+			self.ponerLabel()
+			labelExp = "L%s" % self.labelIndex
+			self.labelIndex += 1
+			attr = Ref()
+			self.expression(attr)
+			if attr.ref.tipo.instancia(Booleano):		
+				labelDpsWhile = "L%s" % self.labelIndex
+				self.labelIndex += 1
+				self.escribir("DSVF %s" %labelDpsWhile)				
+			else:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid repetitive statement condition: Boolean expected but %s found" % attr.ref.tipo)
+			###########
+			
+			if self.lexer.getNextToken() == '<DO>':
+				self.statement()
+				
+				###########
+				self.escribir("DSVS %s" % labelExp)
+				self.ponerLabel(labelDpsWhile)
+				###########
 				
 			else:
 				self.synErr('"do"')
 		else:
 			self.synErr('"while"')
 
-	def repetitive_statement_rest(self):
-		self.out.write('In repetitive_statement_rest\n')
-		token=self.lexer.getNextToken()
-		self.pushLexeme()
-		if token in('<BEGIN>','<WHILE>','<IF>','<IDENTIFIER>'):
-			self.statement()
-		else:
-			pass #lambda
-		
 	def synErr(self,s):
 		raise SynError(self.lexer.errorLeader(),s,self.lexer.getLexeme())
 		
