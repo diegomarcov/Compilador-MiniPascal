@@ -1,2 +1,4 @@
 Si se pueden asignar variables a constantes.
 En la comparacion, si se puede comparar por igualdad los arreglos.
+SI definimos maxint, y en cuanto.
+Copiar arreglos en asignaciones.

@@ -20,7 +20,7 @@ class SynAn():
 		
 		self.relationals = {'<LESS_OP>':'CMME','<LESS_EQUAL_OP>':'CMNI','<GREATER_OP>':'CMMA','<GREATER_EQUAL_OP>':'CMYI','<EQUAL>':'CMIG','<NOT_EQUAL_OP>':'CMDG'}
 		self.adding = {'<ADD_OP>':'SUMA','<MINUS_OP>':'SUST','<OR_LOGOP>':'DISJ'}
-		self.multiplying = {'<MULTIPLY_OP>':'MULT','<DIV_OP>':'DIVI','<AND_LOGOP>':'CONJ'}
+		self.multiplying = {'<MULTIPLY_OP>':'MULT','<DIV_OP>':'DIVC\nDIVI','<AND_LOGOP>':'CONJ'}
 		if debug:
 			self.out = outputFile
 		else:
@@ -31,11 +31,12 @@ class SynAn():
 			self.out.write("\t|%s|%s|\n" % (x.center(20), str(st[x]).center(80)))
 			
 	def checkTypes(self,tipo1,tipo2):
+		mient = Entero()
+		print "checkTypes",mient
 		return tipo1.instancia(type(tipo2))
 			
 	def escribir(self, s):
 		self.mepa.write(s + '\n')
-		
 			
 	def execute(self):
 		try:
@@ -381,7 +382,7 @@ class SynAn():
 			tipo2 = Ref()
 			self.subrange_type_rest(tipo2)
 			tipo2.ref.tipo.lowerBound.valor *= valor.ref
-			#print tipo2.ref.tipo.lowerBound.valor , tipo2.ref.tipo.upperBound.valor
+			print tipo2.ref.tipo.lowerBound.valor , tipo2.ref.tipo.upperBound.valor
 			if tipo2.ref.tipo.lowerBound.valor <= tipo2.ref.tipo.upperBound.valor:
 				tipo.ref = Attr(tipo = tipo2.ref.tipo, clase = "constant")
 			else:
@@ -450,7 +451,7 @@ class SynAn():
 				number2 = Ref()
 				self.constant(number2)
 				if number2.ref.tipo.instancia(Entero):
-					tipo.ref = Attr(tipo = SubEntero(Attr(valor = number,tipo = Entero(), clase = "constant"),number2.ref), clase = "type")
+					tipo.ref = Attr(tipo = SubEntero(lowerBound = Attr(valor = int(number),tipo = Entero(), clase = "constant"),upperBound = number2.ref), clase = "type")
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Integer expected, but " + str(number2.ref.tipo) + " found).")
 				##############
@@ -825,14 +826,38 @@ class SynAn():
 			############
 			
 		elif token=='<OPEN_BRACKET>' :
-			self.expression()
+		
+			#############
+			attr1 = Ref()
+			self.expression(attr1)
+			array = self.stStack.getGlobalValue(id)
+			lexLevel = self.stStack.lastLexicalLevel()
+			self.escribir("CONT %s,%s" % (array.tipo.indexType.getLower(),array.tipo.indexType.getUpper()))
+			self.escribir("APCT %s" % array.tipo.indexType.getLower())
+			self.escribir("SUST")
+			#############
+			
 			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
 				if self.lexer.getNextToken()=='<ASSIGNMENT>':
-					self.expression()
+					
+					############
+					attr2 = Ref()
+					self.expression(attr2)					
+					if self.checkTypes(array.tipo.indexType,attr1.ref.tipo):
+						print array.tipo.elementType, "asd",attr2.ref
+						if self.checkTypes(array.tipo.elementType, attr2.ref.tipo):
+							self.escribir("ALAR %s,%s" % (lexLevel, array.pos))
+						else:
+							raise SemanticError(self.lexer.errorLeader(),"Non compatible types in assignment. %s expected, but %s found" % (array.tipo.indexType, attr2.ref.tipo))
+					else:
+						raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
+					############
+					
 				else:
 					self.synErr('":="')
 			else:
 				self.synErr('"]"')
+				
 		elif token=='<OPEN_PARENTHESIS>':
 			self.actual_parameter()
 			self.actual_parameter_rest()
@@ -957,31 +982,31 @@ class SynAn():
 	def factor(self,attr):
 		self.out.write('In factor\n')
 		
-		attr.ref = Attr(clase = "subexpression", tipo= Entero())
-		
 		token=self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % token)
 		if token=='<IDENTIFIER>':
 			
+
 			########			
 			self.factor_rest(self.lexer.getLexeme(),attr)
 			########
 			
 		elif token=='<NUMBER>':
 		
+			
 			########
 			self.escribir("APCT %s" % self.lexer.getLexeme())
+			attr.ref = Attr(clase = "subexpression", tipo = Entero(), valor = int(self.lexer.getLexeme()))
 			########
 			
-			self.out.write('Factor is finished\n')
 		elif token=='<OPEN_PARENTHESIS>':
-
+		
 			###########
 			self.expression(attr)
 			###########
 			
 			if self.lexer.getNextToken()=='<CLOSE_PARENTHESIS>':
-				self.out.write('factor is finished\n')
+				pass
 			else:
 				self.synErr('")"')
 		elif token=='<NOT_LOGOP>':
@@ -997,16 +1022,44 @@ class SynAn():
 			###########
 			
 		elif token=='<CHAR>':
-			self.out.write('factor is finished\n')
+						
+			########
+			self.escribir("APCT %s" % ord(self.lexer.getLexeme()[1]))
+			attr.ref = Attr(clase = "subexpression", tipo = Caracter(),valor = self.lexer.getLexeme()[1])
+			########
+			
 		else:
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
+		self.out.write('factor is finished\n')
 
 	def factor_rest(self,id,attr):
 		self.out.write('In factor_rest\n')
 		token=self.lexer.getNextToken()
 		if token=='<OPEN_BRACKET>': # TODOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-			self.expression()
+		
+			###############
+			attr1 = Ref()
+			###############
+			
+			self.expression(attr1)
 			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
+			
+				###############
+				array = self.stStack.getGlobalValue(id)
+				nivel = self.stStack.lastLexicalLevel()
+				if array.clase=="variable" and array.tipo.instancia(Arreglo):
+					if self.checkTypes(attr1.ref.tipo,array.tipo.indexType):
+						self.escribir("CONT %s,%s" % (array.tipo.indexType.getLower(),array.tipo.indexType.getUpper()))
+						self.escribir("APCT %s" % array.tipo.indexType.getLower())
+						self.escribir("SUST")
+						self.escribir("APAR %s,%s" % (nivel, array.pos))
+						attr.ref = Attr(clase = "subexpression", tipo = array.tipo.elementType)
+					else:
+						raise SemanticError(self.lexer.errorLeader(), "%s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "%s is not an array" % id)			
+				###############
+				
 				self.out.write('factor_rest is finished\n')
 		elif token=='<OPEN_PARENTHESIS>':
 			self.actual_parameter()
@@ -1031,9 +1084,9 @@ class SynAn():
 				self.escribir("APCT %s" % identifier.valor)
 				attr.ref = deepcopy(identifier)
 				attr.ref.clase = "subexpression"
+				print "factor_rest",type(attr.ref.tipo)
 			else:
-				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+identifier.ref.tipo+" found")
-			
+				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+identifier.ref.tipo+" found")			
 			########
 
 	def actual_parameter(self):

@@ -2,9 +2,9 @@ program ej;
 
 var 
 
-	var2 : integer;
+	var2 : char;
 
 begin
-	var2 := 1;
+	var2 := 'a';
 
 end.

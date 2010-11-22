@@ -1,32 +1,47 @@
 # -*- coding: utf-8 -*-
 # toda la herencia de tipos
 
-class Elemento: #todos los elementos que pueden aparecer como tipo de un attr en la tabla de simbolos
+class Elemento(object): #todos los elementos que pueden aparecer como tipo de un attr en la tabla de simbolos
+	def __init__(self):
+		super(Elemento,self).__init__()
+	
 	def instancia(self,tipo):
 		return isinstance(self,tipo)
 
 class Tipo(Elemento):
 	#nombre: el nombre del tipo
 	#tamanio: cantidad de locaciones de memoria que ocupa	
-	pass
+	def __init__(self):
+		super(Tipo,self).__init__()
 	
 class Simple(Tipo):
 	def __init__(self):
+		super(Simple,self).__init__()
 		self.tamanio = 1
 		
 class Caracter(Simple):
 	def __init__(self):
-		Simple.__init__(self)
+		super(Caracter,self).__init__()
 		
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or tipo == SubCaracter
 		
 	def __str__(self):
 		return "Character"
+		
+	def getRange(self):
+		return 256
+		
+	def getLower(self):
+		return 0
+		
+	def getUpper(self):
+		return 255
+	
 	
 class Entero(Simple):
 	def __init__(self):
-		Simple.__init__(self)
+		super(Entero,self).__init__()
 		
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or tipo == SubEntero
@@ -34,9 +49,19 @@ class Entero(Simple):
 	def __str__(self):
 		return "Integer"
 		
+	def getRange(self):
+		return 65535
+		
+	def getLower(self):
+		return 0
+		
+	def getUpper(self):
+		return 65535
+	
+		
 class Booleano(Simple):
 	def __init__(self):
-		Simple.__init__(self)
+		super(Booleano,self).__init__()
 		
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or tipo == SubBooleano
@@ -46,11 +71,18 @@ class Booleano(Simple):
 
 	def getRange(self):
 		return 2
+		
+	def getLower(self):
+		return 0
+		
+	def getUpper(self):
+		return 1
+	
 	
 class Subrango(Simple):
 	#upperBound y lowerBound
 	def __init__(self, lowerBound, upperBound):
-		Simple.__init__(self)
+		super(Subrango,self).__init__()
 		self.lowerBound = lowerBound
 		self.upperBound = upperBound
 		
@@ -59,6 +91,12 @@ class Subrango(Simple):
 
 	def getRange(self):
 		return int(self.upperBound.valor) - int(self.lowerBound.valor) + 1
+		
+	def getLower(self):
+		return self.lowerBound.valor
+		
+	def getUpper(self):
+		return self.upperBound.valor
 		
 class SubCaracter(Subrango,Caracter): #herencia múltiple troska
 	def __init__(self, lowerBound, upperBound):
@@ -69,6 +107,12 @@ class SubCaracter(Subrango,Caracter): #herencia múltiple troska
 		
 	def getRange(self):
 		return ord(self.upperBound.valor) - ord(self.lowerBound.valor) + 1
+		
+	def getLower(self):
+		return ord(self.lowerBound.valor)
+		
+	def getUpper(self):
+		return ord(self.upperBound.valor)
 		
 class SubEntero(Subrango,Entero):
 	def __init__(self,lowerBound, upperBound):
@@ -123,7 +167,6 @@ class Programa(Elemento):#no puse que hereda de tipo porque no es un tipo
 		return "Program identifier"
 		
 class Attr:
-	
 	def __init__(self,tipo,clase, valor=None, pos=None):
 		self.valor=valor
 		#valor: puede ser el valor de la constante... o el lugar fisico donde se encontrara
@@ -144,22 +187,24 @@ class Ref:
 
 if __name__ == '__main__':
 	#testeo de la herencia
-	print "hola"
-	caracter = Caracter()
-	print "tamaño caracter", caracter.tamanio
-	subCaracter = SubCaracter()
-	print "tamaño subcaracter", subCaracter.tamanio
-	print "caracter instancia de subcaracter", caracter.instancia(SubCaracter)
-	print "subcaracter instancia de caracter", subCaracter.instancia(Caracter)
+	# print "hola"
+	# caracter = Caracter()
+	# print "tamaño caracter", caracter.tamanio
+	# subCaracter = SubCaracter()
+	# print "tamaño subcaracter", subCaracter.tamanio
+	# print "caracter instancia de subcaracter", caracter.instancia(SubCaracter)
+	# print "subcaracter instancia de caracter", subCaracter.instancia(Caracter)
 
-	print "caracter es tipo simple", caracter.instancia(Simple)
-	print "subcaracter es tipo estructurado", subCaracter.instancia(Estructurado)
-	arreglo = Arreglo(3,caracter,subCaracter)
-	print "arreglo es de tipo estructurado", arreglo.instancia(Estructurado)
-	print "tamaño arreglo", arreglo.tamanio
-	proc = Procedimiento([])
-	print "procedimiento es simple",proc.instancia(Simple)
-	funcion = Funcion([],Entero)
-	print "funcion es tipo", funcion.instancia(Tipo)
-	print "funcion devuelve", str(funcion.ret)
-	print "funcion compatible con entero", funcion.instancia(Entero)
+	# print "caracter es tipo simple", caracter.instancia(Simple)
+	# print "subcaracter es tipo estructurado", subCaracter.instancia(Estructurado)
+	# arreglo = Arreglo(3,caracter,subCaracter)
+	# print "arreglo es de tipo estructurado", arreglo.instancia(Estructurado)
+	# print "tamaño arreglo", arreglo.tamanio
+	# proc = Procedimiento([])
+	# print "procedimiento es simple",proc.instancia(Simple)
+	# funcion = Funcion([],Entero)
+	# print "funcion es tipo", funcion.instancia(Tipo)
+	# print "funcion devuelve", str(funcion.ret)
+	# print "funcion compatible con entero", funcion.instancia(Entero)
+	int = Entero()
+	print type(Entero()) == Entero
