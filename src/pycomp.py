@@ -33,7 +33,19 @@ class SynAn():
 		self.out.write("fin tabla\n\n")
 			
 	def checkTypes(self,tipo1,tipo2):
-		return tipo1.instancia(type(tipo2))
+		if tipo1.instancia(type(tipo2)):
+			if tipo1.instancia(Simple):
+				return True
+			else: #estamos en un arreglo
+				if tipo1.indexType.getRange()==tipo2.indexType.getRange():
+					if self.checkTypes(tipo1.elementType,tipo2.elementType):
+						return True
+					else:
+						raise SemanticError(self.lexer.errorLeader(),"Non compatible array element types: %s and %s" % (tipo1.elementType,tipo2.elementType))
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Cannot operate with arrays of different size" )
+		else:
+			return False
 			
 	def escribir(self, s):
 		self.mepa.write('\t\t' + s + '\n')
@@ -918,7 +930,12 @@ class SynAn():
 			self.expression(attr)
 			if identifier.clase == "variable":
 				if self.checkTypes(attr.ref.tipo,identifier.tipo):
-					self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
+					if identifier.tipo.instancia(Simple):
+						self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
+					elif identifier.tipo.instancia(Arreglo):
+						self.escribir("POAR %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
+					else:
+						raise Exception("YOUUUU SHALL NOT PAAAASS!")
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected, but %s found" % (identifier.tipo, attr.ref.tipo))
 			else:
@@ -1203,7 +1220,7 @@ class SynAn():
 		self.out.write('In factor_rest\n')
 		token=self.lexer.getNextToken()
 		if token=='<OPEN_BRACKET>':
-			#TODOOOOOOOOOOOOOOOOOOOOOOO
+			
 			###############
 			attr1 = Ref()
 			###############
@@ -1248,9 +1265,12 @@ class SynAn():
 				else:
 					if identifier.tipo.instancia(Simple):
 						self.escribir("APVL %s,%s" % (nivel,identifier.pos))
-						attr.ref = deepcopy(identifier)
+						
+					elif identifier.tipo.instancia(Arreglo):
+						self.escribir("PUAR %s,%s,%s" % (nivel,identifier.pos,identifier.tipo.indexType.getRange()))
 					else:
-						raise SemanticError(self.lexer.errorLeader(), "Invalid expression: Simple type expected, but %s found" % identifier.tipo)
+						raise Exception("YOUUUU SHALL NOT PAAAASS!")
+					attr.ref = deepcopy(identifier)
 			elif identifier.clase == 'constant':
 				if porRef:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
@@ -1298,7 +1318,7 @@ class SynAn():
 				# else:
 					# raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
 			else:
-				Exception("This should not happen")
+				raise Exception("YOUUUU SHALL NOT PAAAASS!")
 		else:# si es None es definido por el usuario	
 			if not self.checkTypes(esperado[1],attrE.ref.tipo):
 				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure or function call: %s parameter expected, but %s found" % (esperado[1],attrE.ref.tipo))
