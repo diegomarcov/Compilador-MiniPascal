@@ -467,15 +467,19 @@
                                     error("Non compatible types in assignment. %s expected as index, but %s found" % (id.tipo.indexType, <expression>.tipo))
                             }
                             |
-                            <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> 
+                            <OPEN_PARENTHESIS> 
 							{
 								identifier = getGlobalValue(<simple_statement_rest>.ID)
 								if identifier.clase== "procedure":
 									#armar el nuevo entorno, con su registro de activacion, guardar las variables, y apuntar la ejecucion al codigo del procedimiento
+									<actual_parameter>.attr = identifier.tipo.params[0]
+									<actual_parameter_rest>.params = identifier.tipo.params[1:-1]
 								else:
 									error(<simple_statement_rest>.ID+ " is not a procedure")
 									
 							}
+							<actual_parameter> <actual_parameter_rest> 
+
 							| 
 							<LAMBDA>
 							{

@@ -13,15 +13,17 @@ class Tipo(Elemento):
 	#tamanio: cantidad de locaciones de memoria que ocupa	
 	def __init__(self):
 		super(Tipo,self).__init__()
+		self.imprimible = False
 	
 class Simple(Tipo):
 	def __init__(self):
 		super(Simple,self).__init__()
-		self.tamanio = 1
+		self.tamanio = 1		
 		
 class Caracter(Simple):
 	def __init__(self):
 		super(Caracter,self).__init__()
+		self.imprimible = True
 		
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or tipo == SubCaracter
@@ -37,11 +39,13 @@ class Caracter(Simple):
 		
 	def getUpper(self):
 		return 255
+
 	
 	
 class Entero(Simple):
 	def __init__(self):
 		super(Entero,self).__init__()
+		self.imprimible = True
 		
 	def instancia(self,tipo):
 		return isinstance(self,tipo) or tipo == SubEntero
@@ -144,7 +148,7 @@ class Arreglo(Estructurado):
 		
 class Procedimiento(Elemento): #no puse que hereda de tipo porque no es un tipo
 	#params:lista de parametros (son tipos)
-	def __init__(self,params):
+	def __init__(self,params=None):
 		self.params = params
 		
 	def __str__(self):

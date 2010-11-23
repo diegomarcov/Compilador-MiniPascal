@@ -860,8 +860,19 @@ class SynAn():
 				self.synErr('"]"')
 				
 		elif token=='<OPEN_PARENTHESIS>':
-			self.actual_parameter()
-			self.actual_parameter_rest()
+			
+			###############
+			proc = self.stStack.getGlobalValue(id)
+			nivel = self.stStack.lastLexicalLevel()
+			if proc.clase == "procedure":
+				if nivel==-1:
+					self.actual_parameter(id = id)
+					self.actual_parameter_rest(id = id)
+					
+			else:
+				raise SemanticError(self.lexer.errorLeader(), "Invalid statement: %s is not a procedure" % id)
+			###############
+			
 		else:
 			#lambda
 			self.out.write('push lexeme\n')
@@ -1102,10 +1113,8 @@ class SynAn():
 				pass
 			elif identifier.clase == 'variable':
 				if identifier.tipo.instancia(Simple):
-					
 					self.escribir("APVL %s,%s" % (nivel,identifier.pos))
 					attr.ref = deepcopy(identifier)
-					attr.ref.clase = "subexpression"
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Invalid expression: Simple type expected, but %s found" % identifier.tipo)
 			elif identifier.clase == 'constant':
@@ -1116,18 +1125,70 @@ class SynAn():
 				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+ str(identifier.clase)+" identifier found")			
 			########
 
-	def actual_parameter(self):
+	def actual_parameter(self, esperado = None,id=None):
 		self.out.write('In actual_parameter\n')
-		self.expression()
+		
+		###########
+		attrE = Ref()
+		self.expression(attrE)
+		
+		if id: #si es None es nuestro
+			if id=="write":
+				if attrE.ref.tipo.instancia(Entero):
+					self.escribir("IMPR")
+				elif attrE.ref.tipo.instancia(Caracter):
+					self.escribir("IMCH")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
+			elif id=="writeln":
+				if attrE.ref.tipo.instancia(Entero):
+					self.escribir("IMLN")
+				elif attrE.ref.tipo.instancia(Caracter):
+					self.escribir("IMCN")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
+			# elif id=="read": # Falta mucho aca... poner el valor en la variable
+				# if attrE.ref.tipo.instancia(Entero):
+					# self.escribir("LEER")
+				# elif attrE.ref.tipo.instancia(Caracter):
+					# self.escribir("LECH")
+				# else:
+					# raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
+			# elif id=="readln":
+				# if attrE.ref.tipo.instancia(Entero):
+					# self.escribir("LELN")
+				# elif attrE.ref.tipo.instancia(Caracter):
+					# self.escribir("LECN")
+				# else:
+					# raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
+			else:
+				Exception("This should not happen")
+		else:# si no es None es definido por el usuario	
+			pass
+		###########
 
-	def actual_parameter_rest(self):
+	def actual_parameter_rest(self, listParams=None,id=None):
 		self.out.write('In actual_parameter_rest\n')
 		token=self.lexer.getNextToken()
 		if token=='<COMMA>':
+		
+			##########
+			if id: #es predefinido... necesita una solo parámetro
+				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure call: %s has only 1 parameter(s)" % id)
+			##########
+				
 			self.actual_parameter()
 			self.actual_parameter_rest()			
 		elif token=='<CLOSE_PARENTHESIS>':
 			self.out.write('actual_parameter_restis finished\n')
+			
+			############
+			if id: #es predefinido
+				pass
+			else:
+				pass # hay que controlar la cantidad de parámetros
+			############
+			
 		else:
 			self.synErr('"," or ")"')
 

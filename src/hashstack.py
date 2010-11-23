@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tipos import Attr,Booleano,Entero,Caracter
+from tipos import Attr,Booleano,Entero,Caracter,Procedimiento,Funcion
 import traceback
 
 class SymbolTableError(Exception):
@@ -20,6 +20,10 @@ class HashStack(list):
 							"integer": Attr(tipo = Entero(), clase = "type"),
 							"boolean": Attr (tipo = Booleano(), clase = "type"),
 							"char": Attr(tipo = Caracter(), clase = "type"),
+							"write": Attr (tipo = Procedimiento(), clase = "procedure"),
+							"writeln": Attr (tipo = Procedimiento(), clase = "procedure"),
+							"read": Attr (tipo = Procedimiento(), clase = "procedure"),
+							"readln": Attr (tipo = Procedimiento(), clase = "procedure"),
 							# procedimientos
 						}
 					)
