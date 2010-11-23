@@ -12,7 +12,7 @@ class SymbolTableError(Exception):
 
 class HashStack(list):
 	def __init__(self):
-		list.__init__([])
+		super(HashStack,self).__init__([])
 		self.append(
 						{
 							"true": Attr(valor = 1, tipo = Booleano(), clase = "constant"),
@@ -32,10 +32,10 @@ class HashStack(list):
 		return self[-1]
 		
 	def pop(self):
-		return list.pop(self)
+		return super(HashStack,self).pop()
 		
-	def push(self,x={}):
-		list.append(self,x)
+	def push(self):
+		self.append({})
 		
 	def addNewID(self,key,element):
 		st = self.top()
@@ -56,6 +56,9 @@ class HashStack(list):
 		
 	def lastLexicalLevel(self): # cuidado con efectos colaterales... usar siempre debajo de getGlobalValue
 		return len(self) + self.index
+		
+	def getCurrentLexLevel(self):
+		return len(self)-1
 			
 	def __iter__(self):
 		self.index = -1

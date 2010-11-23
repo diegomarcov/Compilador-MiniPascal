@@ -24,6 +24,9 @@
 					stStack.addNewID(<block>.idPrograma], Attr(tipo="program", type = Program()))
 			}
             <constant_definition_part> <block_cons_rest> 
+			{
+				stStack.pop()
+			}
             | 
             { 
 				stStack.pushNewSymbolTable() 
@@ -31,12 +34,22 @@
 					stStack[-1][<block>.idPrograma] = newAttr(tipo="program", type = Program())
 			}
             <block_cons_rest>
+			{
+				stStack.pop()
+			}
 
 <block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
 
 <block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
 
-<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part>
+<block_var_rest> ::= 	{
+							#poner el salto al principio de los statements
+						}
+						<procedure_and_function_declaration_part> 
+						{
+							#poner el label del principio de los statements
+						}
+						<statement_part> | <statement_part>
 
 <constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
 
@@ -653,7 +666,7 @@
 				  }
 
 <actual_parameter> ::= {
-						<expression>.porReferencia=<actual_parameter>.expected[1]#aca viene el booleano
+						<expression>.porReferencia=<actual_parameter>.expected[2]#aca viene el booleano
 						#capaz que no sea necesario, si se viene levantando el attr con la clase variable...
 					   }
 					   <expression>
@@ -664,7 +677,8 @@
 							else:
 								error("Variable expected")
 						else:
-							<actual_parameter>.attr=<expression>.attr
+							if checkTypes(<actual_parameter>.tipo,<expression>.attr.tipo):
+								<actual_parameter>.attr=<expression>.attr
 					   }
 
 <actual_parameter_rest> ::= <COMMA> 

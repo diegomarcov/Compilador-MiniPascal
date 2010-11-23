@@ -30,6 +30,7 @@ class SynAn():
 	def imprimirST(self,st):
 		for x in st:
 			self.out.write("\t|%s|%s|\n" % (x.center(20), str(st[x]).center(80)))
+		self.out.write("fin tabla\n\n")
 			
 	def checkTypes(self,tipo1,tipo2):
 		return tipo1.instancia(type(tipo2))
@@ -98,8 +99,7 @@ class SynAn():
 
 	def block(self,idPrograma=None):
 		self.out.write('In block\n')
-		self.currentToken = self.lexer.getNextToken()
-		self.out.write(self.currentToken)
+		currentToken = self.lexer.getNextToken()
 		
 		################		
 		self.imprimirST(self.stStack.top())
@@ -109,31 +109,41 @@ class SynAn():
 			#procedimientos...
 		################
 		
-		if self.currentToken == "<CONST>":
-			self.pushLexeme()
+		self.pushLexeme()
+		tamanioVariables =Ref(0)
+		if currentToken == "<CONST>":
 			self.constant_definition_part()
-			self.block_cons_rest()
+			self.block_cons_rest(tamanioVariables)
 		else:
-			self.pushLexeme()
-			self.block_cons_rest()
+			self.block_cons_rest(tamanioVariables)
+			
+		#########
+		self.stStack.pop()
+		
+		#########
 
-	def block_cons_rest(self):
+	def block_cons_rest(self,tamanioVariables):
 		self.out.write('In block_cons_rest\n')
-		self.currentToken = self.lexer.getNextToken()
-		if self.currentToken == "<TYPE>":
+		currentToken = self.lexer.getNextToken()
+		if currentToken == "<TYPE>":
 			self.pushLexeme()
 			self.type_definition_part()
-			self.block_type_rest()
+			self.block_type_rest(tamanioVariables)
 		else:
 			self.pushLexeme()
-			self.block_type_rest()
+			self.block_type_rest(tamanioVariables)
+			
+		###########		
+		if tamanioVariables.ref: # si hay variables libero memoria
+			self.escribir("LMEM %s" %tamanioVariables.ref)
+		###########
 	
-	def block_type_rest(self):
+	def block_type_rest(self,tamanioVariables):
 		self.out.write('In block_type_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<VAR>":
 			self.pushLexeme()
-			self.variable_definition_part()
+			self.variable_definition_part(tamanioVariables)
 			self.block_var_rest()
 		else:
 			self.pushLexeme()
@@ -147,8 +157,20 @@ class SynAn():
 			self.pushLexeme()
 			self.statement_part()
 		else:
-			self.pushLexeme()
+			self.pushLexeme()	
+			
+			########
+			label = "L%s" % self.labelIndex
+			self.labelIndex += 1
+			self.escribir("DSVS %s" %label)
+			########
+			
 			self.procedure_and_function_declaration_part()
+			
+			#######
+			self.ponerLabel(label)
+			#######
+			
 			self.statement_part()
 
 	def constant_definition_part(self):
@@ -193,11 +215,7 @@ class SynAn():
 			
 				#########
 				attr = Ref()
-				#########
-				
 				self.constant(attr)
-				
-				#########
 				self.stStack.addNewID(id,attr.ref)
 				self.out.write("\tConstant: "+id + ": " + str(attr.ref) +" at constant_definition\n")
 				self.imprimirST(self.stStack.top())
@@ -521,44 +539,46 @@ class SynAn():
 		else:
 			self.synErr('"array"')
 
-	def variable_definition_part(self):
+	def variable_definition_part(self,tamanioVariables):
 		self.out.write('In variable_definition_part\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<VAR>":
-			self.globalVarIndex = 0
-			self.variable_declaration()
-			self.variable_declaration_part_rest()
+			# self.globalVarIndex = 0
+			tamanioVariables.ref = 0
+			self.variable_declaration(tamanioVariables)
+			self.variable_declaration_part_rest(tamanioVariables)
 			
 			#############
-			self.escribir("RMEM %s" % self.globalVarIndex)
+			# self.escribir("RMEM %s" % self.globalVarIndex)
+			self.escribir("RMEM %s" % tamanioVariables.ref)
 			#############
 			
 		else:
 			self.synErr('"VAR"')
 
-	def variable_declaration_part_rest(self):
+	def variable_declaration_part_rest(self,tamanioVariables):
 		self.out.write('In variable_declaration_part_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<SEMI_COLON>":
-			self.variable_declaration_rest_rest()
+			self.variable_declaration_rest_rest(tamanioVariables)
 		else:
 			self.synErr('";"')
 
-	def variable_declaration_rest_rest(self):
+	def variable_declaration_rest_rest(self,tamanioVariables):
 		self.out.write('In variable_declaration_rest_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<IDENTIFIER>":
 			self.pushLexeme()
-			self.variable_declaration()
-			self.variable_declaration_part_rest()
+			self.variable_declaration(tamanioVariables)
+			self.variable_declaration_part_rest(tamanioVariables)
 		else:
 		#lambda
 			self.pushLexeme()
 
-	def variable_declaration(self):
+	def variable_declaration(self,tamanioVariables):
 		self.out.write('In variable_declaration\n')
 		self.currentToken = self.lexer.getNextToken()
 		self.out.write('Current token == %s\n' % self.currentToken)
@@ -569,8 +589,10 @@ class SynAn():
 			tipo = Ref()
 			self.variable_declaration_rest(idList,tipo)
 			for var in idList.ref:
-				self.stStack.addNewID(var, Attr(pos = self.globalVarIndex ,  clase = "variable", tipo = tipo.ref))
-				self.globalVarIndex += tipo.ref.tamanio
+				# self.stStack.addNewID(var, Attr(pos = self.globalVarIndex ,  clase = "variable", tipo = tipo.ref))
+				# self.globalVarIndex += tipo.ref.tamanio
+				self.stStack.addNewID(var, Attr(pos = tamanioVariables.ref,  clase = "variable", tipo = tipo.ref))
+				tamanioVariables.ref += tipo.ref.tamanio
 			self.imprimirST(self.stStack.top())
 			# self.escribir("RMEM %s" %len(idList.ref))
 			#########
@@ -634,35 +656,75 @@ class SynAn():
 			self.synErr('a function or procedure')		
 		
 	def procedure_declaration(self):
-		self.procedure_heading()
+	
+		##########
+		self.ponerLabel()
+		label = "L%s" % self.labelIndex
+		self.labelIndex += 1
+		##########
+		tamanioParams = Ref()
+		self.procedure_heading(label,tamanioParams)
+		
+		#########
+		nivel = self.stStack.getCurrentLexLevel() 
+		self.escribir("ENPR %s" % nivel)
+		#########
+		
 		self.block()
+		
+		#########		
+		self.escribir("RTPR %s, %s" % (nivel, tamanioParams.ref))
+		#########
 
-	def procedure_heading(self):
+	def procedure_heading(self,label,tamanioParams):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<PROCEDURE>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
-				self.procedure_heading_rest()
+				
+				######
+				id = self.lexer.getLexeme()
+				parameterList = Ref([])
+				self.procedure_heading_rest(parameterList)
+				attr = Attr(clase ="procedure", tipo = Procedimiento(label,parameterList.ref))
+				self.stStack.addNewID(id, attr)
+				tamanioParams.ref = attr.tipo.tamanioParams()
+				######
+				
 			else:
 				self.synErr('identifier')
 		else:
 			self.synErr('procedure')
 
-	def procedure_heading_rest(self):
+	def procedure_heading_rest(self,parameterList):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<SEMI_COLON>":
 			self.out.write('\nSuccesfully recognised procedure heading!\n')
 		elif self.currentToken == "<OPEN_PARENTHESIS>":
-			self.formal_parameter_section()
-			self.formal_parameter_rest()
+		
+			#########pa
+			parameterList1 = Ref([])
+			self.formal_parameter_section(parameterList1)
+			parameterList2 = Ref([])
+			self.formal_parameter_rest(parameterList2)
+			parameterList.ref = parameterList1.ref + parameterList2.ref
+			#########
+			
 		else:
 			self.synErr('; or (')
 
-	def formal_parameter_rest(self):
+	def formal_parameter_rest(self,parameterList):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<SEMI_COLON>":
-			self.formal_parameter_section()
-			self.formal_parameter_rest()
+		
+			########
+			parameterList1  =Ref([])
+			self.formal_parameter_section(parameterList1)
+			parameterList2  =Ref([])
+			self.formal_parameter_rest(parameterList2)
+			parameterList.ref = parameterList1.ref + parameterList2.ref
+			##############
+			
 		elif self.currentToken == "<CLOSE_PARENTHESIS>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SEMI_COLON>":
@@ -672,34 +734,70 @@ class SynAn():
 		else:
 			self.synErr(' \";\" or \")\"')
 				
-	def formal_parameter_section(self):
+	def formal_parameter_section(self,parameterList):
 		self.currentToken = self.lexer.getNextToken()
+		tipo = Ref()
+		parameterList1 = Ref([])
 		if self.currentToken == "<VAR>":
-			self.parameter_group()
+			
+			self.parameter_group(parameterList1,tipo)
+
+			##########
+			for x in parameterList1.ref:
+				parameterList.ref.append((x,tipo.ref, True))
+			##########
+			
 		elif self.currentToken == "<IDENTIFIER>":
 			self.pushLexeme()
-			self.parameter_group()
+			self.parameter_group(parameterList1,tipo)
+			
+			##########
+			for x in parameterList1.ref:
+				parameterList.ref.append((x,tipo.ref, False))
+			##########
+			
 		else:
 			self.synErr('a parameter group')
 
-	def parameter_group(self):
+	def parameter_group(self,parameterList,tipo):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<IDENTIFIER>":
-			self.parameter_group_rest()
+			id = self.lexer.getLexeme()
+			self.parameter_group_rest(parameterList,tipo)
+			
+			##########
+			parameterList.ref = [id] + parameterList.ref
+			##########
+			
 		else:
 			self.synErr('parameter group')
 
-	def parameter_group_rest(self):
+	def parameter_group_rest(self,parameterList,tipo):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<COMMA>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
-				self.parameter_group_rest()
+			
+				############
+				id = self.lexer.getLexeme()
+				self.parameter_group_rest(parameterList,tipo)
+				parameterList.ref = [id] + parameterList.ref
+				############
+				
 			else:
 				raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 		elif self.currentToken == "<TYPE_DECLARATION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
+			
+				###########
+				identifier = self.stStack.getGlobalValue(self.lexer.getLexeme())
+				if identifier.clase == "type":
+					tipo.ref = identifier.tipo
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid procedure or function heading: Expecting a type identifier")
+				###########
+				
 				self.out.write('\nSuccesfully recognised parameter group')
 			else:
 				# si bien el token es IDENTIFIER, lo que se espera en este caso es un DATA TYPE
@@ -864,11 +962,15 @@ class SynAn():
 			###############
 			proc = self.stStack.getGlobalValue(id)
 			nivel = self.stStack.lastLexicalLevel()
+			listParams = proc.tipo.params
 			if proc.clase == "procedure":
 				if nivel==-1:
 					self.actual_parameter(id = id)
 					self.actual_parameter_rest(id = id)
-					
+				else:
+					self.actual_parameter(esperado = listParams[0])
+					self.actual_parameter_rest(listParams = listParams[1:])
+					self.escribir("LLPR %s" %proc.tipo.label)
 			else:
 				raise SemanticError(self.lexer.errorLeader(), "Invalid statement: %s is not a procedure" % id)
 			###############
@@ -877,6 +979,18 @@ class SynAn():
 			#lambda
 			self.out.write('push lexeme\n')
 			self.pushLexeme()
+			
+			#######
+			proc = self.stStack.getGlobalValue(id)
+			nivel = self.stStack.lastLexicalLevel()
+			if proc.clase == "procedure":
+				if proc.tipo.params==[]:
+					self.escribir("LLPR %s" %proc.tipo.label)
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid procedure call: %s has %s parameters" % (id,len(proc.tipo.params)))
+			else:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid statement: %s is not a procedure" % id)
+			#######
 
 	def component_variable(self):
 		self.out.write('In component_variable\n')
@@ -893,19 +1007,19 @@ class SynAn():
 		else:
 			self.synErr('an identifier')
 
-	def expression(self, attr = None):
+	def expression(self, attr = None, porRef = None):
 		self.out.write('In expression\n')
 		
 		########
 		# attr.ref = Attr(clase="subexpresion", tipo= Entero())
 		attr1 = Ref() 
 		# sintetizo attr1
-		self.simple_expression(attr1)		
-		self.expression_rest(attr1)
+		self.simple_expression(attr1,porRef)		
+		self.expression_rest(attr1,porRef)
 		attr.ref = attr1.ref
 		#########
 
-	def expression_rest(self,attr):
+	def expression_rest(self,attr, porRef = None):
 		self.out.write('In expression_rest\n')
 		token=self.lexer.getNextToken()
 		self.pushLexeme()
@@ -913,6 +1027,8 @@ class SynAn():
 		if token in self.relationals:
 		
 			###########
+			if porRef:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			op = Ref()
 			self.relational_operator(op)
 			attr1 = Ref()
@@ -930,17 +1046,17 @@ class SynAn():
 		else:
 			pass #lambda
 
-	def simple_expression(self,attr=None):
+	def simple_expression(self,attr=None, porRef = None):
 		self.out.write('In simple_expression\n')
 
 		#########
 		attr1 = Ref()
-		self.term(attr1)
-		self.simple_expression_other(attr1)
+		self.term(attr1,porRef)
+		self.simple_expression_other(attr1,porRef)
 		attr.ref = attr1.ref
 		#########
 
-	def simple_expression_other(self,attr):
+	def simple_expression_other(self,attr, porRef = None):
 		self.out.write('In simple_expression_other\n')
 		token=self.lexer.getNextToken()
 		operator = self.lexer.getLexeme()
@@ -948,6 +1064,8 @@ class SynAn():
 		if token in self.adding:
 		
 			###########
+			if porRef:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			op = Ref()
 			tipo = Ref()
 			self.adding_operator(op,tipo)
@@ -967,17 +1085,17 @@ class SynAn():
 		else:
 			pass #lambda
 
-	def term(self,attr):
+	def term(self,attr, porRef = None):
 		self.out.write('In term\n')
 		
 		#########
 		attr1 = Ref()		
-		self.factor(attr1)
-		self.term_other(attr1)
+		self.factor(attr1,porRef)
+		self.term_other(attr1,porRef)
 		attr.ref = attr1.ref
 		#########
 		
-	def term_other(self,attr):
+	def term_other(self,attr, porRef = None):
 		self.out.write('In term_other\n')
 		token=self.lexer.getNextToken()
 		operator = self.lexer.getLexeme()
@@ -985,6 +1103,8 @@ class SynAn():
 		if token in self.multiplying:
 		
 			#########
+			if porRef:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			op = Ref()
 			tipo = Ref()
 			self.multiplying_operator(op,tipo)
@@ -1004,7 +1124,7 @@ class SynAn():
 		else:			
 			pass #lambda
 
-	def factor(self,attr):
+	def factor(self,attr,porRef = None):
 		self.out.write('In factor\n')
 		
 		token=self.lexer.getNextToken()
@@ -1012,12 +1132,14 @@ class SynAn():
 		if token=='<IDENTIFIER>':
 
 			########			
-			self.factor_rest(self.lexer.getLexeme(),attr)
+			self.factor_rest(self.lexer.getLexeme(),attr,porRef)
 			########
 			
 		elif token=='<NUMBER>':
 		
 			########
+			if porRef:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			self.escribir("APCT %s" % self.lexer.getLexeme())
 			attr.ref = Attr(clase = "subexpression", tipo = Entero(), valor = int(self.lexer.getLexeme()))
 			########
@@ -1025,7 +1147,7 @@ class SynAn():
 		elif token=='<OPEN_PARENTHESIS>':
 		
 			###########
-			self.expression(attr)
+			self.expression(attr,porRef)
 			###########
 			
 			if self.lexer.getNextToken()=='<CLOSE_PARENTHESIS>':
@@ -1035,6 +1157,8 @@ class SynAn():
 		elif token=='<NOT_LOGOP>':
 		
 			###########
+			if porRef:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			attr1 = Ref()
 			self.factor(attr1)
 			if attr1.ref.tipo.instancia(Booleano):
@@ -1047,6 +1171,8 @@ class SynAn():
 		elif token=='<CHAR>':
 						
 			########
+			if porRef:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			self.escribir("APCT %s" % ord(self.lexer.getLexeme()[1]))
 			attr.ref = Attr(clase = "subexpression", tipo = Caracter(),valor = self.lexer.getLexeme()[1])
 			########
@@ -1054,6 +1180,8 @@ class SynAn():
 		elif token == '<ADD_OP>' or token == '<MINUS_OP>':
 		
 			##########
+			if porRef:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			self.pushLexeme()
 			valor = Ref()
 			self.sign(valor)			
@@ -1071,11 +1199,11 @@ class SynAn():
 			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
 		self.out.write('factor is finished\n')
 
-	def factor_rest(self,id,attr):
+	def factor_rest(self,id,attr,porRef = None):
 		self.out.write('In factor_rest\n')
 		token=self.lexer.getNextToken()
 		if token=='<OPEN_BRACKET>':
-		
+			#TODOOOOOOOOOOOOOOOOOOOOOOO
 			###############
 			attr1 = Ref()
 			###############
@@ -1101,6 +1229,8 @@ class SynAn():
 				
 				self.out.write('factor_rest is finished\n')
 		elif token=='<OPEN_PARENTHESIS>': # TODOOOOOOOOOOOOOOOOOOOOOOO
+			if porRef:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			self.actual_parameter()
 			self.actual_parameter_rest()
 		else:
@@ -1110,14 +1240,20 @@ class SynAn():
 			identifier = self.stStack.getGlobalValue(id)
 			nivel = self.stStack.lastLexicalLevel()
 			if identifier.clase == 'function':
-				pass
+				if porRef:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			elif identifier.clase == 'variable':
-				if identifier.tipo.instancia(Simple):
-					self.escribir("APVL %s,%s" % (nivel,identifier.pos))
-					attr.ref = deepcopy(identifier)
+				if porRef:
+					self.escribir("APDR %s, %s" % nivel, identifier.pos)
 				else:
-					raise SemanticError(self.lexer.errorLeader(), "Invalid expression: Simple type expected, but %s found" % identifier.tipo)
+					if identifier.tipo.instancia(Simple):
+						self.escribir("APVL %s,%s" % (nivel,identifier.pos))
+						attr.ref = deepcopy(identifier)
+					else:
+						raise SemanticError(self.lexer.errorLeader(), "Invalid expression: Simple type expected, but %s found" % identifier.tipo)
 			elif identifier.clase == 'constant':
+				if porRef:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 				self.escribir("APCT %s" % identifier.valor)
 				attr.ref = deepcopy(identifier)
 				attr.ref.clase = "subexpression"
@@ -1132,7 +1268,7 @@ class SynAn():
 		attrE = Ref()
 		self.expression(attrE)
 		
-		if id: #si es None es nuestro
+		if id: #si no es None es nuestro
 			if id=="write":
 				if attrE.ref.tipo.instancia(Entero):
 					self.escribir("IMPR")
@@ -1147,7 +1283,7 @@ class SynAn():
 					self.escribir("IMCN")
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
-			# elif id=="read": # Falta mucho aca... poner el valor en la variable
+			# elif id=="read": # Falta mucho aca... poner el valor en la variable 
 				# if attrE.ref.tipo.instancia(Entero):
 					# self.escribir("LEER")
 				# elif attrE.ref.tipo.instancia(Caracter):
@@ -1163,8 +1299,10 @@ class SynAn():
 					# raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
 			else:
 				Exception("This should not happen")
-		else:# si no es None es definido por el usuario	
-			pass
+		else:# si es None es definido por el usuario	
+			if not self.checkTypes(esperado[1],attrE.ref.tipo):
+				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure or function call: %s parameter expected, but %s found" % (esperado[1],attrE.ref.tipo))
+				
 		###########
 
 	def actual_parameter_rest(self, listParams=None,id=None):
@@ -1175,10 +1313,13 @@ class SynAn():
 			##########
 			if id: #es predefinido... necesita una solo parámetro
 				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure call: %s has only 1 parameter(s)" % id)
+			if len(listParams)>0:
+				self.actual_parameter(listParams[0])
+				self.actual_parameter_rest(listParams[1:])			
+			else:
+				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure or function call: More parameters than expected")
 			##########
-				
-			self.actual_parameter()
-			self.actual_parameter_rest()			
+			
 		elif token=='<CLOSE_PARENTHESIS>':
 			self.out.write('actual_parameter_restis finished\n')
 			
@@ -1186,7 +1327,8 @@ class SynAn():
 			if id: #es predefinido
 				pass
 			else:
-				pass # hay que controlar la cantidad de parámetros
+				if len(listParams)!=0:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid procedure or function call: Less parameters than expected")
 			############
 			
 		else:

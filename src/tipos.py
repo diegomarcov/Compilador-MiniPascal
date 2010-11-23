@@ -7,6 +7,9 @@ class Elemento(object): #todos los elementos que pueden aparecer como tipo de un
 	
 	def instancia(self,tipo):
 		return isinstance(self,tipo)
+		
+	def strExtendido(self):
+		return str(self)
 
 class Tipo(Elemento):
 	#nombre: el nombre del tipo
@@ -133,12 +136,14 @@ class SubBooleano(Subrango,Booleano):
 		return "Boolean subrange from %s to %s" % (self.lowerBound.valor,self.upperBound.valor)
 		
 class Estructurado(Tipo):
-	pass
+	def __init__(self):
+		Tipo.__init__(self)
 	
 class Arreglo(Estructurado):
 	#indexType: tipo del indice
 	#elementType: tipo de los elementos
 	def __init__(self,tamanio,indexType,elementType):
+		Estructurado.__init__(self)
 		self.tamanio=tamanio
 		self.indexType = indexType
 		self.elementType = elementType
@@ -146,13 +151,33 @@ class Arreglo(Estructurado):
 	def __str__(self):
 		return "%s Array" % str(self.elementType)
 		
+	def strExtendido(self):
+		return "Array [%s] of %s" %(self.indexType,self.elementType)
+		
 class Procedimiento(Elemento): #no puse que hereda de tipo porque no es un tipo
 	#params:lista de parametros (son tipos)
-	def __init__(self,params=None):
+	def __init__(self,label=None,params=None):
+		Elemento.__init__(self)
+		if not params:
+			params = []
+		self.label = label
 		self.params = params
 		
 	def __str__(self):
 		return "Procedure"
+		
+	def strExtendido(self):
+		aux = "Procedure("
+		for x in self.params:
+			aux+= str(x[1]) + ","
+		return aux + ")"
+	
+	def tamanioParams(self):
+		aux = 0
+		for x in self.params:
+			aux += x[1].tamanio
+		return aux
+			
 		
 class Funcion(Procedimiento):
 	#ret:tipo que devuelve
@@ -165,6 +190,9 @@ class Funcion(Procedimiento):
 		
 	def __str__(self):
 		return ret + " Function"
+		
+	def strExtendido(self):
+		return Procedimiento.strExtendido(self) + ": %s" %self.ret
 	
 class Programa(Elemento):#no puse que hereda de tipo porque no es un tipo
 	def __str__(self):
@@ -182,7 +210,7 @@ class Attr:
 		#pos: el numero de identificador de una variable en el programa o procedimiento actual
 		
 	def __str__(self):
-		return "value: " + str(self.valor) + ", type: " + str(self.tipo) + ",class:" + self.clase
+		return "value: " + str(self.valor) + ", type: " + self.tipo.strExtendido() + ",class:" + self.clase
 		
 class Ref:
 	#clase utilizada para pasar variables por referencia (o sea, serán utilizadas para pasar atributos sintetizados)
