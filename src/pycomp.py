@@ -1544,6 +1544,7 @@ if __name__ == '__main__':
 	except CompilerError as e:
 		# output.write(str(e))
 		traceback.print_exc()
+		sys.exit(1)
 	finally:
 		output.close()
 		mepa.close()
