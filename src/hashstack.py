@@ -24,6 +24,7 @@ class HashStack(list):
 							"writeln": Attr (tipo = Procedimiento(), clase = "procedure"),
 							"read": Attr (tipo = Procedimiento(), clase = "procedure"),
 							"readln": Attr (tipo = Procedimiento(), clase = "procedure"),
+							"maxint": Attr (tipo = Entero(), clase = "constant", valor = 32767)
 							# procedimientos
 						}
 					)

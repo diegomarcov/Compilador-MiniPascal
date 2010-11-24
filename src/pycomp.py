@@ -109,18 +109,39 @@ class SynAn():
 		else:
 			self.synErr('"program"')
 
-	def block(self,idPrograma=None):
+	def block(self,idPrograma=None,parameterList = None):
 		self.out.write('In block\n')
 		currentToken = self.lexer.getNextToken()
 		
 		################		
 		self.imprimirST(self.stStack.top())
 		self.stStack.push() # agrega por default un diccionario, o sea una tabla de símbolos
+		
 		if idPrograma!=None:
 			self.stStack.addNewID(idPrograma, Attr(valor=idPrograma,tipo=Programa(),clase="program"))			
 			#procedimientos...
+			
+		if parameterList!=None:
+			i = 1
+			n = 0
+			for x in parameterList.ref:
+				if x[2]: # por Referencia
+					n+=1
+				else:
+					n+=x[1].tamanio
+			for x in parameterList.ref:
+				if x[2]: # por Referencia
+					clase = "reference"
+				else:
+					clase = "variable"
+				self.stStack.addNewID(x[0], Attr(clase = clase, tipo = x[1], pos = -(n+3-i)))
+				if x[2]: # por Referencia
+					i+=1
+				else:
+					i+=x[1].tamanio
+
 		################
-		
+		self.imprimirST(self.stStack.top())
 		self.pushLexeme()
 		tamanioVariables =Ref(0)
 		if currentToken == "<CONST>":
@@ -533,13 +554,13 @@ class SynAn():
 						########
 						tipoElem = Ref()
 						self.simple_type(tipoElem)
-						if tipoIndice.ref.tipo.instancia(Subrango) or tipoIndice.ref.tipo.instancia(Booleano):
+						if tipoIndice.ref.tipo.instancia(Simple):
 							if tipoElem.ref.tipo.instancia(Simple):
 								tipo.ref = Attr(tipo = Arreglo(tamanio = tipoIndice.ref.tipo.getRange(), indexType=tipoIndice.ref.tipo, elementType=tipoElem.ref.tipo),clase = "type")
 							else:
 								raise SemanticError(self.lexer.errorLeader(),"Element type of an array must be a simple type, but %s found" % str(tipoElem.ref.tipo))
 						else:
-							raise SemanticError(self.lexer.errorLeader(),"Index type  of an array must be a subrange or a boolean type, but %s found" % str(tipoIndice.ref.tipo))
+							raise SemanticError(self.lexer.errorLeader(),"Index type of an array must be a simple type, but %s found" % str(tipoIndice.ref.tipo))
 						#########
 						
 					else:
@@ -675,20 +696,21 @@ class SynAn():
 		self.labelIndex += 1
 		##########
 		tamanioParams = Ref()
-		self.procedure_heading(label,tamanioParams)
+		parameterList = Ref()
+		self.procedure_heading(label,tamanioParams,parameterList)
 		
 		#########
 		nivel = self.stStack.getCurrentLexLevel() 
 		self.escribir("ENPR %s" % nivel)
 		#########
 		
-		self.block()
+		self.block(parameterList = parameterList)
 		
 		#########		
 		self.escribir("RTPR %s, %s" % (nivel, tamanioParams.ref))
 		#########
 
-	def procedure_heading(self,label,tamanioParams):
+	def procedure_heading(self,label,tamanioParams,parameterList1):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<PROCEDURE>":
 			self.currentToken = self.lexer.getNextToken()
@@ -699,6 +721,7 @@ class SynAn():
 				parameterList = Ref([])
 				self.procedure_heading_rest(parameterList)
 				attr = Attr(clase ="procedure", tipo = Procedimiento(label,parameterList.ref))
+				parameterList1.ref = parameterList.ref
 				self.stStack.addNewID(id, attr)
 				tamanioParams.ref = attr.tipo.tamanioParams()
 				######
@@ -928,18 +951,37 @@ class SynAn():
 			lexLevel = self.stStack.lastLexicalLevel()
 			attr = Ref()
 			self.expression(attr)
-			if identifier.clase == "variable":
+			if identifier.clase == "variable" or identifier.clase == "reference":
 				if self.checkTypes(attr.ref.tipo,identifier.tipo):
-					if identifier.tipo.instancia(Simple):
-						self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
-					elif identifier.tipo.instancia(Arreglo):
-						self.escribir("POAR %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
+					self.escribir("CONT %s, %s" % (identifier.tipo.getLower(),identifier.tipo.getUpper()))
+					if identifier.clase == "variable":
+						if identifier.tipo.instancia(Simple):
+							
+							self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
+							
+						elif identifier.tipo.instancia(Arreglo):
+							self.escribir("POAR %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
+						else:
+							raise Exception("YOUUUU SHALL NOT PAAAASS!")
+					elif identifier.clase == "reference":
+						if identifier.tipo.instancia(Simple):
+							
+							self.escribir("ALVI %s, %s" % (lexLevel, identifier.pos))
+							
+						elif identifier.tipo.instancia(Arreglo):
+							self.escribir("POAI %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
+						else:
+							raise Exception("YOUUUU SHALL NOT PAAAASS!")
 					else:
 						raise Exception("YOUUUU SHALL NOT PAAAASS!")
+					
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected, but %s found" % (identifier.tipo, attr.ref.tipo))
-			else:
+			else:					
 				raise SemanticError(self.lexer.errorLeader(), "Left side of assignment must be a variable")
+			
+				
+			
 			############
 			
 		elif token=='<OPEN_BRACKET>' :
@@ -949,9 +991,7 @@ class SynAn():
 			self.expression(attr1)
 			array = self.stStack.getGlobalValue(id)
 			lexLevel = self.stStack.lastLexicalLevel()
-			self.escribir("CONT %s,%s" % (array.tipo.indexType.getLower(),array.tipo.indexType.getUpper()))
-			self.escribir("APCT %s" % array.tipo.indexType.getLower())
-			self.escribir("SUST")
+
 			#############
 			
 			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
@@ -959,14 +999,27 @@ class SynAn():
 					
 					############
 					attr2 = Ref()
-					self.expression(attr2)					
+					if array.tipo.instancia(Arreglo):
+						self.escribir("CONT %s,%s" % (array.tipo.indexType.getLower(),array.tipo.indexType.getUpper()))
+						self.escribir("APCT %s" % array.tipo.indexType.getLower())
+						self.escribir("SUST")
+					else:
+						raise SemanticError(self.lexer.errorLeader(), "Invalid statement: %s is not an array" %id)
+					self.expression(attr2)
 					if self.checkTypes(array.tipo.indexType,attr1.ref.tipo):
 						if self.checkTypes(array.tipo.elementType, attr2.ref.tipo):
-							self.escribir("ALAR %s,%s" % (lexLevel, array.pos))
+							if array.clase == "variable":
+								self.escribir("ALAR %s,%s" % (lexLevel, array.pos))
+							elif array.clase == "reference":
+								self.escribir("ALAI %s,%s" % (lexLevel, array.pos))
+							else:
+								raise Exception("This shouldn't happen")
+							
 						else:
 							raise SemanticError(self.lexer.errorLeader(),"Non compatible types in assignment. %s expected, but %s found" % (array.tipo.elementType, attr2.ref.tipo))
 					else:
 						raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
+
 					############
 					
 				else:
@@ -1231,12 +1284,27 @@ class SynAn():
 				###############
 				array = self.stStack.getGlobalValue(id)
 				nivel = self.stStack.lastLexicalLevel()
-				if array.clase=="variable" and array.tipo.instancia(Arreglo):
+				if array.tipo.instancia(Arreglo): 
+					
 					if self.checkTypes(attr1.ref.tipo,array.tipo.indexType):
 						self.escribir("CONT %s,%s" % (array.tipo.indexType.getLower(),array.tipo.indexType.getUpper()))
 						self.escribir("APCT %s" % array.tipo.indexType.getLower())
 						self.escribir("SUST")
-						self.escribir("APAR %s,%s" % (nivel, array.pos))
+						if porRef:
+							if array.clase=="variable":
+								self.escribir("APDC %s, %s" % (nivel, array.pos))
+							elif array.clase=="reference":
+								self.escribir("APVL %s, %s" % (nivel, array.pos))
+								self.escribir("SUMA" % (nivel, array.pos))
+								# self.escribir("APDC %s, %s" % (nivel, array.pos))
+						else:
+							if array.clase=="variable":
+								self.escribir("APAR %s,%s" % (nivel, array.pos))
+							elif array.clase=="reference":
+								print nivel, array.pos
+								self.escribir("APAI %s,%s" % (nivel, array.pos))
+						
+							
 						attr.ref = Attr(clase = "subexpression", tipo = array.tipo.elementType)
 					else:
 						raise SemanticError(self.lexer.errorLeader(), "%s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
@@ -1261,22 +1329,34 @@ class SynAn():
 					raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			elif identifier.clase == 'variable':
 				if porRef:
-					self.escribir("APDR %s, %s" % nivel, identifier.pos)
+					self.escribir("APDR %s, %s" % (nivel, identifier.pos))
 				else:
 					if identifier.tipo.instancia(Simple):
+						
 						self.escribir("APVL %s,%s" % (nivel,identifier.pos))
 						
 					elif identifier.tipo.instancia(Arreglo):
 						self.escribir("PUAR %s,%s,%s" % (nivel,identifier.pos,identifier.tipo.indexType.getRange()))
 					else:
 						raise Exception("YOUUUU SHALL NOT PAAAASS!")
-					attr.ref = deepcopy(identifier)
+				attr.ref = deepcopy(identifier)
 			elif identifier.clase == 'constant':
 				if porRef:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 				self.escribir("APCT %s" % identifier.valor)
 				attr.ref = deepcopy(identifier)
 				attr.ref.clase = "subexpression"
+			elif identifier.clase == 'reference':
+				if porRef:
+					self.escribir("APVL %s,%s" % (nivel,identifier.pos))
+				else:
+					if identifier.tipo.instancia(Simple):
+						self.escribir("APVI %s, %s" % (nivel,identifier.pos))
+					elif identifier.tipo.instancia(Arreglo):
+						self.escribir("PUAI %s, %s, %s" % (nivel,identifier.pos,identifier.tipo.indexType.getRange()))
+					else:
+						raise Exception("YOUUUU SHALL NOT PAAAASS!")
+				attr.ref = deepcopy(identifier)
 			else:
 				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+ str(identifier.clase)+" identifier found")			
 			########
@@ -1286,7 +1366,10 @@ class SynAn():
 		
 		###########
 		attrE = Ref()
-		self.expression(attrE)
+		if esperado:
+			self.expression(attrE, porRef = esperado[2])
+		else:
+			self.expression(attrE)
 		
 		if id: #si no es None es nuestro
 			if id=="write":
