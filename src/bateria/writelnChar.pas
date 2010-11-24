@@ -1,5 +1,5 @@
 program wr;
 begin
-	writeln('a');
+	Writeln('a');
 	
 end.

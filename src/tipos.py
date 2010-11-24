@@ -97,6 +97,7 @@ class Subrango(Simple):
 class SubCaracter(Subrango,Caracter): #herencia múltiple troska
 	def __init__(self, lowerBound, upperBound):
 		Subrango.__init__(self, lowerBound, upperBound)
+		self.imprimible = True
 		
 	def __str__(self):
 		return "Character subrange from %s to %s" %(self.lowerBound.valor,self.upperBound.valor)
@@ -110,6 +111,7 @@ class SubCaracter(Subrango,Caracter): #herencia múltiple troska
 class SubEntero(Subrango,Entero):
 	def __init__(self,lowerBound, upperBound):
 		Subrango.__init__(self, lowerBound, upperBound)
+		self.imprimible = True
 		
 	def __str__(self):
 		return "Integer subrange from %s to %s" % (self.lowerBound.valor,self.upperBound.valor)

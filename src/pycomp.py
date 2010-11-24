@@ -9,8 +9,16 @@ from tipos import Elemento,Tipo,Simple,Caracter,Entero,Booleano,Subrango,SubCara
 from hashstack import HashStack,SymbolTableError
 from copy import deepcopy
 
+"""
+RE NADA
+ENPR 0
+LEER
+ALVI 0, -3
+RTPR 0, 1
+"""
 
-class SynAn():
+
+class PyComp():
 
 	#stStack: pila de tablas de simbolos
 	
@@ -19,9 +27,11 @@ class SynAn():
 		self.mepa = mepa
 		self.labelIndex = 0
 		
+		self.procReadE,self.procReadLE,self.procReadC,self.procReadLC = (None,None,None,None)
+		
 		self.relationals = {'<LESS_OP>':'CMME','<LESS_EQUAL_OP>':'CMNI','<GREATER_OP>':'CMMA','<GREATER_EQUAL_OP>':'CMYI','<EQUAL>':'CMIG','<NOT_EQUAL_OP>':'CMDG'}
 		self.adding = {'<ADD_OP>':'SUMA','<MINUS_OP>':'SUST','<OR_LOGOP>':'DISJ'}
-		self.multiplying = {'<MULTIPLY_OP>':'MULT','<DIV_OP>':'DIVC\nDIVI','<AND_LOGOP>':'CONJ'}
+		self.multiplying = {'<MULTIPLY_OP>':'MULT','<DIV_OP>':'DIVC\n\t\tDIVI','<AND_LOGOP>':'CONJ'}
 		if debug:
 			self.out = outputFile
 		else:
@@ -54,6 +64,44 @@ class SynAn():
 		if label == None:
 			label = "L" + str(self.labelIndex)
 		self.mepa.write('%s\t\tNADA\n' % label)
+		
+	def writeProcedures(self):
+		if not self.procReadC:
+			self.procReadC = "L%s" % self.labelIndex
+			self.labelIndex +=1
+			
+			self.ponerLabel(self.procReadC)
+			self.escribir("ENPR 0")
+			self.escribir("LECH")
+			self.escribir("ALVI 0, -3")
+			self.escribir("RTPR 0, 1")
+			
+			self.procReadE = "L%s" % self.labelIndex
+			self.labelIndex +=1
+		
+			self.ponerLabel(self.procReadE)
+			self.escribir("ENPR 0")
+			self.escribir("LEER")
+			self.escribir("ALVI 0, -3")
+			self.escribir("RTPR 0, 1")
+			
+			self.procReadLC = "L%s" % self.labelIndex
+			self.labelIndex +=1
+		
+			self.ponerLabel(self.procReadLC)
+			self.escribir("ENPR 0")
+			self.escribir("LECN")
+			self.escribir("ALVI 0, -3")
+			self.escribir("RTPR 0, 1")
+			
+			self.procReadLE = "L%s" % self.labelIndex
+			self.labelIndex +=1
+		
+			self.ponerLabel(self.procReadLE)
+			self.escribir("ENPR 0")
+			self.escribir("LELN")
+			self.escribir("ALVI 0, -3")
+			self.escribir("RTPR 0, 1")
 			
 	def execute(self):
 		try:
@@ -80,14 +128,14 @@ class SynAn():
 				###########
 				# finalizar el programa
 				self.escribir('PARA')
+				
+				
 				###########
 				
 				return 'The program is syntactically correct.'
 			else: 
 				raise SynError(self.lexer.errorLeader(),msg="There are characters after the last character ('.')")
 		else:
-			# self.thiserrorLeader = self.lexer.errorLeader()
-			# self.thislexeme = self.lexer.getLexeme()
 			self.synErr('"."')
 
 	def program_heading(self,idPrograma):
@@ -96,7 +144,7 @@ class SynAn():
 			if self.lexer.getNextToken() == '<IDENTIFIER>':
 			
 				#############
-				idPrograma.ref = self.lexer.getLexeme()
+				idPrograma.ref = self.lexer.getLexeme().lower()
 				self.out.write("\tprogram heading ID: " + idPrograma.ref + "\n")
 				#############
 				
@@ -186,17 +234,21 @@ class SynAn():
 		self.out.write('In block_var_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		# en este caso controlo si viene el <statement_part> porque es mas sencillo
+		label = "L%s" % self.labelIndex
+		self.labelIndex += 1
+		self.escribir("DSVS %s" %label)
+		self.writeProcedures()
 		if self.currentToken == "<BEGIN>":
 			self.pushLexeme()
+			
+			#######
+			self.ponerLabel(label)
+			#######
+			
 			self.statement_part()
 		else:
 			self.pushLexeme()	
-			
-			########
-			label = "L%s" % self.labelIndex
-			self.labelIndex += 1
-			self.escribir("DSVS %s" %label)
-			########
+
 			
 			self.procedure_and_function_declaration_part()
 			
@@ -1030,13 +1082,14 @@ class SynAn():
 		elif token=='<OPEN_PARENTHESIS>':
 			
 			###############
+			id = id.lower()
 			proc = self.stStack.getGlobalValue(id)
 			nivel = self.stStack.lastLexicalLevel()
 			listParams = proc.tipo.params
 			if proc.clase == "procedure":
 				if nivel==-1:
-					self.actual_parameter(id = id)
-					self.actual_parameter_rest(id = id)
+					self.actual_parameter(esperado = listParams[0],id = id)
+					self.actual_parameter_rest(listParams = listParams[1:],id = id)
 				else:
 					self.actual_parameter(esperado = listParams[0])
 					self.actual_parameter_rest(listParams = listParams[1:])
@@ -1366,6 +1419,7 @@ class SynAn():
 		
 		###########
 		attrE = Ref()
+		# if id!=None and id in ["read","readln"]
 		if esperado:
 			self.expression(attrE, porRef = esperado[2])
 		else:
@@ -1386,20 +1440,24 @@ class SynAn():
 					self.escribir("IMCN")
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
-			# elif id=="read": # Falta mucho aca... poner el valor en la variable 
-				# if attrE.ref.tipo.instancia(Entero):
-					# self.escribir("LEER")
-				# elif attrE.ref.tipo.instancia(Caracter):
-					# self.escribir("LECH")
-				# else:
-					# raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
-			# elif id=="readln":
-				# if attrE.ref.tipo.instancia(Entero):
-					# self.escribir("LELN")
-				# elif attrE.ref.tipo.instancia(Caracter):
-					# self.escribir("LECN")
-				# else:
-					# raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
+			elif id=="read": # Falta mucho aca... poner el valor en la variable 
+				if attrE.ref.tipo.instancia(Entero):
+
+					self.escribir("LLPR %s" % self.procReadE)
+				elif attrE.ref.tipo.instancia(Caracter):
+
+					self.escribir("LLPR %s" % self.procReadC)
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
+			elif id=="readln":
+				if attrE.ref.tipo.instancia(Entero):
+
+					self.escribir("LLPR %s" % self.procReadLE)
+				elif attrE.ref.tipo.instancia(Caracter):
+
+					self.escribir("LLPR %s" % self.procReadLC)
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
 			else:
 				raise Exception("YOUUUU SHALL NOT PAAAASS!")
 		else:# si es None es definido por el usuario	
@@ -1617,7 +1675,7 @@ if __name__ == '__main__':
 		print "Error: The file %s could not be opened for writing" % args.mepaFile
 			
 	lexicalAnalyzer = LexAn(inputFile,args.inputFile)
-	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,output,mepa)
+	syntacticalAnalyzer = PyComp(lexicalAnalyzer,args.debug,output,mepa)
 	try:
 		msg = syntacticalAnalyzer.execute()
 		if output != sys.stdout:

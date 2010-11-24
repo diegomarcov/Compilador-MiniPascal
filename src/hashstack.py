@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tipos import Attr,Booleano,Entero,Caracter,Procedimiento,Funcion
+from tipos import Attr,Booleano,Entero,Caracter,Procedimiento,Funcion,Simple
 import traceback
 
 class SymbolTableError(Exception):
@@ -20,11 +20,12 @@ class HashStack(list):
 							"integer": Attr(tipo = Entero(), clase = "type"),
 							"boolean": Attr (tipo = Booleano(), clase = "type"),
 							"char": Attr(tipo = Caracter(), clase = "type"),
-							"write": Attr (tipo = Procedimiento(), clase = "procedure"),
-							"writeln": Attr (tipo = Procedimiento(), clase = "procedure"),
-							"read": Attr (tipo = Procedimiento(), clase = "procedure"),
-							"readln": Attr (tipo = Procedimiento(), clase = "procedure"),
-							"maxint": Attr (tipo = Entero(), clase = "constant", valor = 32767)
+							"write": Attr (tipo = Procedimiento(params = [("x",Simple(),False)]), clase = "procedure"),
+							"writeln": Attr (tipo = Procedimiento(params = [("x",Simple(),False)]), clase = "procedure"),
+							"read": Attr (tipo = Procedimiento(params = [("x",Simple(),True)]), clase = "procedure"),
+							"readln": Attr (tipo = Procedimiento(params = [("x",Simple(),True)]), clase = "procedure"),
+							"maxint": Attr (tipo = Entero(), clase = "constant", valor = 32767),
+							
 							# procedimientos
 						}
 					)
@@ -40,6 +41,7 @@ class HashStack(list):
 		
 	def addNewID(self,key,element):
 		st = self.top()
+		key = key.lower()
 		if not (key in st):
 			st[key] = element
 		else:
@@ -47,6 +49,7 @@ class HashStack(list):
 			
 	def getGlobalValue(self,key):
 		aux = None
+		key = key.lower()
 		for x in self:
 			if key in x:
 				aux = x[key]
