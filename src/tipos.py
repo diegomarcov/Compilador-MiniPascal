@@ -172,8 +172,8 @@ class Procedimiento(Elemento): #no puse que hereda de tipo porque no es un tipo
 		
 class Funcion(Procedimiento):
 	#ret:tipo que devuelve
-	def __init__(self,params,ret):
-		Procedimiento.__init__(self,params)
+	def __init__(self,label,params,ret):
+		Procedimiento.__init__(self,label,params)
 		self.ret = ret
 		
 	def instancia(self,tipo):
@@ -183,14 +183,18 @@ class Funcion(Procedimiento):
 		return ret + " Function"
 		
 	def strExtendido(self):
-		return Procedimiento.strExtendido(self) + ": %s" %self.ret
+		aux = "Funcion("
+		for x in self.params:
+			aux+= str(x[1]) + ","
+
+		return aux + "): %s" %self.ret
 	
 class Programa(Elemento):#no puse que hereda de tipo porque no es un tipo
 	def __str__(self):
 		return "Program identifier"
 		
 class Attr:
-	def __init__(self,tipo,clase, valor=None, pos=None):
+	def __init__(self,tipo,clase, valor=None, pos=None, used = None):
 		self.valor=valor
 		#valor: puede ser el valor de la constante... o el lugar fisico donde se encontrara
 		self.tipo=tipo
@@ -199,6 +203,8 @@ class Attr:
 		#clase: atributo que define si el identificador es un "type", una "variable", "function", "procedure" o "constant". Agregué tambien subexpresion, para cuando solo se trata de un valor que viene en una expresion
 		self.pos = pos
 		#pos: el numero de identificador de una variable en el programa o procedimiento actual
+		self.used = used
+		#used: si fue asignado alguna vez
 		
 	def __str__(self):
 		aux = "value: " + str(self.valor) + ", type: " + self.tipo.strExtendido() + ",class:" + self.clase + ", pos: " + str(self.pos) 

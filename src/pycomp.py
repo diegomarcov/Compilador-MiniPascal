@@ -104,10 +104,10 @@ class PyComp():
 			self.escribir("RTPR 0, 1")
 			
 	def execute(self):
-		try:
+		# try:
 			return self.program()
-		except SymbolTableError as e:
-			raise SemanticError(self.lexer.errorLeader(),e.msg)
+		# except SymbolTableError as e:
+			# raise SemanticError(self.lexer.errorLeader(),e.msg)
 
 	def program(self):
 		self.out.write('In program\n')
@@ -157,7 +157,7 @@ class PyComp():
 		else:
 			self.synErr('"program"')
 
-	def block(self,idPrograma=None,parameterList = None):
+	def block(self,idPrograma=None,parameterList = None,idFuncion = None, returnType= None):
 		self.out.write('In block\n')
 		currentToken = self.lexer.getNextToken()
 		
@@ -169,7 +169,10 @@ class PyComp():
 			self.stStack.addNewID(idPrograma, Attr(valor=idPrograma,tipo=Programa(),clase="program"))			
 			#procedimientos...
 			
+		
+			
 		if parameterList!=None:
+			
 			i = 1
 			n = 0
 			for x in parameterList.ref:
@@ -177,6 +180,10 @@ class PyComp():
 					n+=1
 				else:
 					n+=x[1].tamanio
+			
+			if returnType:
+				self.stStack.addNewID("$" + idFuncion, Attr(clase = "return", tipo = returnType.tipo, pos = -(n+3), used = False))
+			
 			for x in parameterList.ref:
 				if x[2]: # por Referencia
 					clase = "reference"
@@ -894,27 +901,69 @@ class PyComp():
 		
 	def function_declaration(self):
 		self.out.write('In function_declaration\n')
-		self.function_heading()
-		self.block()
+		
+		##########
+		self.ponerLabel()
+		label = "L%s" % self.labelIndex
+		self.labelIndex += 1
+		##########
+		tamanioParams = Ref()
+		parameterList = Ref()
+		id = Ref()
+		returnType =Ref()
+		self.function_heading(label,tamanioParams,parameterList,id,returnType)
+		
+		#########
+		nivel = self.stStack.getCurrentLexLevel() 
+		self.escribir("ENPR %s" % nivel)
+		#########
+		
+		self.block(idFuncion = id.ref,parameterList = parameterList, returnType = returnType.ref)
+		
+		#########		
+		self.escribir("RTPR %s, %s" % (nivel, tamanioParams.ref))
+		#########
 
-	def function_heading(self):
+	def function_heading(self,label,tamanioParams,parameterList1,id,returnType):
 		self.out.write('In function_heading\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<FUNCTION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
-				self.function_heading_rest()
+			
+				######
+				id.ref = self.lexer.getLexeme()
+				parameterList = Ref([])
+				self.function_heading_rest(parameterList,returnType)
+				attr = Attr(clase ="function", tipo = Funcion(label,parameterList.ref,ret = returnType.ref.tipo))
+				parameterList1.ref = parameterList.ref
+				
+				self.stStack.addNewID(id.ref, attr)
+				tamanioParams.ref = attr.tipo.tamanioParams()
+				######
+				
 			else:
 				self.synErr('an identifier')
 		else:
 			self.synErr('a function')
 
-	def function_heading_rest(self):
+	def function_heading_rest(self,parameterList,returnType):
 		self.out.write('In function_heading_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<TYPE_DECLARATION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
+			
+				#######
+				id = self.lexer.getLexeme()
+				returnType.ref = self.stStack.getGlobalValue(id)
+				if returnType.ref.clase == "type":
+					if not returnType.ref.tipo.instancia(Simple):
+						raise SemanticError(self.lexer.errorLeader(),"Invalid function declaration: Return type must be a simple type")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid function declaration: '%s' is not a valid type" % id)
+				#######
+				
 				self.currentToken = self.lexer.getNextToken()
 				if self.currentToken == "<SEMI_COLON>":
 					self.out.write('\nSuccesfully recognised function heading!\n')
@@ -924,21 +973,48 @@ class PyComp():
 				#este error se podria cambiar por "VALID DATA TYPE"
 				self.synErr('a type identifier')
 		elif self.currentToken == "<OPEN_PARENTHESIS>":
-			self.formal_parameter_section()
-			self.formal_parameter_function_rest()
+		
+			######
+			parameterList1 = Ref([])
+			parameterList2 = Ref([])
+			self.formal_parameter_section(parameterList1)
+			self.formal_parameter_function_rest(parameterList2,returnType)
+			parameterList.ref = parameterList1.ref + parameterList2.ref
+			print "function_heading_rest:",parameterList1.ref
+			######
+			
 		else:
 			self.synErr('\":\" or \")\"')
 
-	def formal_parameter_function_rest(self):
+	def formal_parameter_function_rest(self,parameterList,returnType):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<SEMI_COLON>":
-			self.formal_parameter_section()
-			self.formal_parameter_function_rest()
+		
+			########
+			parameterList1  =Ref([])
+			parameterList2  =Ref([])
+			self.formal_parameter_section(parameterList1)
+			self.formal_parameter_function_rest(parameterList2,returnType)
+			
+			parameterList.ref = parameterList1.ref + parameterList2.ref
+			##############
+			
 		elif self.currentToken == "<CLOSE_PARENTHESIS>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<TYPE_DECLARATION>":
 				self.currentToken = self.lexer.getNextToken()
 				if self.currentToken == "<IDENTIFIER>":
+				
+					#######
+					id = self.lexer.getLexeme()
+					returnType.ref = self.stStack.getGlobalValue(id)
+					if returnType.ref.clase == "type":
+						if not returnType.ref.tipo.instancia(Simple):
+							raise SemanticError(self.lexer.errorLeader(),"Invalid function declaration: Return type must be a simple type")
+					else:
+						raise SemanticError(self.lexer.errorLeader(),"Invalid function declaration: '%s' is not a valid type" % id)
+					#######
+				
 					self.currentToken = self.lexer.getNextToken()
 					if self.currentToken == "<SEMI_COLON>":
 						self.out.write('\nSuccesfully recognised parameter group!\n')
@@ -999,11 +1075,15 @@ class PyComp():
 		if token=='<ASSIGNMENT>' :
 		
 			############
-			identifier = self.stStack.getGlobalValue(id)
+			try:
+				identifier = self.stStack.getGlobalValue("$" + id)
+				
+			except:
+				identifier = self.stStack.getGlobalValue(id)
 			lexLevel = self.stStack.lastLexicalLevel()
 			attr = Ref()
 			self.expression(attr)
-			if identifier.clase == "variable" or identifier.clase == "reference":
+			if identifier.clase == "variable" or identifier.clase == "reference" or identifier.clase == "return":
 				if self.checkTypes(attr.ref.tipo,identifier.tipo):
 					self.escribir("CONT %s, %s" % (identifier.tipo.getLower(),identifier.tipo.getUpper()))
 					if identifier.clase == "variable":
@@ -1024,16 +1104,16 @@ class PyComp():
 							self.escribir("POAI %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
 						else:
 							raise Exception("YOUUUU SHALL NOT PAAAASS!")
+					elif identifier.clase == "return":
+						self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
 					else:
 						raise Exception("YOUUUU SHALL NOT PAAAASS!")
 					
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected, but %s found" % (identifier.tipo, attr.ref.tipo))
+				identifier.used = True
 			else:					
 				raise SemanticError(self.lexer.errorLeader(), "Left side of assignment must be a variable")
-			
-				
-			
 			############
 			
 		elif token=='<OPEN_BRACKET>' :
@@ -1087,13 +1167,16 @@ class PyComp():
 			nivel = self.stStack.lastLexicalLevel()
 			listParams = proc.tipo.params
 			if proc.clase == "procedure":
-				if nivel==-1:
-					self.actual_parameter(esperado = listParams[0],id = id)
-					self.actual_parameter_rest(listParams = listParams[1:],id = id)
+				if len(listParams)>0:
+					if nivel==-1:
+						self.actual_parameter(esperado = listParams[0],id = id)
+						self.actual_parameter_rest(listParams = listParams[1:],id = id)
+					else:
+						self.actual_parameter(esperado = listParams[0])
+						self.actual_parameter_rest(listParams = listParams[1:])
+						self.escribir("LLPR %s" %proc.tipo.label)
 				else:
-					self.actual_parameter(esperado = listParams[0])
-					self.actual_parameter_rest(listParams = listParams[1:])
-					self.escribir("LLPR %s" %proc.tipo.label)
+					raise SemanticError(self.lexer.errorLeader(), "Invalid procedure call: More parameters than expected")
 			else:
 				raise SemanticError(self.lexer.errorLeader(), "Invalid statement: %s is not a procedure" % id)
 			###############
@@ -1369,8 +1452,27 @@ class PyComp():
 		elif token=='<OPEN_PARENTHESIS>': # TODOOOOOOOOOOOOOOOOOOOOOOO
 			if porRef:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
-			self.actual_parameter()
-			self.actual_parameter_rest()
+			id = id.lower()
+			fun = self.stStack.getGlobalValue(id)
+			nivel = self.stStack.lastLexicalLevel()
+			print fun
+			if fun.clase == "function":
+				listParams = fun.tipo.params
+				if len(listParams)>0:
+					if nivel==-1:
+						self.actual_parameter(esperado = listParams[0],id = id)
+						self.actual_parameter_rest(listParams = listParams[1:],id = id)
+					else:
+						self.escribir("RMEM 1")
+						self.actual_parameter(esperado = listParams[0])
+						self.actual_parameter_rest(listParams = listParams[1:])
+						self.escribir("LLPR %s" %fun.tipo.label)
+						
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Invalid function call: More parameters than expected")
+				attr.ref = Attr(clase="subexpression",tipo=deepcopy(fun.tipo.ret))
+			else:
+				raise SemanticError(self.lexer.errorLeader(), "Invalid expression: %s is not a function" % id)
 		else:
 			self.pushLexeme() #lambda
 			
@@ -1378,8 +1480,14 @@ class PyComp():
 			identifier = self.stStack.getGlobalValue(id)
 			nivel = self.stStack.lastLexicalLevel()
 			if identifier.clase == 'function':
-				if porRef:
-					raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
+				if identifier.tipo.tamanioParams()==0:
+					if porRef:
+						raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
+					self.escribir("RMEM 1")
+					self.escribir("LLPR %s" % identifier.tipo.label)
+					attr.ref = Attr(clase = "subexpression",tipo = deepcopy(identifier.tipo.ret))
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Invalid function call: Less parameters than expected")
 			elif identifier.clase == 'variable':
 				if porRef:
 					self.escribir("APDR %s, %s" % (nivel, identifier.pos))

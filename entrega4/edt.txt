@@ -419,6 +419,7 @@
 							<OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
 							{
 								<function_heading_rest>.parameterList = [(<formal_parameter_section>.parameterList, <formal_parameter_section>.tipo, <formal_parameter_section>.byReference)] + <formal_parameter_function_rest>.parameterList
+								
 								<function_heading_rest>.returnType =  <formal_parameter_function_rest>.returnType
 							}
 							
