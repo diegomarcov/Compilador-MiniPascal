@@ -133,9 +133,11 @@ class PyComp():
 				###########
 				
 				return 'The program is syntactically correct.'
-			else: 
-				raise SynError(self.lexer.errorLeader(),msg="There are characters after the last character ('.')")
+			else:
+				#test: syn_charactersAfterEnd.pas
+				raise SynError(self.lexer.errorLeader(),msg="No statements allowed after program end.")
 		else:
+			# test: syn_wrongProgramEnd.pas
 			self.synErr('"."')
 
 	def program_heading(self,idPrograma,leader):
@@ -152,10 +154,13 @@ class PyComp():
 				if self.lexer.getNextToken() == '<SEMI_COLON>':
 					self.out.write('program_heading succeeded\n')
 				else:
+					#test: syn_program_two_ids.pas
 					self.synErr('";"')
 			else:
-				raise SynError(self.lexer.errorLeader(), msg="Expecting an identifier but %s was found" % self.lexer.getLexeme())
+				# test: syn_programWithoutName.pas
+				raise SynError(self.lexer.errorLeader(), msg="Expecting an identifier, but '%s' was found" % self.lexer.getLexeme())
 		else:
+			#test: syn_noProgram.pas
 			self.synErr('"program"')
 
 	def block(self,idPrograma=None,parameterList = None,idFuncion = None, returnType= None, idProc = None,leader = None):
@@ -266,6 +271,7 @@ class PyComp():
 			self.constant_definition()
 			self.constant_definition_rest()
 		else:
+			# error inalcanzable!
 			self.synErr('"const"')
 
 
@@ -275,6 +281,7 @@ class PyComp():
 		if self.currentToken == "<SEMI_COLON>":
 			self.constant_definition_rest_rest()
 		else:
+			#test: syn_constantSinPuntoYComa.pas
 			self.synErr('";"')
 
 	def constant_definition_rest_rest(self):
@@ -308,8 +315,10 @@ class PyComp():
 				#########	
 				
 			else:
+				# test: syn_constantSinPuntoYComa.pas
 				self.synErr('"="')
 		else:
+			#test: syn_programNoConst.pas, syn_twoConstants.pas
 			self.synErr('an identifier')
 		
 	def constant(self,attr=None): #cambiar!!!!! sacar el None
@@ -342,6 +351,7 @@ class PyComp():
 		################
 		
 		else:
+			# test: syn_constantSinPuntoYComa2.pas
 			self.synErr('a number, identifier or char')
 			
 	def constant_rest(self,attr):
@@ -367,6 +377,7 @@ class PyComp():
 			
 			self.out.write("\nFound constant declaration succesfully!\n")
 		else:
+			# syn_constantWrongAssignment.pas
 			self.synErr('a number or identifier')
 
 	def sign(self,signValue):
@@ -380,6 +391,7 @@ class PyComp():
 		##########
 		
 		else:
+			# error inalcanzable
 			self.synErr('a sign')
 
 	def type_definition_part(self):
@@ -388,6 +400,7 @@ class PyComp():
 			self.type_definition()
 			self.type_definition_rest()
 		else:
+			# error inalcanzable: 
 			self.synErr('"type"')
 
 	def type_definition_rest(self):
@@ -395,6 +408,7 @@ class PyComp():
 		if self.currentToken == "<SEMI_COLON>":
 			self.type_definition_rest_rest()
 		else:
+			# test: syn_TypeSinPuntoYComa.pas
 			self.synErr('";"')
 
 	def type_definition_rest_rest(self):
@@ -422,8 +436,10 @@ class PyComp():
 				#########
 				
 			else:
+				# test: syn_TypeSinIgual.pas
 				self.synErr('"="')
 		else:
+			# test: syn_TypesinIdentifier.pas
 			self.synErr('identifier')
 
 	def type(self,tipo):
@@ -462,6 +478,7 @@ class PyComp():
 				##########
 				
 			else:
+				# test: syn_subrangeSinSeparador.pas
 				self.synErr('".."')
 		elif self.currentToken == "<CHAR>":
 			char = self.lexer.getLexeme()[1]
@@ -480,6 +497,7 @@ class PyComp():
 				#############
 				
 			else:
+				# test: syn_subrangeSinSeparador2
 				self.synErr('".."')
 		elif self.currentToken == "<ADD_OP>" or self.currentToken == "<MINUS_OP>":
 			self.pushLexeme()
@@ -518,7 +536,9 @@ class PyComp():
 					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (%s expected, but %s found)" % (str(id.tipo),str(tipo2)))					
 			#########
 			
-		else: 
+		else:
+			# CREO que este error es inalcanzable...
+			# de cualquier manera, no lo puedo hacer saltar -.-
 			self.synErr('simple type')
 
 	def simple_type_rest(self,attr):
@@ -564,6 +584,7 @@ class PyComp():
 				##############
 				
 			else:
+				# test: syn_subrangeSinSegundaParte2
 				self.synErr('".."')
 		elif self.currentToken == "<IDENTIFIER>":
 			id = self.lexer.getLexeme()
@@ -586,8 +607,10 @@ class PyComp():
 				###############
 				
 			else:
+				# test: syn_subrangeSinSegundaParte
 				self.synErr('".."')
 		else:
+			# test: syn_subrangeMalDefinido.pas
 			self.synErr('subrange declaration')
 			
 
@@ -617,12 +640,16 @@ class PyComp():
 						#########
 						
 					else:
+						# test: syn_arrayMalDefinido.pas
 						self.synErr('"of"')
 				else:
+					# test: syn_arrayMalDefinido2.pas
 					self.synErr('"]"')
 			else:
+				# test: syn_arrayMalDefinido3.pas
 				self.synErr('"["')
 		else:
+			# error inalcanzable
 			self.synErr('"array"')
 
 	def variable_definition_part(self,tamanioVariables):
@@ -641,6 +668,7 @@ class PyComp():
 			#############
 			
 		else:
+			# error inalcanzable
 			self.synErr('"VAR"')
 
 	def variable_declaration_part_rest(self,tamanioVariables):
@@ -650,6 +678,7 @@ class PyComp():
 		if self.currentToken == "<SEMI_COLON>":
 			self.variable_declaration_rest_rest(tamanioVariables)
 		else:
+			# test: syn_varSinPuntoYComa.pas
 			self.synErr('";"')
 
 	def variable_declaration_rest_rest(self,tamanioVariables):
@@ -683,7 +712,8 @@ class PyComp():
 			# self.escribir("RMEM %s" %len(idList.ref))
 			#########
 			
-		else:	
+		else:
+			# test: syn_varSinIdentifier.pas
 			self.synErr('an identifier')
 
 	def variable_declaration_rest(self,idList,tipo):
@@ -702,6 +732,7 @@ class PyComp():
 				#########
 				
 			else:
+				# test: syn_varSinIdentifier2.pas
 				self.synErr('an identifier')
 		elif self.currentToken == "<TYPE_DECLARATION>":
 
@@ -712,6 +743,7 @@ class PyComp():
 			#########
 			
 		else:
+			# syn_varSinSeparador.pas
 			self.synErr('"," or ":"')
 
 	def procedure_and_function_declaration_part(self):
@@ -725,6 +757,7 @@ class PyComp():
 			if self.currentToken == "<SEMI_COLON>":
 				self.procedure_and_function_declaration_part()
 			else:
+				#
 				self.synErr('";"')
 		else:
 			#lambda
@@ -1038,6 +1071,7 @@ class PyComp():
 			if self.lexer.getNextToken() != '<END>':
 				self.synErr('"end" or a valid statement')
 		else:
+			#test: syn_doblePuntoYComa.pas, syn_noConst.pas
 			self.synErr('"begin"')
 
 	def compound_statement_rest(self):
