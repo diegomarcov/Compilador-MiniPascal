@@ -99,8 +99,8 @@ class PyComp():
 	def chequearUsados(self,vector):
 		st = self.stStack.top()
 		for x in st:
-			if not st[x].used and st[x].clase!="program":
-				 print "WARNING: '%s' has never been used in %s %s\n" %(x, vector[0], vector[1])
+			if not st[x].used and st[x].clase!="program" and x[0]!="$":
+				 print "%sWARNING: '%s' has never been used in %s '%s'\n" %(vector[2],x, vector[0], vector[1])
 			
 	def execute(self):
 		try:
@@ -118,8 +118,9 @@ class PyComp():
 		self.escribir('INPP')		
 		###########
 		
-		self.program_heading(idPrograma)
-		self.block(idPrograma.ref)
+		leader = Ref()
+		self.program_heading(idPrograma,leader)
+		self.block(idPrograma.ref,leader = leader.ref)
 		if self.lexer.getNextToken() == '<END_PROGRAM>':
 			if self.lexer.getNextToken() == '<EOF>':
 				self.out.write('Success\n')
@@ -137,9 +138,10 @@ class PyComp():
 		else:
 			self.synErr('"."')
 
-	def program_heading(self,idPrograma):
+	def program_heading(self,idPrograma,leader):
 		self.out.write('In program_heading\n')
 		if self.lexer.getNextToken() == '<PROGRAM>':
+			leader.ref = self.lexer.errorLeader()
 			if self.lexer.getNextToken() == '<IDENTIFIER>':
 			
 				#############
@@ -156,18 +158,18 @@ class PyComp():
 		else:
 			self.synErr('"program"')
 
-	def block(self,idPrograma=None,parameterList = None,idFuncion = None, returnType= None, idProc = None):
+	def block(self,idPrograma=None,parameterList = None,idFuncion = None, returnType= None, idProc = None,leader = None):
 		self.out.write('In block\n')
 		currentToken = self.lexer.getNextToken()
 		
 		################		
 		self.imprimirST(self.stStack.top())
 		self.stStack.push() # agrega por default un diccionario, o sea una tabla de símbolos
-		idCompleto =["procedure",idProc,None]
+		idCompleto =["procedure",idProc,leader]
 		if idPrograma!=None:
 			self.stStack.addNewID(idPrograma, Attr(valor=idPrograma,tipo=Programa(),clase="program"))			
 			#procedimientos...
-			idCompleto = ["program",idPrograma,None]
+			idCompleto = ["program",idPrograma,leader]
 			
 		if parameterList!=None:
 			
@@ -182,7 +184,7 @@ class PyComp():
 			if returnType:
 				self.stStack.addNewID("$" + idFuncion, Attr(clase = "return", tipo = returnType.tipo, pos = -(n+3), used = False))
 				
-				idCompleto = ["function",idFuncion,None]
+				idCompleto = ["function",idFuncion,leader]
 			
 			for x in parameterList.ref:
 				if x[2]: # por Referencia
@@ -199,7 +201,7 @@ class PyComp():
 		self.imprimirST(self.stStack.top())
 		self.pushLexeme()
 		tamanioVariables =Ref(0)
-		idCompleto[2]=self.lexer.errorLeader()
+		
 		if currentToken == "<CONST>":
 			self.constant_definition_part()
 			self.block_cons_rest(tamanioVariables)
@@ -749,22 +751,24 @@ class PyComp():
 		tamanioParams = Ref()
 		parameterList = Ref()
 		id = Ref()
-		self.procedure_heading(label,tamanioParams,parameterList,id)
+		leader = Ref()
+		self.procedure_heading(label,tamanioParams,parameterList,id, leader)
 		
 		#########
 		nivel = self.stStack.getCurrentLexLevel() 
 		self.escribir("ENPR %s" % nivel)
 		#########
 		
-		self.block(parameterList = parameterList,idProc = id.ref)
+		self.block(parameterList = parameterList,idProc = id.ref, leader = leader.ref)
 		
 		#########		
 		self.escribir("RTPR %s, %s" % (nivel, tamanioParams.ref))
 		#########
 
-	def procedure_heading(self,label,tamanioParams,parameterList1,id):
+	def procedure_heading(self,label,tamanioParams,parameterList1,id, leader):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<PROCEDURE>":
+			leader.ref = self.lexer.errorLeader()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
 				
@@ -904,23 +908,25 @@ class PyComp():
 		parameterList = Ref()
 		id = Ref()
 		returnType =Ref()
-		self.function_heading(label,tamanioParams,parameterList,id,returnType)
+		leader = Ref()
+		self.function_heading(label,tamanioParams,parameterList,id,returnType,leader)
 		
 		#########
 		nivel = self.stStack.getCurrentLexLevel() 
 		self.escribir("ENPR %s" % nivel)
 		#########
 		
-		self.block(idFuncion = id.ref,parameterList = parameterList, returnType = returnType.ref)
+		self.block(idFuncion = id.ref,parameterList = parameterList, returnType = returnType.ref, leader = leader.ref)
 		
 		#########		
 		self.escribir("RTPR %s, %s" % (nivel, tamanioParams.ref))
 		#########
 
-	def function_heading(self,label,tamanioParams,parameterList1,id,returnType):
+	def function_heading(self,label,tamanioParams,parameterList1,id,returnType,leader):
 		self.out.write('In function_heading\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<FUNCTION>":
+			leader.ref = self.lexer.errorLeader()
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
 			
@@ -973,7 +979,7 @@ class PyComp():
 			self.formal_parameter_section(parameterList1)
 			self.formal_parameter_function_rest(parameterList2,returnType)
 			parameterList.ref = parameterList1.ref + parameterList2.ref
-			print "function_heading_rest:",parameterList1.ref
+			
 			######
 			
 		else:
@@ -1431,7 +1437,7 @@ class PyComp():
 							if array.clase=="variable":
 								self.escribir("APAR %s,%s" % (nivel, array.pos))
 							elif array.clase=="reference":
-								print nivel, array.pos
+								
 								self.escribir("APAI %s,%s" % (nivel, array.pos))
 						
 							
@@ -1443,7 +1449,7 @@ class PyComp():
 				###############
 				
 				self.out.write('factor_rest is finished\n')
-		elif token=='<OPEN_PARENTHESIS>': # TODOOOOOOOOOOOOOOOOOOOOOOO
+		elif token=='<OPEN_PARENTHESIS>': 
 			if porRef:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			id = id.lower()
@@ -1458,11 +1464,11 @@ class PyComp():
 						if id=="ord":
 							self.actual_parameter(esperado = listParams[0])
 							self.actual_parameter_rest(listParams = listParams[1:],id = id)
-							attr.ref = Attr(clase="subexpression",tipo=Caracter())
+							attr.ref = Attr(clase="subexpression",tipo=Entero())
 						elif id=="chr":
 							self.actual_parameter(esperado = listParams[0])
 							self.actual_parameter_rest(listParams = listParams[1:],id = id)
-							attr.ref = Attr(clase="subexpression",tipo=Entero())
+							attr.ref = Attr(clase="subexpression",tipo=Caracter())
 						elif id=="succ":
 							attr1 = Ref()
 							self.actual_parameter(esperado = listParams[0],attr = attr1)
@@ -1513,6 +1519,7 @@ class PyComp():
 					self.escribir("APDR %s, %s" % (nivel, identifier.pos))
 					identifier.used = True
 				else:
+					
 					if not identifier.used:
 						self.warning("'%s' has not been initialized" % id)
 					if identifier.tipo.instancia(Simple):
@@ -1620,7 +1627,7 @@ class PyComp():
 		token=self.lexer.getNextToken()
 		if token=='<COMMA>':
 		
-			##########
+			########## 
 			if id: #es predefinido... necesita una solo parámetro
 				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure call: %s has only 1 parameter(s)" % id)
 			if len(listParams)>0:

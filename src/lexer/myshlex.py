@@ -35,7 +35,7 @@ class shlex:
             self.eof = None
         else:
             self.eof = ''
-        self.commenters = '#'
+        # self.commenters = '#'
         self.wordchars = ('abcdfeghijklmnopqrstuvwxyz'
                           'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
         if self.posix:
@@ -142,9 +142,15 @@ class shlex:
                         break   # emit current token
                     else:
                         continue
-                elif nextchar in self.commenters:
-                    self.instream.readline()
-                    self.lineno = self.lineno + 1
+                elif nextchar == '/':
+					nextnextchar = self.instream.read(1)
+					if nextnextchar =='/':
+						self.instream.readline()
+						self.lineno = self.lineno + 1
+					else:
+						self.token = nextchar
+						self.instream.seek(-1,os.SEEK_CUR) # vuelvo el lector una posicion atras, porque no era comentario
+						break
                 # parte agregada por leo
                 elif (nextchar == '{'):
                     # es comentario
@@ -242,15 +248,22 @@ class shlex:
                         break   # emit current token
                     else:
                         continue
-                elif nextchar in self.commenters:
-                    self.instream.readline()
-                    self.lineno = self.lineno + 1
-                    if self.posix:
-                        self.state = ' '
-                        if self.token or (self.posix and quoted):
-                            break   # emit current token
-                        else:
-                            continue
+                elif nextchar == '/':
+					nextnextchar = self.instream.read(1)
+					if nextnextchar =='/':
+						self.instream.readline()
+						self.lineno = self.lineno + 1
+					else:
+						self.token = nextchar
+						self.instream.seek(-1,os.SEEK_CUR) # vuelvo el lector una posicion atras, porque no era comentario
+						break
+                    
+					if self.posix:
+						self.state = ' '
+						if self.token or (self.posix and quoted):
+							break   # emit current token
+						else:
+							continue
                 # parte agregada por leo
                 elif (nextchar == '{'):
                     # es comentario
