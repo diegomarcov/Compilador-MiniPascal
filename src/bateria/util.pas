@@ -1,3 +1,0 @@
-program ej;
-begin
-end.

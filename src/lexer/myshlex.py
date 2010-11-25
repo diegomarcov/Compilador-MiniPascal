@@ -41,6 +41,7 @@ class shlex:
         if self.posix:
             self.wordchars += ('‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ'
                                'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ')
+		
         self.whitespace = ' \t\r\n'
         self.whitespace_split = False
         self.quotes = '\'"'

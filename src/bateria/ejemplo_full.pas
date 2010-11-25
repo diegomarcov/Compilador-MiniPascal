@@ -58,7 +58,7 @@ cont:=1;
 while(cont<=N) do
  begin
 	if(func<>0) then
-		fillArr(a*99 div (n+a*(i-u)),cont,fibonacci(cont))
+		fillArr(a,cont,fibonacci(cont))
 	else
 		fillArr(a,cont,fact(cont));;;;;;;;;;;
 	cont:=cont+1;;;;;;;;;;;;;;;;;;;;;;;;;;;;

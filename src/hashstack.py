@@ -48,7 +48,8 @@ class HashStack(list):
 		if not (key in st):
 			st[key] = element
 		else:
-			raise SymbolTableError(True,key)
+			raise SymbolTableError(True,key) 
+			# constRedefinido.pas
 			
 	def getGlobalValue(self,key):
 		aux = None

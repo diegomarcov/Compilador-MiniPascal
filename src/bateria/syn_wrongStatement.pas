@@ -1,4 +1,4 @@
-program sin_end;
+program sinend;
 var a,b:integer;
 function sumaEnteros(a:integer;var b:integer):integer;
 		var c:integer;

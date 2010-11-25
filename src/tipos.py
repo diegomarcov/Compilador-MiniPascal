@@ -102,7 +102,7 @@ class SubCaracter(Subrango,Caracter): #herencia múltiple troska
 		self.imprimible = True
 		
 	def __str__(self):
-		return "Character subrange from %s to %s" %(self.lowerBound.valor,self.upperBound.valor)
+		return "Character subrange from '%s' to '%s'" %(self.lowerBound.valor,self.upperBound.valor)
 		
 	def getLower(self):
 		return ord(self.lowerBound.valor)

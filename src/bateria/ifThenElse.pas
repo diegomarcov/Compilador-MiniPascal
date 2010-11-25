@@ -7,4 +7,5 @@ begin
 		a := 1
 	else
 		a := 2;
+	write(a);
 end.

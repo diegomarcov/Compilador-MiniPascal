@@ -44,8 +44,10 @@ class PyComp():
 						return True
 					else:
 						raise SemanticError(self.lexer.errorLeader(),"Non compatible array element types: %s and %s" % (tipo1.elementType,tipo2.elementType))
+						# copiaArreglosIncompatibles2.pas
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Cannot operate with arrays of different size" )
+					# copiaArreglosIncompatibles.pas
 		else:
 			return False
 			
@@ -100,7 +102,10 @@ class PyComp():
 		st = self.stStack.top()
 		for x in st:
 			if not st[x].used and st[x].clase!="program" and x[0]!="$":
-				 print "%sWARNING: '%s' has never been used in %s '%s'\n" %(vector[2],x, vector[0], vector[1])
+				if st[x].clase in ["procedure","function"]:
+					print "%sWARNING: '%s' has never been used in %s '%s'\n" %(vector[2],x, vector[0], vector[1])
+				elif  st[x].clase in ["variable"]:
+					print "%sWARNING: '%s' has never been initialized in %s '%s'\n" %(vector[2],x, vector[0], vector[1])
 			
 	def execute(self):
 		try:
@@ -327,7 +332,12 @@ class PyComp():
 		
 		#################
 		if self.currentToken == "<NUMBER>":
-			attr.ref = Attr(valor=int(self.lexer.getLexeme()),tipo=Entero(),clase="constant")
+			i = int(self.lexer.getLexeme())
+			tipo=Entero()
+			if i<tipo.getLower() or i>tipo.getUpper():
+				raise SemanticError(self.lexer.errorLeader(),"Invalid constant: Integer literal out of bounds")
+				#test: 
+			attr.ref = Attr(valor=i,tipo=tipo,clase="constant")
 			self.out.write("\tInteger constant found: " + str(attr.ref) + "\n")			
 		elif self.currentToken == "<IDENTIFIER>":
 			attr.ref = self.stStack.getGlobalValue(self.lexer.getLexeme())
@@ -338,6 +348,7 @@ class PyComp():
 				# attr.ref = Attr(valor = attr.ref.valor,) 
 			else:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid assignment: constant expected")
+				#constMalAsignacion.pas
 		elif self.currentToken == "<CHAR>":
 			attr.ref = Attr(valor = self.lexer.getLexeme()[1],tipo = Caracter(),clase="constant")
 			self.out.write("\tCharacter constant found: " + str(attr.ref) + "\n")	
@@ -347,7 +358,11 @@ class PyComp():
 			self.sign(signValue)
 			# attr = Ref()
 			self.constant_rest(attr)
+			tipo=Entero()
 			attr.ref.valor = signValue.ref * attr.ref.valor
+			if attr.ref.valor<tipo.getLower() or attr.ref.valor>tipo.getUpper():
+				raise SemanticError(self.lexer.errorLeader(),"Invalid constant: Integer literal out of bounds")
+				#test: 
 		################
 		
 		else:
@@ -369,6 +384,7 @@ class PyComp():
 					self.out.write("\tConstant %s assigned to constant\n" % self.lexer.getLexeme())
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Can not apply sign operator to " + self.lexer.getLexeme())
+					# constMalTipo.pas
 			# elif attr.ref.clase=="variable":
 				# attr.ref = Attr(valor = attr.ref.valor,) 
 			else:
@@ -462,6 +478,9 @@ class PyComp():
 		self.out.write('Current token == %s\n' % self.currentToken)
 		if self.currentToken == "<NUMBER>":
 			number = int(self.lexer.getLexeme())
+			if number<Entero().getLower() or number>Entero().getUpper():
+				raise SemanticError(self.lexer.errorLeader(),"Invalid constant: Integer literal out of bounds")
+				#test: 
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<SUBRANGE_SEPARATOR>":
 			
@@ -493,7 +512,7 @@ class PyComp():
 					else:
 						raise SemanticError(self.lexer.errorLeader(),"Invalid subrange: lower bound must be smaller than upper bound.")
 				else:
-					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Character expected, but " + str(char2.ref.tipo) + " found).")
+					raise SemanticError(self.lexer.errorLeader(),"Non compatible subrange bounds (Character expected, but " + str(char2.ref.tipo) + " found)")
 				#############
 				
 			else:
@@ -508,6 +527,10 @@ class PyComp():
 			tipo2 = Ref()
 			self.subrange_type_rest(tipo2)
 			tipo2.ref.tipo.lowerBound.valor *= valor.ref
+			
+			if tipo2.ref.tipo.lowerBound<Entero().getLower():
+				raise SemanticError(self.lexer.errorLeader(),"Invalid constant: Integer literal out of bounds")
+				#test: 
 			if tipo2.ref.tipo.lowerBound.valor <= tipo2.ref.tipo.upperBound.valor:
 				tipo.ref = Attr(tipo = tipo2.ref.tipo, clase = "constant")
 			else:
@@ -525,6 +548,7 @@ class PyComp():
 					tipo.ref = deepcopy(id)
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Type expected, but %s found" % id.clase)
+					#sem_wrongTypeID.pas
 			else:
 				if tipo2.ref.tipo.instancia(type(id.tipo)):
 					if id.valor <= tipo2.ref.tipo.upperBound.valor:
@@ -1117,10 +1141,10 @@ class PyComp():
 			self.expression(attr)
 			if identifier.clase == "variable" or identifier.clase == "reference" or identifier.clase == "return": #este control lo hacemos dos veces para poder tirar mejor el error
 				if self.checkTypes(attr.ref.tipo,identifier.tipo):
-					self.escribir("CONT %s, %s" % (identifier.tipo.getLower(),identifier.tipo.getUpper()))
+					
 					if identifier.clase == "variable":
 						if identifier.tipo.instancia(Simple):
-							
+							self.escribir("CONT %s, %s" % (identifier.tipo.getLower(),identifier.tipo.getUpper()))
 							self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
 							
 						elif identifier.tipo.instancia(Arreglo):
@@ -1129,7 +1153,7 @@ class PyComp():
 							raise Exception("This error should not happen")
 					elif identifier.clase == "reference":
 						if identifier.tipo.instancia(Simple):
-							
+							self.escribir("CONT %s, %s" % (identifier.tipo.getLower(),identifier.tipo.getUpper()))
 							self.escribir("ALVI %s, %s" % (lexLevel, identifier.pos))
 							
 						elif identifier.tipo.instancia(Arreglo):
@@ -1160,7 +1184,7 @@ class PyComp():
 			
 			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
 				if self.lexer.getNextToken()=='<ASSIGNMENT>':
-					
+					array.used = True
 					############
 					attr2 = Ref()
 					if array.tipo.instancia(Arreglo):
@@ -1168,7 +1192,7 @@ class PyComp():
 						self.escribir("APCT %s" % array.tipo.indexType.getLower())
 						self.escribir("SUST")
 					else:
-						raise SemanticError(self.lexer.errorLeader(), "Invalid statement: %s is not an array" %id)
+						raise SemanticError(self.lexer.errorLeader(), "Invalid statement: '%s' is not an array" %id)
 					self.expression(attr2)
 					if self.checkTypes(array.tipo.indexType,attr1.ref.tipo):
 						if self.checkTypes(array.tipo.elementType, attr2.ref.tipo):
@@ -1200,8 +1224,9 @@ class PyComp():
 			proc = self.stStack.getGlobalValue(id)
 			proc.used = True
 			nivel = self.stStack.lastLexicalLevel()
-			listParams = proc.tipo.params
+			
 			if proc.clase == "procedure":
+				listParams = proc.tipo.params
 				if len(listParams)>0:
 					if nivel==-1:
 						self.actual_parameter(esperado = listParams[0],id = id)
@@ -1213,7 +1238,7 @@ class PyComp():
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Invalid procedure call: More parameters than expected")
 			else:
-				raise SemanticError(self.lexer.errorLeader(), "Invalid statement: %s is not a procedure" % id)
+				raise SemanticError(self.lexer.errorLeader(), "Invalid statement: '%s' is not a procedure" % id)
 			###############
 			
 		else:
@@ -1228,7 +1253,8 @@ class PyComp():
 				if proc.tipo.params==[]:
 					self.escribir("LLPR %s" %proc.tipo.label)
 				else:
-					raise SemanticError(self.lexer.errorLeader(),"Invalid procedure call: %s has %s parameters" % (id,len(proc.tipo.params)))
+					raise SemanticError(self.lexer.errorLeader(),"Invalid procedure call: Less parameters than expected")
+					# sem_procedimientoWrongMenosParams.pas
 			else:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid statement: %s is not a procedure" % id)
 			#######
@@ -1414,8 +1440,8 @@ class PyComp():
 			attr1 = Ref()
 			self.factor(attr1)
 			if attr1.ref.tipo.instancia(Entero):
-				self.escribir("APCT %s" %valor.ref)
-				self.escribir("MULT")
+				if valor.ref==-1:
+					self.escribir("UMEN")				
 				attr.ref = attr1.ref
 			else:
 				raise SemanticError("Invalid expression: Integer expected, but %s found" % attr1.ref.tipo)
@@ -1423,7 +1449,7 @@ class PyComp():
 			
 		else:
 			self.synErr('a valid subexpresion (e.g. literal, identifier)')
-			#test: syn_wrongAssignment.pas
+			#test: syn_wrongAssignment.pas syn_expresionInvalida.pas
 		self.out.write('factor is finished\n')
 
 	def factor_rest(self,id,attr,porRef = None):
@@ -1465,6 +1491,7 @@ class PyComp():
 						attr.ref = Attr(clase = "subexpression", tipo = array.tipo.elementType)
 					else:
 						raise SemanticError(self.lexer.errorLeader(), "%s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
+						# sem_arrayWrongIndex.pas
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Invalid expression: '%s' is not an array" % id)			
 				###############
@@ -1583,8 +1610,8 @@ class PyComp():
 		# if id!=None and id in ["read","readln"]
 
 		self.expression(attrE, porRef = esperado[2])
-		if type(esperado[1])!=Simple:
-			self.escribir("CONT %s,%s" %(esperado[1].getLower(),esperado[1].getUpper()))
+		# if esperado[1].instancia(Simple):
+			# self.escribir("CONT %s,%s" %(esperado[1].indexType.getLower(),esperado[1].indexType.getUpper()))
 
 			
 		if attr:
@@ -1747,6 +1774,7 @@ class PyComp():
 				
 			else:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid conditional statement. Boolean expected, but %s found" % attr.ref.tipo)
+				# sem_ifWrongCondition.pas
 			################
 			
 			if self.lexer.getNextToken() =='<THEN>':
@@ -1827,9 +1855,9 @@ class PyComp():
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Lexical analysis for the provided .pas file.')
 	parser.add_argument('inputFile', metavar='IN_FILE', help='The source .pas file')
-	parser.add_argument('outputFile', metavar='OUT_FILE', nargs='?', help='The optional output file for the compiler messages.')
+	parser.add_argument('mepaFile', metavar='OUT_FILE', nargs='?', help='The output file for the generated program (.mepa file).')
 	parser.add_argument('-d', help='Debug mode',action='store_const', const=True, dest='debug')
-	parser.add_argument('-o', dest = 'mepaFile', help='The output file for the generated program (.mepa file).', metavar='OUT_FILE', nargs='?')
+	parser.add_argument('-o', dest = 'outputFile', help='The optional output file for the compiler messages.', metavar='DISPLAY_FILE', nargs='?')
 
 	args = parser.parse_args()
 	inputFile = io.BufferedReader(io.FileIO(args.inputFile))

@@ -9,7 +9,7 @@ begin
 	a[1]:=38;
 	writeln(a[0]);
 	writeln(a[1]);
-	a:=b;
+	b:=a;
 	writeln(b[0]);
 	writeln(b[1]);
 end.

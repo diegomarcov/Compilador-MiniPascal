@@ -11,4 +11,5 @@ begin
 		end
 	else
 		a := 2;
+	write(a);
 end.
