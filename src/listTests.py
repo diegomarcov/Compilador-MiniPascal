@@ -17,7 +17,7 @@ for x in casoCorrecto:
 		if a=="next":
 			break
 
-		print os.system(a.replace("$$",x)) 
+		print os.system(a.replace("$$","bateria/"+x)) 
 print "Casos erroneos:"		
 for x in casoErroneo:
 	while True:
@@ -25,4 +25,4 @@ for x in casoErroneo:
 		if a=="next":
 			break
 			
-		print os.system(a.replace("$$",x))
+		print os.system(a.replace("$$","bateria/"+x))

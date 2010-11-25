@@ -9,12 +9,12 @@ class CompilerError(Exception):
 		self.leader = leader
 		
 	def __str__(self):
-		return "\n" + self.leader + self.msg + "\n"
+		return "\n" + self.leader + self.msg + ".\n"
 		
 class SynError(CompilerError):
 	def __init__(self,leader,expected="",found="",msg=""):
 		super(SynError,self).__init__(leader)
-		self.msg="Syntactical error found:"
+		self.msg="Syntactical error found: "
 		if msg=="":
 			# self.leader = leader
 			# self.expected = expected

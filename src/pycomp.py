@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import argparse, io, traceback, re
+import argparse, io, traceback, re, os
 # sys.path.append('../entrega2/')
 from lexer.lexan import LexAn,LexError
 from utils import VortexWriter,SynError,UnexpectedTokenError,CompilerError, SemanticError
@@ -1071,7 +1071,7 @@ class PyComp():
 			if self.lexer.getNextToken() != '<END>':
 				self.synErr('"end" or a valid statement')
 		else:
-			#test: syn_doblePuntoYComa.pas, syn_noConst.pas
+			#test: syn_doblePuntoYComa.pas, syn_doblePuntoYComa2.pas, syn_noConst.pas
 			self.synErr('"begin"')
 
 	def compound_statement_rest(self):
@@ -1095,7 +1095,7 @@ class PyComp():
 	def simple_statement(self):
 		self.out.write('In simple_statement\n')
 		token=self.lexer.getNextToken()
-		self.out.write('Current token == %s\n' % token)
+		
 		if token=='<IDENTIFIER>' :
 			self.simple_statement_rest(self.lexer.getLexeme())
 		else:
@@ -1109,14 +1109,13 @@ class PyComp():
 		
 			############
 			try:
-				identifier = self.stStack.getGlobalValue("$" + id)
-				
+				identifier = self.stStack.getGlobalValue("$" + id) #primero busca el retorno de funcion. Si no aparece, no deja que salte el error y busca el nombre de identificador común. Ya si ese tira error, es que no existe el id, y está bien que se rompa
 			except:
 				identifier = self.stStack.getGlobalValue(id)
 			lexLevel = self.stStack.lastLexicalLevel()
 			attr = Ref()
 			self.expression(attr)
-			if identifier.clase == "variable" or identifier.clase == "reference" or identifier.clase == "return":
+			if identifier.clase == "variable" or identifier.clase == "reference" or identifier.clase == "return": #este control lo hacemos dos veces para poder tirar mejor el error
 				if self.checkTypes(attr.ref.tipo,identifier.tipo):
 					self.escribir("CONT %s, %s" % (identifier.tipo.getLower(),identifier.tipo.getUpper()))
 					if identifier.clase == "variable":
@@ -1127,7 +1126,7 @@ class PyComp():
 						elif identifier.tipo.instancia(Arreglo):
 							self.escribir("POAR %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
 						else:
-							raise Exception("YOUUUU SHALL NOT PAAAASS!")
+							raise Exception("This error should not happen")
 					elif identifier.clase == "reference":
 						if identifier.tipo.instancia(Simple):
 							
@@ -1136,11 +1135,11 @@ class PyComp():
 						elif identifier.tipo.instancia(Arreglo):
 							self.escribir("POAI %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
 						else:
-							raise Exception("YOUUUU SHALL NOT PAAAASS!")
+							raise Exception("This error should not happen")
 					elif identifier.clase == "return":
 						self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
 					else:
-						raise Exception("YOUUUU SHALL NOT PAAAASS!")
+						raise Exception("This error should not happen")
 					
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected, but %s found" % (identifier.tipo, attr.ref.tipo))
@@ -1189,8 +1188,10 @@ class PyComp():
 					
 				else:
 					self.synErr('":="')
+					# test: syn_wrongElementAssignment.pas
 			else:
 				self.synErr('"]"')
+				# test: syn_wrongElementAssignment2.pas
 				
 		elif token=='<OPEN_PARENTHESIS>':
 			
@@ -1231,21 +1232,6 @@ class PyComp():
 			else:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid statement: %s is not a procedure" % id)
 			#######
-
-	def component_variable(self):
-		self.out.write('In component_variable\n')
-		token=self.lexer.getNextToken()
-		if token=='<IDENTIFIER>': 
-			if self.lexer.getNextToken()=='<OPEN_BRACKET>':
-				self.expression()
-				if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
-					self.out.write('component_variable is finished\n')
-				else:
-					self.synErr('"]"')
-			else:
-				self.synErr('"["')
-		else:
-			self.synErr('an identifier')
 
 	def expression(self, attr = None, porRef = None):
 		self.out.write('In expression\n')
@@ -1436,7 +1422,8 @@ class PyComp():
 			###########
 			
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
+			self.synErr('a valid subexpresion (e.g. literal, identifier)')
+			#test: syn_wrongAssignment.pas
 		self.out.write('factor is finished\n')
 
 	def factor_rest(self,id,attr,porRef = None):
@@ -1563,7 +1550,7 @@ class PyComp():
 					elif identifier.tipo.instancia(Arreglo):
 						self.escribir("PUAR %s,%s,%s" % (nivel,identifier.pos,identifier.tipo.indexType.getRange()))
 					else:
-						raise Exception("YOUUUU SHALL NOT PAAAASS!")
+						raise Exception("This error should not happen")
 				attr.ref = deepcopy(identifier)
 			elif identifier.clase == 'constant':
 				if porRef:
@@ -1582,7 +1569,7 @@ class PyComp():
 					elif identifier.tipo.instancia(Arreglo):
 						self.escribir("PUAI %s, %s, %s" % (nivel,identifier.pos,identifier.tipo.indexType.getRange()))
 					else:
-						raise Exception("YOUUUU SHALL NOT PAAAASS!")
+						raise Exception("This error should not happen")
 				attr.ref = deepcopy(identifier)
 			else:
 				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+ str(identifier.clase)+" identifier found")			
@@ -1649,7 +1636,7 @@ class PyComp():
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
 			else:
-				raise Exception("YOUUUU SHALL NOT PAAAASS!")
+				raise Exception("This error should not happen")
 		else:# si es None es definido por el usuario	
 			if not self.checkTypes(attrE.ref.tipo,esperado[1]):
 				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure or function call: %s parameter expected, but %s found" % (esperado[1],attrE.ref.tipo))
@@ -1684,6 +1671,7 @@ class PyComp():
 			
 		else:
 			self.synErr('"," or ")"')
+			#test: syn_wrongProcedureCall.pas, syn_wrongFunctionCall.pas
 
 	def multiplying_operator(self,op,tipo):
 		self.out.write('In multiplying_operator\n')
@@ -1700,7 +1688,7 @@ class PyComp():
 			########
 			
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme()) #inalcanzable
 
 	def adding_operator(self,op,tipo):
 		self.out.write('In adding_operator\n')
@@ -1717,7 +1705,7 @@ class PyComp():
 			
 			self.out.write('adding_operator is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme()) #inalcanzable
 
 	def relational_operator(self,op):
 		self.out.write('In relational_operator\n')
@@ -1730,7 +1718,7 @@ class PyComp():
 			
 			self.out.write('relational_operator is finished\n')
 		else:
-			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
+			raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme()) #inalcanzable
 
 	def structured_statement(self):
 		self.out.write('In structured_statement\n')
@@ -1767,8 +1755,9 @@ class PyComp():
 				self.conditional_statement_other(labelActual)
 			else:
 				self.synErr('"then"')
+				#test: syn_wrongIf.pas
 		else:
-			self.synErr('"if"')
+			self.synErr('"if"') #inalcanzable
 
 	def conditional_statement_other(self,label):
 		self.out.write('In conditional_statement_other\n')
@@ -1824,8 +1813,9 @@ class PyComp():
 				
 			else:
 				self.synErr('"do"')
+				#test: syn_wrongWhile.pas
 		else:
-			self.synErr('"while"')
+			self.synErr('"while"') #inalcanzable
 
 	def synErr(self,s):
 		raise SynError(self.lexer.errorLeader(),s,self.lexer.getLexeme())
@@ -1863,6 +1853,7 @@ if __name__ == '__main__':
 		mepa = open(mepaFile,'w')
 	except:
 		print "Error: The file %s could not be opened for writing" % args.mepaFile
+		sys.exit(1)
 			
 	lexicalAnalyzer = LexAn(inputFile,args.inputFile)
 	syntacticalAnalyzer = PyComp(lexicalAnalyzer,args.debug,output,mepa)
@@ -1872,10 +1863,13 @@ if __name__ == '__main__':
 			output.write(msg)
 			
 		print msg
+		mepa.close()
 	except CompilerError as e:
 		# output.write(str(e))
 		traceback.print_exc()
+		mepa.close()
+		os.remove(mepaFile)
 		sys.exit(1)
 	finally:
 		output.close()
-		mepa.close()
+		
