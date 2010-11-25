@@ -10,7 +10,7 @@ from hashstack import HashStack,SymbolTableError
 from copy import deepcopy
 
 
-class SynAn():
+class PyComp():
 
 	#stStack: pila de tablas de simbolos
 	
@@ -19,9 +19,11 @@ class SynAn():
 		self.mepa = mepa
 		self.labelIndex = 0
 		
+		self.procReadE,self.procReadLE,self.procReadC,self.procReadLC = (None,None,None,None)
+		
 		self.relationals = {'<LESS_OP>':'CMME','<LESS_EQUAL_OP>':'CMNI','<GREATER_OP>':'CMMA','<GREATER_EQUAL_OP>':'CMYI','<EQUAL>':'CMIG','<NOT_EQUAL_OP>':'CMDG'}
 		self.adding = {'<ADD_OP>':'SUMA','<MINUS_OP>':'SUST','<OR_LOGOP>':'DISJ'}
-		self.multiplying = {'<MULTIPLY_OP>':'MULT','<DIV_OP>':'DIVC\nDIVI','<AND_LOGOP>':'CONJ'}
+		self.multiplying = {'<MULTIPLY_OP>':'MULT','<DIV_OP>':'DIVC\n\t\tDIVI','<AND_LOGOP>':'CONJ'}
 		if debug:
 			self.out = outputFile
 		else:
@@ -54,12 +56,48 @@ class SynAn():
 		if label == None:
 			label = "L" + str(self.labelIndex)
 		self.mepa.write('%s\t\tNADA\n' % label)
+		
+	def writeProcedures(self):
+		if self.procReadC or self.procReadE or self.procReadLC or self.procReadLE:
+			label = "L%s"% self.labelIndex
+			self.escribir("DSVS %s" % label)
+			self.labelIndex +=1
+			if self.procReadC:
+				
+				self.ponerLabel(self.procReadC)
+				self.escribir("ENPR 0")
+				self.escribir("LECH")
+				self.escribir("ALVI 0, -3")
+				self.escribir("RTPR 0, 1")
+
+			if self.procReadE:
+				self.ponerLabel(self.procReadE)
+				self.escribir("ENPR 0")
+				self.escribir("LEER")
+				self.escribir("ALVI 0, -3")
+				self.escribir("RTPR 0, 1")
+
+			if self.procReadLC:
+				self.ponerLabel(self.procReadLC)
+				self.escribir("ENPR 0")
+				self.escribir("LECN")
+				self.escribir("ALVI 0, -3")
+				self.escribir("RTPR 0, 1")
+
+			if self.procReadLE:
+				self.ponerLabel(self.procReadLE)
+				self.escribir("ENPR 0")
+				self.escribir("LELN")
+				self.escribir("ALVI 0, -3")
+				self.escribir("RTPR 0, 1")
+				
+			self.ponerLabel(label)
 			
 	def execute(self):
-		try:
+		# try:
 			return self.program()
-		except SymbolTableError as e:
-			raise SemanticError(self.lexer.errorLeader(),e.msg)
+		# except SymbolTableError as e:
+			# raise SemanticError(self.lexer.errorLeader(),e.msg)
 
 	def program(self):
 		self.out.write('In program\n')
@@ -79,15 +117,18 @@ class SynAn():
 				
 				###########
 				# finalizar el programa
+				
+				self.writeProcedures()
+				
 				self.escribir('PARA')
+				
+				
 				###########
 				
 				return 'The program is syntactically correct.'
 			else: 
 				raise SynError(self.lexer.errorLeader(),msg="There are characters after the last character ('.')")
 		else:
-			# self.thiserrorLeader = self.lexer.errorLeader()
-			# self.thislexeme = self.lexer.getLexeme()
 			self.synErr('"."')
 
 	def program_heading(self,idPrograma):
@@ -96,7 +137,7 @@ class SynAn():
 			if self.lexer.getNextToken() == '<IDENTIFIER>':
 			
 				#############
-				idPrograma.ref = self.lexer.getLexeme()
+				idPrograma.ref = self.lexer.getLexeme().lower()
 				self.out.write("\tprogram heading ID: " + idPrograma.ref + "\n")
 				#############
 				
@@ -109,18 +150,46 @@ class SynAn():
 		else:
 			self.synErr('"program"')
 
-	def block(self,idPrograma=None):
+	def block(self,idPrograma=None,parameterList = None,idFuncion = None, returnType= None):
 		self.out.write('In block\n')
 		currentToken = self.lexer.getNextToken()
 		
 		################		
 		self.imprimirST(self.stStack.top())
 		self.stStack.push() # agrega por default un diccionario, o sea una tabla de símbolos
+		
 		if idPrograma!=None:
 			self.stStack.addNewID(idPrograma, Attr(valor=idPrograma,tipo=Programa(),clase="program"))			
 			#procedimientos...
-		################
+			
 		
+			
+		if parameterList!=None:
+			
+			i = 1
+			n = 0
+			for x in parameterList.ref:
+				if x[2]: # por Referencia
+					n+=1
+				else:
+					n+=x[1].tamanio
+			
+			if returnType:
+				self.stStack.addNewID("$" + idFuncion, Attr(clase = "return", tipo = returnType.tipo, pos = -(n+3), used = False))
+			
+			for x in parameterList.ref:
+				if x[2]: # por Referencia
+					clase = "reference"
+				else:
+					clase = "variable"
+				self.stStack.addNewID(x[0], Attr(clase = clase, tipo = x[1], pos = -(n+3-i)))
+				if x[2]: # por Referencia
+					i+=1
+				else:
+					i+=x[1].tamanio
+
+		################
+		self.imprimirST(self.stStack.top())
 		self.pushLexeme()
 		tamanioVariables =Ref(0)
 		if currentToken == "<CONST>":
@@ -164,19 +233,16 @@ class SynAn():
 	def block_var_rest(self):
 		self.out.write('In block_var_rest\n')
 		self.currentToken = self.lexer.getNextToken()
+		# self.writeProcedures()
 		# en este caso controlo si viene el <statement_part> porque es mas sencillo
 		if self.currentToken == "<BEGIN>":
 			self.pushLexeme()
 			self.statement_part()
 		else:
 			self.pushLexeme()	
-			
-			########
 			label = "L%s" % self.labelIndex
 			self.labelIndex += 1
 			self.escribir("DSVS %s" %label)
-			########
-			
 			self.procedure_and_function_declaration_part()
 			
 			#######
@@ -533,13 +599,13 @@ class SynAn():
 						########
 						tipoElem = Ref()
 						self.simple_type(tipoElem)
-						if tipoIndice.ref.tipo.instancia(Subrango) or tipoIndice.ref.tipo.instancia(Booleano):
+						if tipoIndice.ref.tipo.instancia(Simple):
 							if tipoElem.ref.tipo.instancia(Simple):
 								tipo.ref = Attr(tipo = Arreglo(tamanio = tipoIndice.ref.tipo.getRange(), indexType=tipoIndice.ref.tipo, elementType=tipoElem.ref.tipo),clase = "type")
 							else:
 								raise SemanticError(self.lexer.errorLeader(),"Element type of an array must be a simple type, but %s found" % str(tipoElem.ref.tipo))
 						else:
-							raise SemanticError(self.lexer.errorLeader(),"Index type  of an array must be a subrange or a boolean type, but %s found" % str(tipoIndice.ref.tipo))
+							raise SemanticError(self.lexer.errorLeader(),"Index type of an array must be a simple type, but %s found" % str(tipoIndice.ref.tipo))
 						#########
 						
 					else:
@@ -675,20 +741,21 @@ class SynAn():
 		self.labelIndex += 1
 		##########
 		tamanioParams = Ref()
-		self.procedure_heading(label,tamanioParams)
+		parameterList = Ref()
+		self.procedure_heading(label,tamanioParams,parameterList)
 		
 		#########
 		nivel = self.stStack.getCurrentLexLevel() 
 		self.escribir("ENPR %s" % nivel)
 		#########
 		
-		self.block()
+		self.block(parameterList = parameterList)
 		
 		#########		
 		self.escribir("RTPR %s, %s" % (nivel, tamanioParams.ref))
 		#########
 
-	def procedure_heading(self,label,tamanioParams):
+	def procedure_heading(self,label,tamanioParams,parameterList1):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<PROCEDURE>":
 			self.currentToken = self.lexer.getNextToken()
@@ -699,6 +766,7 @@ class SynAn():
 				parameterList = Ref([])
 				self.procedure_heading_rest(parameterList)
 				attr = Attr(clase ="procedure", tipo = Procedimiento(label,parameterList.ref))
+				parameterList1.ref = parameterList.ref
 				self.stStack.addNewID(id, attr)
 				tamanioParams.ref = attr.tipo.tamanioParams()
 				######
@@ -819,27 +887,69 @@ class SynAn():
 		
 	def function_declaration(self):
 		self.out.write('In function_declaration\n')
-		self.function_heading()
-		self.block()
+		
+		##########
+		self.ponerLabel()
+		label = "L%s" % self.labelIndex
+		self.labelIndex += 1
+		##########
+		tamanioParams = Ref()
+		parameterList = Ref()
+		id = Ref()
+		returnType =Ref()
+		self.function_heading(label,tamanioParams,parameterList,id,returnType)
+		
+		#########
+		nivel = self.stStack.getCurrentLexLevel() 
+		self.escribir("ENPR %s" % nivel)
+		#########
+		
+		self.block(idFuncion = id.ref,parameterList = parameterList, returnType = returnType.ref)
+		
+		#########		
+		self.escribir("RTPR %s, %s" % (nivel, tamanioParams.ref))
+		#########
 
-	def function_heading(self):
+	def function_heading(self,label,tamanioParams,parameterList1,id,returnType):
 		self.out.write('In function_heading\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<FUNCTION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
-				self.function_heading_rest()
+			
+				######
+				id.ref = self.lexer.getLexeme()
+				parameterList = Ref([])
+				self.function_heading_rest(parameterList,returnType)
+				attr = Attr(clase ="function", tipo = Funcion(label,parameterList.ref,ret = returnType.ref.tipo))
+				parameterList1.ref = parameterList.ref
+				
+				self.stStack.addNewID(id.ref, attr)
+				tamanioParams.ref = attr.tipo.tamanioParams()
+				######
+				
 			else:
 				self.synErr('an identifier')
 		else:
 			self.synErr('a function')
 
-	def function_heading_rest(self):
+	def function_heading_rest(self,parameterList,returnType):
 		self.out.write('In function_heading_rest\n')
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<TYPE_DECLARATION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
+			
+				#######
+				id = self.lexer.getLexeme()
+				returnType.ref = self.stStack.getGlobalValue(id)
+				if returnType.ref.clase == "type":
+					if not returnType.ref.tipo.instancia(Simple):
+						raise SemanticError(self.lexer.errorLeader(),"Invalid function declaration: Return type must be a simple type")
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid function declaration: '%s' is not a valid type" % id)
+				#######
+				
 				self.currentToken = self.lexer.getNextToken()
 				if self.currentToken == "<SEMI_COLON>":
 					self.out.write('\nSuccesfully recognised function heading!\n')
@@ -849,21 +959,48 @@ class SynAn():
 				#este error se podria cambiar por "VALID DATA TYPE"
 				self.synErr('a type identifier')
 		elif self.currentToken == "<OPEN_PARENTHESIS>":
-			self.formal_parameter_section()
-			self.formal_parameter_function_rest()
+		
+			######
+			parameterList1 = Ref([])
+			parameterList2 = Ref([])
+			self.formal_parameter_section(parameterList1)
+			self.formal_parameter_function_rest(parameterList2,returnType)
+			parameterList.ref = parameterList1.ref + parameterList2.ref
+			print "function_heading_rest:",parameterList1.ref
+			######
+			
 		else:
 			self.synErr('\":\" or \")\"')
 
-	def formal_parameter_function_rest(self):
+	def formal_parameter_function_rest(self,parameterList,returnType):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<SEMI_COLON>":
-			self.formal_parameter_section()
-			self.formal_parameter_function_rest()
+		
+			########
+			parameterList1  =Ref([])
+			parameterList2  =Ref([])
+			self.formal_parameter_section(parameterList1)
+			self.formal_parameter_function_rest(parameterList2,returnType)
+			
+			parameterList.ref = parameterList1.ref + parameterList2.ref
+			##############
+			
 		elif self.currentToken == "<CLOSE_PARENTHESIS>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<TYPE_DECLARATION>":
 				self.currentToken = self.lexer.getNextToken()
 				if self.currentToken == "<IDENTIFIER>":
+				
+					#######
+					id = self.lexer.getLexeme()
+					returnType.ref = self.stStack.getGlobalValue(id)
+					if returnType.ref.clase == "type":
+						if not returnType.ref.tipo.instancia(Simple):
+							raise SemanticError(self.lexer.errorLeader(),"Invalid function declaration: Return type must be a simple type")
+					else:
+						raise SemanticError(self.lexer.errorLeader(),"Invalid function declaration: '%s' is not a valid type" % id)
+					#######
+				
 					self.currentToken = self.lexer.getNextToken()
 					if self.currentToken == "<SEMI_COLON>":
 						self.out.write('\nSuccesfully recognised parameter group!\n')
@@ -924,21 +1061,44 @@ class SynAn():
 		if token=='<ASSIGNMENT>' :
 		
 			############
-			identifier = self.stStack.getGlobalValue(id)
+			try:
+				identifier = self.stStack.getGlobalValue("$" + id)
+				
+			except:
+				identifier = self.stStack.getGlobalValue(id)
 			lexLevel = self.stStack.lastLexicalLevel()
 			attr = Ref()
 			self.expression(attr)
-			if identifier.clase == "variable":
+			if identifier.clase == "variable" or identifier.clase == "reference" or identifier.clase == "return":
 				if self.checkTypes(attr.ref.tipo,identifier.tipo):
-					if identifier.tipo.instancia(Simple):
+					self.escribir("CONT %s, %s" % (identifier.tipo.getLower(),identifier.tipo.getUpper()))
+					if identifier.clase == "variable":
+						if identifier.tipo.instancia(Simple):
+							
+							self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
+							
+						elif identifier.tipo.instancia(Arreglo):
+							self.escribir("POAR %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
+						else:
+							raise Exception("YOUUUU SHALL NOT PAAAASS!")
+					elif identifier.clase == "reference":
+						if identifier.tipo.instancia(Simple):
+							
+							self.escribir("ALVI %s, %s" % (lexLevel, identifier.pos))
+							
+						elif identifier.tipo.instancia(Arreglo):
+							self.escribir("POAI %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
+						else:
+							raise Exception("YOUUUU SHALL NOT PAAAASS!")
+					elif identifier.clase == "return":
 						self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
-					elif identifier.tipo.instancia(Arreglo):
-						self.escribir("POAR %s, %s, %s" % (lexLevel, identifier.pos, identifier.tipo.indexType.getRange()))
 					else:
 						raise Exception("YOUUUU SHALL NOT PAAAASS!")
+					
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected, but %s found" % (identifier.tipo, attr.ref.tipo))
-			else:
+				identifier.used = True
+			else:					
 				raise SemanticError(self.lexer.errorLeader(), "Left side of assignment must be a variable")
 			############
 			
@@ -949,9 +1109,7 @@ class SynAn():
 			self.expression(attr1)
 			array = self.stStack.getGlobalValue(id)
 			lexLevel = self.stStack.lastLexicalLevel()
-			self.escribir("CONT %s,%s" % (array.tipo.indexType.getLower(),array.tipo.indexType.getUpper()))
-			self.escribir("APCT %s" % array.tipo.indexType.getLower())
-			self.escribir("SUST")
+
 			#############
 			
 			if self.lexer.getNextToken()=='<CLOSE_BRACKET>':
@@ -959,14 +1117,27 @@ class SynAn():
 					
 					############
 					attr2 = Ref()
-					self.expression(attr2)					
+					if array.tipo.instancia(Arreglo):
+						self.escribir("CONT %s,%s" % (array.tipo.indexType.getLower(),array.tipo.indexType.getUpper()))
+						self.escribir("APCT %s" % array.tipo.indexType.getLower())
+						self.escribir("SUST")
+					else:
+						raise SemanticError(self.lexer.errorLeader(), "Invalid statement: %s is not an array" %id)
+					self.expression(attr2)
 					if self.checkTypes(array.tipo.indexType,attr1.ref.tipo):
 						if self.checkTypes(array.tipo.elementType, attr2.ref.tipo):
-							self.escribir("ALAR %s,%s" % (lexLevel, array.pos))
+							if array.clase == "variable":
+								self.escribir("ALAR %s,%s" % (lexLevel, array.pos))
+							elif array.clase == "reference":
+								self.escribir("ALAI %s,%s" % (lexLevel, array.pos))
+							else:
+								raise Exception("This shouldn't happen")
+							
 						else:
 							raise SemanticError(self.lexer.errorLeader(),"Non compatible types in assignment. %s expected, but %s found" % (array.tipo.elementType, attr2.ref.tipo))
 					else:
 						raise SemanticError(self.lexer.errorLeader(), "Non compatible types in assignment. %s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
+
 					############
 					
 				else:
@@ -977,17 +1148,22 @@ class SynAn():
 		elif token=='<OPEN_PARENTHESIS>':
 			
 			###############
+			id = id.lower()
 			proc = self.stStack.getGlobalValue(id)
+			id.used = True
 			nivel = self.stStack.lastLexicalLevel()
 			listParams = proc.tipo.params
 			if proc.clase == "procedure":
-				if nivel==-1:
-					self.actual_parameter(id = id)
-					self.actual_parameter_rest(id = id)
+				if len(listParams)>0:
+					if nivel==-1:
+						self.actual_parameter(esperado = listParams[0],id = id)
+						self.actual_parameter_rest(listParams = listParams[1:],id = id)
+					else:
+						self.actual_parameter(esperado = listParams[0])
+						self.actual_parameter_rest(listParams = listParams[1:])
+						self.escribir("LLPR %s" %proc.tipo.label)
 				else:
-					self.actual_parameter(esperado = listParams[0])
-					self.actual_parameter_rest(listParams = listParams[1:])
-					self.escribir("LLPR %s" %proc.tipo.label)
+					raise SemanticError(self.lexer.errorLeader(), "Invalid procedure call: More parameters than expected")
 			else:
 				raise SemanticError(self.lexer.errorLeader(), "Invalid statement: %s is not a procedure" % id)
 			###############
@@ -1231,12 +1407,27 @@ class SynAn():
 				###############
 				array = self.stStack.getGlobalValue(id)
 				nivel = self.stStack.lastLexicalLevel()
-				if array.clase=="variable" and array.tipo.instancia(Arreglo):
+				if array.tipo.instancia(Arreglo): 
+					
 					if self.checkTypes(attr1.ref.tipo,array.tipo.indexType):
 						self.escribir("CONT %s,%s" % (array.tipo.indexType.getLower(),array.tipo.indexType.getUpper()))
 						self.escribir("APCT %s" % array.tipo.indexType.getLower())
 						self.escribir("SUST")
-						self.escribir("APAR %s,%s" % (nivel, array.pos))
+						if porRef:
+							if array.clase=="variable":
+								self.escribir("APDC %s, %s" % (nivel, array.pos))
+							elif array.clase=="reference":
+								self.escribir("APVL %s, %s" % (nivel, array.pos))
+								self.escribir("SUMA" % (nivel, array.pos))
+								# self.escribir("APDC %s, %s" % (nivel, array.pos))
+						else:
+							if array.clase=="variable":
+								self.escribir("APAR %s,%s" % (nivel, array.pos))
+							elif array.clase=="reference":
+								print nivel, array.pos
+								self.escribir("APAI %s,%s" % (nivel, array.pos))
+						
+							
 						attr.ref = Attr(clase = "subexpression", tipo = array.tipo.elementType)
 					else:
 						raise SemanticError(self.lexer.errorLeader(), "%s expected as index, but %s found" % (array.tipo.indexType, attr1.ref.tipo))
@@ -1248,8 +1439,51 @@ class SynAn():
 		elif token=='<OPEN_PARENTHESIS>': # TODOOOOOOOOOOOOOOOOOOOOOOO
 			if porRef:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
-			self.actual_parameter()
-			self.actual_parameter_rest()
+			id = id.lower()
+			fun = self.stStack.getGlobalValue(id)
+			fun.used = True
+			nivel = self.stStack.lastLexicalLevel()
+			print fun
+			if fun.clase == "function":
+				listParams = fun.tipo.params
+				if len(listParams)>0:
+					if nivel==-1:
+						if id=="ord":
+							self.actual_parameter(esperado = listParams[0])
+							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							attr.ref = Attr(clase="subexpression",tipo=Caracter())
+						elif id=="chr":
+							self.actual_parameter(esperado = listParams[0])
+							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							attr.ref = Attr(clase="subexpression",tipo=Entero())
+						elif id=="succ":
+							attr1 = Ref()
+							self.actual_parameter(esperado = listParams[0],attr = attr1)
+							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							self.escribir("APCT 1")
+							self.escribir("SUMA")
+							self.escribir("CONT %s, %s" % (attr1.ref.tipo.getLower(),attr1.ref.tipo.getUpper()))
+							attr.ref = Attr(clase="subexpression",tipo=deepcopy(attr1.ref.tipo))
+						elif id=="pred":
+							attr1 = Ref()
+							self.actual_parameter(esperado = listParams[0],attr=attr1)
+							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							self.escribir("APCT 1")
+							self.escribir("SUST")
+							self.escribir("CONT %s, %s" % (attr1.ref.tipo.getLower(),attr1.ref.tipo.getUpper()))
+							attr.ref = Attr(clase="subexpression",tipo=deepcopy(attr1.ref.tipo))
+					else:
+						self.escribir("RMEM 1")
+						self.actual_parameter(esperado = listParams[0])
+						self.actual_parameter_rest(listParams = listParams[1:])
+						self.escribir("LLPR %s" %fun.tipo.label)
+						attr.ref = Attr(clase="subexpression",tipo=deepcopy(fun.tipo.ret))
+						
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Invalid function call: More parameters than expected")
+				
+			else:
+				raise SemanticError(self.lexer.errorLeader(), "Invalid expression: %s is not a function" % id)
 		else:
 			self.pushLexeme() #lambda
 			
@@ -1257,70 +1491,112 @@ class SynAn():
 			identifier = self.stStack.getGlobalValue(id)
 			nivel = self.stStack.lastLexicalLevel()
 			if identifier.clase == 'function':
-				if porRef:
-					raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
+				if identifier.tipo.tamanioParams()==0:
+					if porRef:
+						raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
+					self.escribir("RMEM 1")
+					self.escribir("LLPR %s" % identifier.tipo.label)
+					attr.ref = Attr(clase = "subexpression",tipo = deepcopy(identifier.tipo.ret))
+				else:
+					raise SemanticError(self.lexer.errorLeader(), "Invalid function call: Less parameters than expected")
 			elif identifier.clase == 'variable':
 				if porRef:
-					self.escribir("APDR %s, %s" % nivel, identifier.pos)
+					self.escribir("APDR %s, %s" % (nivel, identifier.pos))
 				else:
 					if identifier.tipo.instancia(Simple):
+						
 						self.escribir("APVL %s,%s" % (nivel,identifier.pos))
 						
 					elif identifier.tipo.instancia(Arreglo):
 						self.escribir("PUAR %s,%s,%s" % (nivel,identifier.pos,identifier.tipo.indexType.getRange()))
 					else:
 						raise Exception("YOUUUU SHALL NOT PAAAASS!")
-					attr.ref = deepcopy(identifier)
+				attr.ref = deepcopy(identifier)
 			elif identifier.clase == 'constant':
 				if porRef:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 				self.escribir("APCT %s" % identifier.valor)
 				attr.ref = deepcopy(identifier)
 				attr.ref.clase = "subexpression"
+			elif identifier.clase == 'reference':
+				if porRef:
+					self.escribir("APVL %s,%s" % (nivel,identifier.pos))
+				else:
+					if identifier.tipo.instancia(Simple):
+						self.escribir("APVI %s, %s" % (nivel,identifier.pos))
+					elif identifier.tipo.instancia(Arreglo):
+						self.escribir("PUAI %s, %s, %s" % (nivel,identifier.pos,identifier.tipo.indexType.getRange()))
+					else:
+						raise Exception("YOUUUU SHALL NOT PAAAASS!")
+				attr.ref = deepcopy(identifier)
 			else:
 				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+ str(identifier.clase)+" identifier found")			
 			########
 
-	def actual_parameter(self, esperado = None,id=None):
+	def actual_parameter(self, esperado,id=None,attr=None):
 		self.out.write('In actual_parameter\n')
 		
 		###########
 		attrE = Ref()
-		self.expression(attrE)
+		# if id!=None and id in ["read","readln"]
+
+		self.expression(attrE, porRef = esperado[2])
+		if type(esperado[1])!=Simple:
+			self.escribir("CONT %s,%s" %(esperado[1].getLower(),esperado[1].getUpper()))
+
+			
+		if attr:
+			attr.ref = attrE.ref
 		
 		if id: #si no es None es nuestro
 			if id=="write":
 				if attrE.ref.tipo.instancia(Entero):
+					self.escribir("CONT %s,%s" %(Entero().getLower(),Entero().getUpper()))
 					self.escribir("IMPR")
 				elif attrE.ref.tipo.instancia(Caracter):
+					self.escribir("CONT %s,%s" %(Caracter().getLower(),Caracter().getUpper()))
 					self.escribir("IMCH")
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
 			elif id=="writeln":
 				if attrE.ref.tipo.instancia(Entero):
+					self.escribir("CONT %s,%s" %(Entero().getLower(),Entero().getUpper()))
 					self.escribir("IMLN")
 				elif attrE.ref.tipo.instancia(Caracter):
+					self.escribir("CONT %s,%s" %(Caracter().getLower(),Caracter().getUpper()))
 					self.escribir("IMCN")
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
-			# elif id=="read": # Falta mucho aca... poner el valor en la variable 
-				# if attrE.ref.tipo.instancia(Entero):
-					# self.escribir("LEER")
-				# elif attrE.ref.tipo.instancia(Caracter):
-					# self.escribir("LECH")
-				# else:
-					# raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
-			# elif id=="readln":
-				# if attrE.ref.tipo.instancia(Entero):
-					# self.escribir("LELN")
-				# elif attrE.ref.tipo.instancia(Caracter):
-					# self.escribir("LECN")
-				# else:
-					# raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
+			elif id=="read": 
+				if attrE.ref.tipo.instancia(Entero):
+					if not self.procReadE:
+						self.procReadE = "L%s" % self.labelIndex
+						self.labelIndex +=1
+					self.escribir("LLPR %s" % self.procReadE)
+				elif attrE.ref.tipo.instancia(Caracter):
+					if not self.procReadC:
+						self.procReadC = "L%s" % self.labelIndex
+						self.labelIndex +=1
+					self.escribir("LLPR %s" % self.procReadC)
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
+			elif id=="readln":
+				if attrE.ref.tipo.instancia(Entero):
+					if not self.procReadLE:
+						self.procReadLE = "L%s" % self.labelIndex
+						self.labelIndex +=1
+					self.escribir("LLPR %s" % self.procReadLE)
+				elif attrE.ref.tipo.instancia(Caracter):
+					if not self.procReadLC:
+						self.procReadLC = "L%s" % self.labelIndex
+						self.labelIndex +=1
+					self.escribir("LLPR %s" % self.procReadLC)
+				else:
+					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
 			else:
 				raise Exception("YOUUUU SHALL NOT PAAAASS!")
 		else:# si es None es definido por el usuario	
-			if not self.checkTypes(esperado[1],attrE.ref.tipo):
+			if not self.checkTypes(attrE.ref.tipo,esperado[1]):
 				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure or function call: %s parameter expected, but %s found" % (esperado[1],attrE.ref.tipo))
 				
 		###########
@@ -1534,7 +1810,7 @@ if __name__ == '__main__':
 		print "Error: The file %s could not be opened for writing" % args.mepaFile
 			
 	lexicalAnalyzer = LexAn(inputFile,args.inputFile)
-	syntacticalAnalyzer = SynAn(lexicalAnalyzer,args.debug,output,mepa)
+	syntacticalAnalyzer = PyComp(lexicalAnalyzer,args.debug,output,mepa)
 	try:
 		msg = syntacticalAnalyzer.execute()
 		if output != sys.stdout:
@@ -1544,6 +1820,7 @@ if __name__ == '__main__':
 	except CompilerError as e:
 		# output.write(str(e))
 		traceback.print_exc()
+		sys.exit(1)
 	finally:
 		output.close()
 		mepa.close()
