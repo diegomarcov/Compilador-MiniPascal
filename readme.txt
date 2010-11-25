@@ -32,6 +32,7 @@ La convención para nombrar dichos casos de test es:
 	prefijo "wrong" indica que el caso de test es erróneo; en caso de no estar, el caso es correcto.
 	prefijo "syn" indica que el caso de test dispara un error sintáctico;
 	prefijo "sem" indica que el caso de test dispara un error semántico;
+	prefijo "mepaError" indica que el caso de test dispara un error en tiempo de ejecución;
 
 De esta manera, un caso de test erróneo que provoque un error semántico al realizar una asignación de variables con tipo incompatible podría llamarse, por ejemplo, "wrong_sem_AsignacionTiposIncompatibles.pas"
 
