@@ -2,10 +2,7 @@ program p;
 
 var 
 	a : char;
-	
 
-begin	
-	
-	read(a);
+begin
 	write(a);
 end.

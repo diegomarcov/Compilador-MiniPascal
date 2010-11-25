@@ -151,7 +151,7 @@ class shlex:
                     while (nextchar != '}'):
                         nextchar = self.instream.read(1)
                         if nextchar == '\n':
-                            self.lineno = self.lineno + 1
+                            self.lineno = self.lineno + 1 
                         if not nextchar: #eof
                             raise EOFError
                 elif (nextchar == '('):

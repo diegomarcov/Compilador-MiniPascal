@@ -52,6 +52,9 @@ class PyComp():
 	def escribir(self, s):
 		self.mepa.write('\t\t' + s + '\n')
 		
+	def warning(self,s):
+		print self.lexer.errorLeader() + "WARNING: %s\n" %s
+		
 	def ponerLabel(self, label = None):
 		if label == None:
 			label = "L" + str(self.labelIndex)
@@ -93,11 +96,17 @@ class PyComp():
 				
 			self.ponerLabel(label)
 			
+	def chequearUsados(self,vector):
+		st = self.stStack.top()
+		for x in st:
+			if not st[x].used and st[x].clase!="program":
+				 print "WARNING: '%s' has never been used in %s %s\n" %(x, vector[0], vector[1])
+			
 	def execute(self):
-		# try:
+		try:
 			return self.program()
-		# except SymbolTableError as e:
-			# raise SemanticError(self.lexer.errorLeader(),e.msg)
+		except SymbolTableError as e:
+			raise SemanticError(self.lexer.errorLeader(),e.msg)
 
 	def program(self):
 		self.out.write('In program\n')
@@ -119,10 +128,7 @@ class PyComp():
 				# finalizar el programa
 				
 				self.writeProcedures()
-				
 				self.escribir('PARA')
-				
-				
 				###########
 				
 				return 'The program is syntactically correct.'
@@ -150,19 +156,18 @@ class PyComp():
 		else:
 			self.synErr('"program"')
 
-	def block(self,idPrograma=None,parameterList = None,idFuncion = None, returnType= None):
+	def block(self,idPrograma=None,parameterList = None,idFuncion = None, returnType= None, idProc = None):
 		self.out.write('In block\n')
 		currentToken = self.lexer.getNextToken()
 		
 		################		
 		self.imprimirST(self.stStack.top())
 		self.stStack.push() # agrega por default un diccionario, o sea una tabla de símbolos
-		
+		idCompleto =["procedure",idProc,None]
 		if idPrograma!=None:
 			self.stStack.addNewID(idPrograma, Attr(valor=idPrograma,tipo=Programa(),clase="program"))			
 			#procedimientos...
-			
-		
+			idCompleto = ["program",idPrograma,None]
 			
 		if parameterList!=None:
 			
@@ -176,6 +181,8 @@ class PyComp():
 			
 			if returnType:
 				self.stStack.addNewID("$" + idFuncion, Attr(clase = "return", tipo = returnType.tipo, pos = -(n+3), used = False))
+				
+				idCompleto = ["function",idFuncion,None]
 			
 			for x in parameterList.ref:
 				if x[2]: # por Referencia
@@ -192,15 +199,14 @@ class PyComp():
 		self.imprimirST(self.stStack.top())
 		self.pushLexeme()
 		tamanioVariables =Ref(0)
+		idCompleto[2]=self.lexer.errorLeader()
 		if currentToken == "<CONST>":
 			self.constant_definition_part()
 			self.block_cons_rest(tamanioVariables)
 		else:
 			self.block_cons_rest(tamanioVariables)
-			
-		#########
+		self.chequearUsados(idCompleto)
 		self.stStack.pop()
-		
 		#########
 
 	def block_cons_rest(self,tamanioVariables):
@@ -742,32 +748,33 @@ class PyComp():
 		##########
 		tamanioParams = Ref()
 		parameterList = Ref()
-		self.procedure_heading(label,tamanioParams,parameterList)
+		id = Ref()
+		self.procedure_heading(label,tamanioParams,parameterList,id)
 		
 		#########
 		nivel = self.stStack.getCurrentLexLevel() 
 		self.escribir("ENPR %s" % nivel)
 		#########
 		
-		self.block(parameterList = parameterList)
+		self.block(parameterList = parameterList,idProc = id.ref)
 		
 		#########		
 		self.escribir("RTPR %s, %s" % (nivel, tamanioParams.ref))
 		#########
 
-	def procedure_heading(self,label,tamanioParams,parameterList1):
+	def procedure_heading(self,label,tamanioParams,parameterList1,id):
 		self.currentToken = self.lexer.getNextToken()
 		if self.currentToken == "<PROCEDURE>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
 				
 				######
-				id = self.lexer.getLexeme()
+				id.ref = self.lexer.getLexeme()
 				parameterList = Ref([])
 				self.procedure_heading_rest(parameterList)
 				attr = Attr(clase ="procedure", tipo = Procedimiento(label,parameterList.ref))
 				parameterList1.ref = parameterList.ref
-				self.stStack.addNewID(id, attr)
+				self.stStack.addNewID(id.ref, attr)
 				tamanioParams.ref = attr.tipo.tamanioParams()
 				######
 				
@@ -1150,7 +1157,7 @@ class PyComp():
 			###############
 			id = id.lower()
 			proc = self.stStack.getGlobalValue(id)
-			id.used = True
+			proc.used = True
 			nivel = self.stStack.lastLexicalLevel()
 			listParams = proc.tipo.params
 			if proc.clase == "procedure":
@@ -1443,7 +1450,7 @@ class PyComp():
 			fun = self.stStack.getGlobalValue(id)
 			fun.used = True
 			nivel = self.stStack.lastLexicalLevel()
-			print fun
+			
 			if fun.clase == "function":
 				listParams = fun.tipo.params
 				if len(listParams)>0:
@@ -1491,6 +1498,7 @@ class PyComp():
 			identifier = self.stStack.getGlobalValue(id)
 			nivel = self.stStack.lastLexicalLevel()
 			if identifier.clase == 'function':
+				identifier.used = True
 				if identifier.tipo.tamanioParams()==0:
 					if porRef:
 						raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
@@ -1500,9 +1508,13 @@ class PyComp():
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Invalid function call: Less parameters than expected")
 			elif identifier.clase == 'variable':
+				
 				if porRef:
 					self.escribir("APDR %s, %s" % (nivel, identifier.pos))
+					identifier.used = True
 				else:
+					if not identifier.used:
+						self.warning("'%s' has not been initialized" % id)
 					if identifier.tipo.instancia(Simple):
 						
 						self.escribir("APVL %s,%s" % (nivel,identifier.pos))
@@ -1519,6 +1531,8 @@ class PyComp():
 				attr.ref = deepcopy(identifier)
 				attr.ref.clase = "subexpression"
 			elif identifier.clase == 'reference':
+				if not identifier.used:
+					self.warning("'%s' has not been initialized (reference)" % id)
 				if porRef:
 					self.escribir("APVL %s,%s" % (nivel,identifier.pos))
 				else:
