@@ -1493,10 +1493,10 @@ class PyComp():
 						attr.ref = Attr(clase="subexpression",tipo=deepcopy(fun.tipo.ret))
 						
 				else:
-					raise SemanticError(self.lexer.errorLeader(), "Invalid function call: More parameters than expected")
+					raise SemanticError(self.lexer.errorLeader(), "Invalid function call: More parameters than expected") # semwrongFunctionCallMore.pas
 				
 			else:
-				raise SemanticError(self.lexer.errorLeader(), "Invalid expression: %s is not a function" % id)
+				raise SemanticError(self.lexer.errorLeader(), "Invalid expression: %s is not a function" % id) # semwrongFunctionCallName.pas
 		else:
 			self.pushLexeme() #lambda
 			
