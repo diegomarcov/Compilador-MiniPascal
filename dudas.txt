@@ -1,6 +1,8 @@
-Si se pueden asignar variables a constantes.
+Si se pueden asignar variables a constantes. no
 En la comparacion, si se puede comparar por igualdad los arreglos.
-SI definimos maxint, y en cuanto.
-Copiar arreglos en asignaciones.
-Borrar archivos mepa cuando encontramos error
-succ y pred de booleanos
+SI definimos maxint, y en cuanto. 32k --> -32k .. 32k-1
+Copiar arreglos en asignaciones. si!
+Borrar archivos mepa cuando encontramos error: decidir
+succ y pred de booleanos: si!
+
+Cuando sucesor y predecesor se salen de los subrangos, es un error en compilaci'on
