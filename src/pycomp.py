@@ -58,42 +58,40 @@ class PyComp():
 		self.mepa.write('%s\t\tNADA\n' % label)
 		
 	def writeProcedures(self):
-		if not self.procReadC:
-			self.procReadC = "L%s" % self.labelIndex
+		if self.procReadC or self.procReadE or self.procReadLC or self.procReadLE:
+			label = "L%s"% self.labelIndex
+			self.escribir("DSVS %s" % label)
 			self.labelIndex +=1
-			
-			self.ponerLabel(self.procReadC)
-			self.escribir("ENPR 0")
-			self.escribir("LECH")
-			self.escribir("ALVI 0, -3")
-			self.escribir("RTPR 0, 1")
-			
-			self.procReadE = "L%s" % self.labelIndex
-			self.labelIndex +=1
-		
-			self.ponerLabel(self.procReadE)
-			self.escribir("ENPR 0")
-			self.escribir("LEER")
-			self.escribir("ALVI 0, -3")
-			self.escribir("RTPR 0, 1")
-			
-			self.procReadLC = "L%s" % self.labelIndex
-			self.labelIndex +=1
-		
-			self.ponerLabel(self.procReadLC)
-			self.escribir("ENPR 0")
-			self.escribir("LECN")
-			self.escribir("ALVI 0, -3")
-			self.escribir("RTPR 0, 1")
-			
-			self.procReadLE = "L%s" % self.labelIndex
-			self.labelIndex +=1
-		
-			self.ponerLabel(self.procReadLE)
-			self.escribir("ENPR 0")
-			self.escribir("LELN")
-			self.escribir("ALVI 0, -3")
-			self.escribir("RTPR 0, 1")
+			if self.procReadC:
+				
+				self.ponerLabel(self.procReadC)
+				self.escribir("ENPR 0")
+				self.escribir("LECH")
+				self.escribir("ALVI 0, -3")
+				self.escribir("RTPR 0, 1")
+
+			if self.procReadE:
+				self.ponerLabel(self.procReadE)
+				self.escribir("ENPR 0")
+				self.escribir("LEER")
+				self.escribir("ALVI 0, -3")
+				self.escribir("RTPR 0, 1")
+
+			if self.procReadLC:
+				self.ponerLabel(self.procReadLC)
+				self.escribir("ENPR 0")
+				self.escribir("LECN")
+				self.escribir("ALVI 0, -3")
+				self.escribir("RTPR 0, 1")
+
+			if self.procReadLE:
+				self.ponerLabel(self.procReadLE)
+				self.escribir("ENPR 0")
+				self.escribir("LELN")
+				self.escribir("ALVI 0, -3")
+				self.escribir("RTPR 0, 1")
+				
+			self.ponerLabel(label)
 			
 	def execute(self):
 		# try:
@@ -119,6 +117,9 @@ class PyComp():
 				
 				###########
 				# finalizar el programa
+				
+				self.writeProcedures()
+				
 				self.escribir('PARA')
 				
 				
@@ -232,23 +233,16 @@ class PyComp():
 	def block_var_rest(self):
 		self.out.write('In block_var_rest\n')
 		self.currentToken = self.lexer.getNextToken()
+		# self.writeProcedures()
 		# en este caso controlo si viene el <statement_part> porque es mas sencillo
-		label = "L%s" % self.labelIndex
-		self.labelIndex += 1
-		self.escribir("DSVS %s" %label)
-		self.writeProcedures()
 		if self.currentToken == "<BEGIN>":
 			self.pushLexeme()
-			
-			#######
-			self.ponerLabel(label)
-			#######
-			
 			self.statement_part()
 		else:
 			self.pushLexeme()	
-
-			
+			label = "L%s" % self.labelIndex
+			self.labelIndex += 1
+			self.escribir("DSVS %s" %label)
 			self.procedure_and_function_declaration_part()
 			
 			#######
@@ -1575,19 +1569,27 @@ class PyComp():
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
 			elif id=="read": 
 				if attrE.ref.tipo.instancia(Entero):
-
+					if not self.procReadE:
+						self.procReadE = "L%s" % self.labelIndex
+						self.labelIndex +=1
 					self.escribir("LLPR %s" % self.procReadE)
 				elif attrE.ref.tipo.instancia(Caracter):
-
+					if not self.procReadC:
+						self.procReadC = "L%s" % self.labelIndex
+						self.labelIndex +=1
 					self.escribir("LLPR %s" % self.procReadC)
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
 			elif id=="readln":
 				if attrE.ref.tipo.instancia(Entero):
-
+					if not self.procReadLE:
+						self.procReadLE = "L%s" % self.labelIndex
+						self.labelIndex +=1
 					self.escribir("LLPR %s" % self.procReadLE)
 				elif attrE.ref.tipo.instancia(Caracter):
-
+					if not self.procReadLC:
+						self.procReadLC = "L%s" % self.labelIndex
+						self.labelIndex +=1
 					self.escribir("LLPR %s" % self.procReadLC)
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot read %s parameter" % attrE.ref.tipo)
