@@ -56,9 +56,11 @@ class Entero(Simple):
 		
 	def getLower(self):
 		return -32768
+		# return -2147483648
 		
 	def getUpper(self):
 		return 32767
+		# return 2147483647
 	
 		
 class Booleano(Simple):

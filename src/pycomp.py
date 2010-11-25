@@ -9,14 +9,6 @@ from tipos import Elemento,Tipo,Simple,Caracter,Entero,Booleano,Subrango,SubCara
 from hashstack import HashStack,SymbolTableError
 from copy import deepcopy
 
-"""
-RE NADA
-ENPR 0
-LEER
-ALVI 0, -3
-RTPR 0, 1
-"""
-
 
 class PyComp():
 
@@ -1164,6 +1156,7 @@ class PyComp():
 			###############
 			id = id.lower()
 			proc = self.stStack.getGlobalValue(id)
+			id.used = True
 			nivel = self.stStack.lastLexicalLevel()
 			listParams = proc.tipo.params
 			if proc.clase == "procedure":
@@ -1454,23 +1447,47 @@ class PyComp():
 				raise SemanticError(self.lexer.errorLeader(),"Invalid function or procedure call: reference parameter expected")
 			id = id.lower()
 			fun = self.stStack.getGlobalValue(id)
+			fun.used = True
 			nivel = self.stStack.lastLexicalLevel()
 			print fun
 			if fun.clase == "function":
 				listParams = fun.tipo.params
 				if len(listParams)>0:
 					if nivel==-1:
-						self.actual_parameter(esperado = listParams[0],id = id)
-						self.actual_parameter_rest(listParams = listParams[1:],id = id)
+						if id=="ord":
+							self.actual_parameter(esperado = listParams[0])
+							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							attr.ref = Attr(clase="subexpression",tipo=Caracter())
+						elif id=="chr":
+							self.actual_parameter(esperado = listParams[0])
+							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							attr.ref = Attr(clase="subexpression",tipo=Entero())
+						elif id=="succ":
+							attr1 = Ref()
+							self.actual_parameter(esperado = listParams[0],attr = attr1)
+							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							self.escribir("APCT 1")
+							self.escribir("SUMA")
+							self.escribir("CONT %s, %s" % (attr1.ref.tipo.getLower(),attr1.ref.tipo.getUpper()))
+							attr.ref = Attr(clase="subexpression",tipo=deepcopy(attr1.ref.tipo))
+						elif id=="pred":
+							attr1 = Ref()
+							self.actual_parameter(esperado = listParams[0],attr=attr1)
+							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							self.escribir("APCT 1")
+							self.escribir("SUST")
+							self.escribir("CONT %s, %s" % (attr1.ref.tipo.getLower(),attr1.ref.tipo.getUpper()))
+							attr.ref = Attr(clase="subexpression",tipo=deepcopy(attr1.ref.tipo))
 					else:
 						self.escribir("RMEM 1")
 						self.actual_parameter(esperado = listParams[0])
 						self.actual_parameter_rest(listParams = listParams[1:])
 						self.escribir("LLPR %s" %fun.tipo.label)
+						attr.ref = Attr(clase="subexpression",tipo=deepcopy(fun.tipo.ret))
 						
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Invalid function call: More parameters than expected")
-				attr.ref = Attr(clase="subexpression",tipo=deepcopy(fun.tipo.ret))
+				
 			else:
 				raise SemanticError(self.lexer.errorLeader(), "Invalid expression: %s is not a function" % id)
 		else:
@@ -1522,33 +1539,41 @@ class PyComp():
 				raise SemanticError(self.lexer.errorLeader(), "Function, variable or constant expected, but "+ str(identifier.clase)+" identifier found")			
 			########
 
-	def actual_parameter(self, esperado = None,id=None):
+	def actual_parameter(self, esperado,id=None,attr=None):
 		self.out.write('In actual_parameter\n')
 		
 		###########
 		attrE = Ref()
 		# if id!=None and id in ["read","readln"]
-		if esperado:
-			self.expression(attrE, porRef = esperado[2])
-		else:
-			self.expression(attrE)
+
+		self.expression(attrE, porRef = esperado[2])
+		if type(esperado[1])!=Simple:
+			self.escribir("CONT %s,%s" %(esperado[1].getLower(),esperado[1].getUpper()))
+
+			
+		if attr:
+			attr.ref = attrE.ref
 		
 		if id: #si no es None es nuestro
 			if id=="write":
 				if attrE.ref.tipo.instancia(Entero):
+					self.escribir("CONT %s,%s" %(Entero().getLower(),Entero().getUpper()))
 					self.escribir("IMPR")
 				elif attrE.ref.tipo.instancia(Caracter):
+					self.escribir("CONT %s,%s" %(Caracter().getLower(),Caracter().getUpper()))
 					self.escribir("IMCH")
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
 			elif id=="writeln":
 				if attrE.ref.tipo.instancia(Entero):
+					self.escribir("CONT %s,%s" %(Entero().getLower(),Entero().getUpper()))
 					self.escribir("IMLN")
 				elif attrE.ref.tipo.instancia(Caracter):
+					self.escribir("CONT %s,%s" %(Caracter().getLower(),Caracter().getUpper()))
 					self.escribir("IMCN")
 				else:
 					raise SemanticError(self.lexer.errorLeader(),"Invalid statement: Cannot write %s parameter. Integer or Character expected" % attrE.ref.tipo)
-			elif id=="read": # Falta mucho aca... poner el valor en la variable 
+			elif id=="read": 
 				if attrE.ref.tipo.instancia(Entero):
 
 					self.escribir("LLPR %s" % self.procReadE)
@@ -1569,7 +1594,7 @@ class PyComp():
 			else:
 				raise Exception("YOUUUU SHALL NOT PAAAASS!")
 		else:# si es None es definido por el usuario	
-			if not self.checkTypes(esperado[1],attrE.ref.tipo):
+			if not self.checkTypes(attrE.ref.tipo,esperado[1]):
 				raise SemanticError(self.lexer.errorLeader(),"Invalid procedure or function call: %s parameter expected, but %s found" % (esperado[1],attrE.ref.tipo))
 				
 		###########

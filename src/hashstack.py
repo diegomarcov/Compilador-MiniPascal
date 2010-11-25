@@ -25,8 +25,11 @@ class HashStack(list):
 							"read": Attr (tipo = Procedimiento(params = [("x",Simple(),True)]), clase = "procedure"),
 							"readln": Attr (tipo = Procedimiento(params = [("x",Simple(),True)]), clase = "procedure"),
 							"maxint": Attr (tipo = Entero(), clase = "constant", valor = 32767),
+							"ord":Attr (tipo = Funcion(params = [("x",Caracter(),False)], ret = Entero(),label=None), clase = "function"),
+							"chr":Attr (tipo = Funcion(params = [("x",Entero(),False)], ret = Caracter(),label=None), clase = "function"),
+							"pred":Attr (tipo = Funcion(params = [("x",Simple(),False)], ret = Simple(),label=None), clase = "function"),
+							"succ":Attr (tipo = Funcion(params = [("x",Simple(),False)], ret = Simple(),label=None), clase = "function"),
 							
-							# procedimientos
 						}
 					)
 		

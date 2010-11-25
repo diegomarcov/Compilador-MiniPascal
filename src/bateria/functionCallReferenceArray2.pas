@@ -18,4 +18,4 @@ begin
 	writeln(f(a,a[2]));
 	writeln(a[2]);
 	writeln(a[3]);
-end.
+end.
