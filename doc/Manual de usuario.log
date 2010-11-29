@@ -1,0 +1,370 @@
+This is pdfTeX, Version 3.1415926-1.40.10 (MiKTeX 2.8) (preloaded format=pdflatex 2010.4.18)  29 NOV 2010 17:13
+entering extended mode
+**D:/UNS/Compiladores*e*Interpretes/Proyectos/Entregas/doc/Manual*de*usuario.te
+x
+
+("D:/UNS/Compiladores e Interpretes/Proyectos/Entregas/doc/Manual de usuario.te
+x"
+LaTeX2e <2005/12/01>
+Babel <v3.8l> and hyphenation patterns for english, dumylang, nohyphenation, ge
+rman, ngerman, german-x-2009-06-19, ngerman-x-2009-06-19, french, loaded.
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\base\report.cls"
+Document Class: report 2005/09/16 v1.4f Standard LaTeX document class
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\base\size10.clo"
+File: size10.clo 2005/09/16 v1.4f Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@chapter=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\babel\babel.sty"
+Package: babel 2008/07/06 v3.8l The Babel package
+
+*************************************
+* Local config file bblopts.cfg used
+*
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\00miktex\bblopts.cfg"
+File: bblopts.cfg 2006/07/31 v1.0 MiKTeX 'babel' configuration
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\babel\spanish.ldf"
+Language: spanish.ldf 2008/07/06 v5.0e Spanish support from the babel system
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\babel\babel.def"
+File: babel.def 2008/07/06 v3.8l Babel common definitions
+\babel@savecnt=\count88
+\U@D=\dimen103
+)
+
+Package babel Warning: No hyphenation patterns were loaded for
+(babel)                the language `Spanish'
+(babel)                I will use the patterns loaded for \language=0 instead.
+
+\l@spanish = a dialect from \language0
+\es@datefmt=\count89
+\es@quottoks=\toks14
+\es@quotdepth=\count90
+Package babel Info: Making " an active character on input line 490.
+Package babel Info: Making . an active character on input line 583.
+Package babel Info: Making < an active character on input line 628.
+Package babel Info: Making > an active character on input line 628.
+)) ("C:\Archivos de programa\MiKTeX 2.8\tex\latex\base\inputenc.sty"
+Package: inputenc 2006/05/05 v1.1b Input encoding file
+\inpenc@prehook=\toks15
+\inpenc@posthook=\toks16
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\base\latin1.def"
+File: latin1.def 2006/05/05 v1.1b Input encoding file
+))
+("C:\Documents and Settings\dgm\Datos de programa\MiKTeX\2.8\tex\latex\preprint
+\fullpage.sty"
+Package: fullpage 1999/02/23 1.1 (PWD)
+\FP@margin=\skip43
+) ("C:\Archivos de programa\MiKTeX 2.8\tex\latex\float\float.sty"
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count91
+\float@exts=\toks17
+\float@box=\box26
+\@float@everytoks=\toks18
+\@floatcapt=\box27
+) ("C:\Archivos de programa\MiKTeX 2.8\tex\latex\hyperref\hyperref.sty"
+Package: hyperref 2009/09/10 v6.78u Hypertext links for LaTeX
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\graphics\keyval.sty"
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks19
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\ifpdf.sty"
+Package: ifpdf 2009/04/10 v2.0 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in pdf mode detected.
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\ifvtex.sty"
+Package: ifvtex 2008/11/04 v1.4 Switches for detecting VTeX and its modes (HO)
+Package ifvtex Info: VTeX not detected.
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\ifxetex\ifxetex.sty"
+Package: ifxetex 2009/01/23 v0.5 Provides ifxetex conditional
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\oberdiek\hycolor.sty"
+Package: hycolor 2008/09/08 v1.4 Code for color options of hyperref/bookmark (H
+O)
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\oberdiek\xcolor-patch.sty"
+Package: xcolor-patch 2008/09/08 xcolor patch
+))
+\@linkdim=\dimen104
+\Hy@linkcounter=\count92
+\Hy@pagecounter=\count93
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\hyperref\pd1enc.def"
+File: pd1enc.def 2009/09/10 v6.78u Hyperref: PDFDocEncoding definition (HO)
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\etexcmds.sty"
+Package: etexcmds 2007/12/12 v1.2 Prefix for e-TeX command names (HO)
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\infwarerr.sty"
+Package: infwarerr 2007/09/09 v1.2 Providing info/warning/message (HO)
+)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\00miktex\hyperref.cfg"
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\oberdiek\kvoptions.sty"
+Package: kvoptions 2009/08/13 v3.4 Keyval support for LaTeX options (HO)
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\kvsetkeys.sty"
+Package: kvsetkeys 2009/07/30 v1.5 Key value parser with default handler suppor
+t (HO)
+))
+Package hyperref Info: Option `colorlinks' set `true' on input line 2864.
+Package hyperref Info: Hyper figures OFF on input line 2975.
+Package hyperref Info: Link nesting OFF on input line 2980.
+Package hyperref Info: Hyper index ON on input line 2983.
+Package hyperref Info: Plain pages OFF on input line 2990.
+Package hyperref Info: Backreferencing OFF on input line 2995.
+
+Implicit mode ON; LaTeX internals redefined
+Package hyperref Info: Bookmarks ON on input line 3191.
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\ltxmisc\url.sty"
+\Urlmuskip=\muskip10
+Package: url 2006/04/12  ver 3.3  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 3428.
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\bitset.sty"
+Package: bitset 2007/09/28 v1.0 Data type bit set (HO)
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\intcalc.sty"
+Package: intcalc 2007/09/27 v1.1 Expandable integer calculations (HO)
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\bigintcalc.sty"
+Package: bigintcalc 2007/11/11 v1.1 Expandable big integer calculations (HO)
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\pdftexcmds.sty"
+Package: pdftexcmds 2009/04/10 v0.4 LuaTeX support for pdfTeX utility functions
+ (HO)
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\ifluatex.sty"
+Package: ifluatex 2009/04/17 v1.2 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+Package pdftexcmds Info: LuaTeX not detected on input line 144.
+)))
+\Fld@menulength=\count94
+\Field@Width=\dimen105
+\Fld@charsize=\dimen106
+\Field@toks=\toks20
+Package hyperref Info: Hyper figures OFF on input line 4346.
+Package hyperref Info: Link nesting OFF on input line 4351.
+Package hyperref Info: Hyper index ON on input line 4354.
+Package hyperref Info: backreferencing OFF on input line 4361.
+Package hyperref Info: Link coloring ON on input line 4364.
+Package hyperref Info: Link coloring with OCG OFF on input line 4371.
+Package hyperref Info: PDF/A mode OFF on input line 4376.
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\generic\oberdiek\atbegshi.sty"
+Package: atbegshi 2008/07/31 v1.9 At begin shipout hook (HO)
+)
+\Hy@abspage=\count95
+\c@Item=\count96
+\c@Hfootnote=\count97
+)
+*hyperref using default driver hpdftex*
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\hyperref\hpdftex.def"
+File: hpdftex.def 2009/09/10 v6.78u Hyperref driver for pdfTeX
+\Fld@listcount=\count98
+)
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\gmverb\gmverb.sty"
+Package: gmverb 2010/03/04 v0.93 After shortvrb (FM) but my way (GM)
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\gmutils\gmutils.sty"
+Package: gmutils 2010/03/04 v0.991 some rather TeXnical macros, some of them tr
+icky (GM)
+\@temptokenb=\toks21
+\@dc@arguments=\toks22
+\@dc@catchernum=\count99
+\@dc@argnum=\count100
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\tools\calc.sty"
+Package: calc 2005/08/06 v4.2 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count101
+\calc@Bcount=\count102
+\calc@Adimen=\dimen107
+\calc@Bdimen=\dimen108
+\calc@Askip=\skip44
+\calc@Bskip=\skip45
+LaTeX Info: Redefining \setlength on input line 75.
+LaTeX Info: Redefining \addtolength on input line 76.
+\calc@Ccount=\count103
+\calc@Cskip=\skip46
+)
+\gmu@luzniej=\count104
+\whernskip=\skip47
+)
+\stanzaskip=\skip48
+\verbatimleftskip=\skip49
+\verbatimhangindent=\skip50
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\xcolor\xcolor.sty"
+Package: xcolor 2007/01/21 v2.11 LaTeX color extensions (UK)
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\00miktex\color.cfg"
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\pdftex-def\pdftex.def"
+File: pdftex.def 2009/08/25 v0.04m Graphics/color for pdfTeX
+\Gread@gobject=\count105
+)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1337.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1341.
+Package xcolor Info: Model `RGB' extended on input line 1353.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1355.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1356.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1357.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1358.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1359.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1360.
+))
+("D:\UNS\Compiladores e Interpretes\Proyectos\Entregas\doc\Manual de usuario.au
+x")
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+Package hyperref Info: Link coloring ON on input line 19.
+ ("C:\Archivos de programa\MiKTeX 2.8\tex\latex\hyperref\nameref.sty"
+Package: nameref 2007/05/29 v2.31 Cross-referencing by name of section
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\oberdiek\refcount.sty"
+Package: refcount 2008/08/11 v3.1 Data extraction from references (HO)
+)
+\c@section@level=\count106
+)
+LaTeX Info: Redefining \ref on input line 19.
+LaTeX Info: Redefining \pageref on input line 19.
+
+("D:\UNS\Compiladores e Interpretes\Proyectos\Entregas\doc\Manual de usuario.ou
+t")
+("D:\UNS\Compiladores e Interpretes\Proyectos\Entregas\doc\Manual de usuario.ou
+t")
+\@outlinefile=\write3
+\AtBeginShipoutBox=\box28
+\c@NoNumSecs=\count107
+ ("C:\Archivos de programa\MiKTeX 2.8\tex\context\base\supp-pdf.tex"
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count108
+\scratchdimen=\dimen109
+\scratchbox=\box29
+\nofMPsegments=\count109
+\nofMParguments=\count110
+\everyMPshowfont=\toks23
+\MPscratchCnt=\count111
+\MPscratchDim=\dimen110
+\MPnumerator=\count112
+\everyMPtoPDFconversion=\toks24
+)
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 22.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 22.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 22.
+ [1
+
+{C:/Documents and Settings/dgm/Configuración local/Datos de programa/MiKTeX/2.8
+/pdftex/config/pdftex.map}]
+("D:\UNS\Compiladores e Interpretes\Proyectos\Entregas\doc\Manual de usuario.to
+c"
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 4.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 4.
+)
+\tf@toc=\write4
+pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
+been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.25 \chapter*{Introducción}
+                             [1
+
+] [2
+
+]
+Cap\'{\i }tulo 1.
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 51.
+[3
+
+]
+@@@@ package gmverb: \bslash wd of select font cmtt10 at 10pt is 5.24995pt
+[4]
+Cap\'{\i }tulo 2.
+@@@@ package gmverb: \lbrace wd of select font cmtt10 at 10pt is 5.24995pt
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 130.
+
+("C:\Archivos de programa\MiKTeX 2.8\tex\latex\base\omscmr.fd"
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 130.
+ [5
+
+] [6]
+[7] [8] [9] [10] [11] [12] [13] [14]
+Cap\'{\i }tulo 3.
+[15
+
+] [16
+
+]
+("D:\UNS\Compiladores e Interpretes\Proyectos\Entregas\doc\Manual de usuario.au
+x") ) 
+Here is how much of TeX's memory you used:
+ 6237 strings out of 495285
+ 87334 string characters out of 3179741
+ 178774 words of memory out of 3000000
+ 9326 multiletter control sequences out of 15000+200000
+ 10271 words of font info for 36 fonts, out of 3000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 37i,6n,37p,528b,442s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Archivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmbx10.
+pfb><C:/Archivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmbx12.p
+fb><C:/Archivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmcsc10.p
+fb><C:/Archivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmr10.pfb
+><C:/Archivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmr12.pfb><
+C:/Archivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:
+/Archivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/
+Archivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/A
+rchivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmti7.pfb><C:/Arc
+hivos de programa/MiKTeX 2.8/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on "Manual de usuario.pdf" (17 pages, 181540 bytes).
+PDF statistics:
+ 216 PDF objects out of 1000 (max. 8388607)
+ 44 named destinations out of 1000 (max. 500000)
+ 125 words of extra memory for PDF output out of 10000 (max. 10000000)
+
