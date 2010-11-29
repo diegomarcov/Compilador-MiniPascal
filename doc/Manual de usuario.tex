@@ -138,6 +138,22 @@ Un identificador es utilizado para dar nombre a un programa, constante, tipo, va
 
 \section{Números}
 Un número es una secuencia de dígitos decimales.
+\begin{verbatim}
+<digit sequence> ::= <digit>{<digit>}
+\end{verbatim}
+
+\section{Constantes}
+Cuando se define una constante, el identificador utilizado se liga al valor elegido durante toda la ejecución del programa; dicho valor no podrá ser cambiado.
+
+\begin{verbatim}
+<constant definition> ::= <identifier>=<constant>
+<constant> ::= <unsigned number> | <sign><unsigned number> | <constant identifier> | <sign><constant identifier> | <char>
+<constant identifier> ::= <identifier>
+\end{verbatim}
+
+\section{Tipos}
+\subsection{Tipos predefinidos}
+Los tipos predefinidos en Mini-Pascal son \emph{char} (caracteres), \emph{integer} (números enteros) y \emph{boolean} (true y false).
 
 \section{Corrección de la gramática}
 Antes de comenzar con la modificación, se corrigieron los errores marcados por la cátedra.
