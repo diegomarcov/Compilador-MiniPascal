@@ -7,6 +7,7 @@ dist/
 /*/informe/*.log
 /*/informe/*.out
 /*/informe/*.toc
+/*/informe/*.dvi
 *~
 /*/informe/*.pdf
 .project

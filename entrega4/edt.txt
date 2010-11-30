@@ -9,6 +9,7 @@
 				}
 				<block> <END_PROGRAM> <EOF>
 				{
+					#escribe los procedimientos de read usados
 					#finalizar el programa (PARA)
 				}
 
@@ -38,7 +39,15 @@
 				stStack.pop()
 			}
 
-<block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
+<block_cons_rest> ::= <type_definition_part> <block_type_rest> 
+						{
+							#libero memoria (<block_type_rest>.tamanioVariables)
+						}
+						| 
+						<block_type_rest>
+						{
+							#libero memoria (<block_type_rest>.tamanioVariables)
+						}
 
 <block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
 

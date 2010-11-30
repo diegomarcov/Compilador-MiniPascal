@@ -1893,8 +1893,8 @@ if __name__ == '__main__':
 		print msg
 		mepa.close()
 	except CompilerError as e:
-		# output.write(str(e))
-		traceback.print_exc()
+		output.write(str(e))
+		# traceback.print_exc()
 		mepa.close()
 		os.remove(mepaFile)
 		sys.exit(1)
