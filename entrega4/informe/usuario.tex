@@ -6,11 +6,11 @@
 %\usepackage{fancyvrb}
 \usepackage{float}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-\usepackage{gmverb}
+%\usepackage{gmverb}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
-\title{Compiladores e Intérpretes\\Manual del usuario}
+\title{Compiladores e Intérpretes\\Manual del Usuario}
 
 \author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
 
@@ -25,7 +25,7 @@
 \chapter*{Introducción}
 \addcontentsline{toc}{chapter}{Introducción}
 
-Este es el Manual del Usuario del Compilador de Mini-Pascal \emph{pyComp}. Detallaremos el alcance del compilador, el lenguaje y los símbolos utilizados, los tipos de datos cubiertos, la forma de uso del lenguaje, la utilización en general del compilador, y las decisiones de diseño tomadas.
+Este es el Manual del Usuario del Compilador de Mini-Pascal \textsc{pyComp}. Detallaremos el alcance del compilador, el lenguaje y los símbolos utilizados, los tipos de datos cubiertos; la forma de uso del lenguaje, la utilización en general del compilador, y las decisiones de diseño tomadas.
 
 \chapter{Modo de Uso}
 
@@ -71,7 +71,7 @@ Los errores posiblemente devueltos son:
   \item \emph{Semantical error}: ocurre cuando se viola alguna de las reglas semánticas definidas por el compilador; por ejemplo, cuando se referencia a una variable que no fue definida anteriormente, cuando se asignan dos elementos de tipos incompatibles, o cuando se declaran dos variables con el mismo identificador.
 \end{itemize}
 
-Por añadidura, se informará por pantalla en forma de \emph{warning} cuando haya variables, funciones o procedimientos declarados que no hayan sido utilizados.
+Por añadidura, se informará por pantalla en forma de \texttt{warning} cuando haya variables, funciones o procedimientos declarados que no hayan sido utilizados.
 
 \begin{figure}[h]
 \begin{verbatim}
@@ -113,9 +113,9 @@ The program is syntactically correct.
 \label{fig:warning}
 \end{figure}
 
-\chapter{Lenguaje}
+\chapter{Especificación completa del lenguaje}
 
-\section{Símbolos válidos}
+\section{Análisis léxico}
 
 En esta sección definiremos todos los símbolos válidos en el lenguaje Mini-Pascal. Éstos se dividen en letras, números, y símbolos especiales (dentro de los que se consideran también las palabras reservadas).
 
@@ -127,33 +127,180 @@ En esta sección definiremos todos los símbolos válidos en el lenguaje Mini-Pasca
 <special symbol> ::= + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
 \end{verbatim}
 
-Es de notar que cualquier bloque de comentarios (definido por los símbolos \{ y \}, // o bien (* y *)) puede contener cualquier tipo de símbolos, pertenezcan a la gramática o no.
+\subsection{Comentarios}
 
-\section{Identificadores}
+Los comentarios son textos que se encuentran dentro del código del programa,y no generan código. Pueden contener cualquier tipo de símbolos, pertenezcan al lenguaje o no.
+
+\textsc{pycomp} utiliza los siguientes:
+
+\begin{itemize}
+	\item \textbf{Comentarios de línea}: La doble barra (``//'') comienza un comentario que termina en el fin de línea.
+	\item \textbf{Comentarios de bloque}: Hay dos comentarios posibles: \verb|{ y }|, ó \verb|(* y *)|.
+\end{itemize}
+
+\begin{figure}
+\begin{verbatim}
+{ 
+ Descripcion del programa : Este programa muestra un mensaje por pantalla
+}
+PROGRAM Saludo;
+BEGIN
+  Write('H') // Instruccion que muestra el mensaje por pantalla 
+END.
+
+(* Aquí termina el programa *)
+\end{verbatim}
+\caption{Ejemplo del uso de comentarios}
+\label{comentarios}
+\end{figure}
+
+\subsection{Identificadores}
 
 Un identificador es utilizado para dar nombre a un programa, constante, tipo, variable, función o procedimiento.
 \begin{verbatim}
 <identifier> ::= <letter>{<letter or digit>}
 \end{verbatim}
 
-\section{Números}
+\subsection{Números}
 Un número es una secuencia de dígitos decimales.
 \begin{verbatim}
 <digit sequence> ::= <digit>{<digit>}
 \end{verbatim}
 
-\section{Constantes}
+\section{Declaraciones}
+
+\subsection{Constantes}
 Cuando se define una constante, el identificador utilizado se liga al valor elegido durante toda la ejecución del programa; dicho valor no podrá ser cambiado.
 
 \begin{verbatim}
 <constant definition> ::= <identifier>=<constant>
 <constant> ::= <unsigned number> | <sign><unsigned number> | <constant identifier> | <sign><constant identifier> | <char>
 <constant identifier> ::= <identifier>
+<sign> ::= + | -
 \end{verbatim}
 
-\section{Tipos}
+\subsection{Tipos}
+
+Los tipos determinan los valores posibles que puede tener una variable en Mini-Pascal, así como las posibles operaciones que se puedan aplicar sobre este. Se asocian a un identificador.
+
+\begin{verbatim}
+<type definition> ::= <identifier>=<type>
+
+<type> ::= <simple type> | <structured type>
+\end{verbatim}
+
+
+\subsubsection{Tipos Simples}
+
+Dentro de los tipos, se encuentran los tipos simples, que cumplen con la característica de ocupar sólo una celda de memoria. Hay tres tipos simples predefinidos en Mini-Pascal, que serán detallados luego en la sección pertinente.
+
+A su vez, se encuentran los \textit{subrangos}, que definen cotas superiores e inferiores a partir de constantes, cuyos tipos deben coincidir en el tipo del subrango.
+
+\begin{verbatim}
+<simple type> ::= <subrange type> | <type identifier>
+
+<subrange type> ::= <constant>..<constant>
+
+<type identifier> ::= <identifier>
+\end{verbatim}
+
+\subsubsection{Tipos Compuestos}
+
+El único tipo compuesto posible dentro de Mini-Pascal es el arreglo: una serie de locaciones de memoria referenciados por índices correlativos. Éste debe tener tipos simples tanto de elementos como de índices.
+\begin{verbatim}
+<structured type> ::= <unpacked structured type>
+
+<unpacked structured type> ::= <array type>
+
+<array type> ::= array[<index type>] of <component type>
+
+<index type> ::= <simple type>
+
+<component type> ::= <simple type>
+\end{verbatim}
+
+\subsection{Variables}
+
+Las variables son una abstracción de referencias a celdas de memoria, cuyo valor puede ser cambiado en tiempo de ejecución. Tienen un tipo determinado en tiempo de compilación, y están asociados a un identificador.
+
+\begin{verbatim}
+<variable declaration> ::= <identifier>{,<identifier>} : <type>
+\end{verbatim}
+
+\subsection{Procedimientos}
+
+Los procedimientos pueden pensarse como subprogramas, determinados por un identificador que se utiliza para luego invocarlo.
+
+\begin{verbatim}
+<procedure declaration> ::= <procedure heading><block>
+\end{verbatim}
+
+\subsubsection{Encabezado de procedimiento}
+
+Los procedimentos son asociados a un identificador, y pueden tener una serie de parámetros, que se determinan en tiempo de compilación.
+
+Un grupo de parámetros que tengan antepuesta la palabra \texttt{var} serán tratados como \textit{parámatros por refencia}; es decir, no se copiarán los valores en nuevas locaciones de memoria, sino que se utilizará la misma locación. Ésto puede generar efectos colaterales.
+
+Los parámetros que no sean por referencia, son denominados \textit{parámtros por valor}. Se trata de variables que sólo vivirán mientras se ejecute el procedimiento, y que serán inicializadas a partir del valor que les sea pasado en la llamada.
+
+\begin{verbatim}
+<procedure heading> ::= procedure <identifier>; | procedure <identifier>(<formal parameter section>{;<formal parameter section>});
+
+<formal parameter section> ::= <parameter group> | var <parameter group>
+
+<parameter group> ::= <identifier>{,<identifier>}:<type identifier>
+\end{verbatim}
+\subsection{Funciones}
+
+Las funciones son muy parecidas a los procedimientos, con la diferencia que devuelven un valor, por lo que no son utilizadas como sentencias de por sí, sino que se invocan dentro del contexto de una expresión.
+
+\begin{verbatim}
+<function declaration> ::= <function heading><block>
+\end{verbatim}
+
+\subsubsection{Encabezado de funciones}
+
+Así como los procedimientos, las funciones están asociadas a un identificador, y tienen una signatura determinada en tiempo de compilación. Puede tener parámatros, con sus tipos, y debe tener un tipo de resultado, que será el tipo del valor que devolverá. En Mini-Pascal, sólo se aceptarán como tipos de resultado, tipos simples.
+
+Puede tener parámtros por valor o referencia, como los procedimientos.
+
+\begin{verbatim}
+<function heading> ::= function<identifier>:<result type>; | <function identifier>(<formal parameter section>{;<formal parameter section>}):<result type>;
+
+<result type> ::= <type identifier>
+\end{verbatim}
+
+\section{Expresiones}
+
+Las expresiones denotan la computación a llevar a cabo en una determinada sentencia. Se computan a partir de átomos, y generan un valor de salida, luego de haber aplicado todos los operadores, con su determinado tipo.
+
+\subsection{Operadores}
+
+Los operadores que se detallarán son binarios, que reciben dos argumentos del mismo tipo, y generan un nuevo valor a partir de ellas. 
+
+\begin{verbatim}
+<multiplying operator> ::= * | div | and
+
+<adding operator> ::= + | - | or
+
+<relational operator> ::= = | <> | < | <= | >= | >
+\end{verbatim}
+
+
+
+\section{Sentencias Simples}
+
+
+\section{Sentencias Compuestas}
+
+\section{Declaraciones}
+
+
+\section{Programas}
+
+
 \subsection{Tipos predefinidos}
-Los tipos predefinidos en Mini-Pascal son \emph{char} (caracteres), \emph{integer} (números enteros) y \emph{boolean} (true y false).
+Los tipos predefinidos en Mini-Pascal son \texttt{char} (caracteres), \texttt{integer} (números enteros) y \texttt{boolean} (\textbf{true} y \textbf{false}).
 
 \section{Corrección de la gramática}
 Antes de comenzar con la modificación, se corrigieron los errores marcados por la cátedra.
@@ -300,145 +447,6 @@ Antes de comenzar con la modificación, se corrigieron los errores marcados por l
 
 \end{verbatim}
 
-\section{Pasaje a notación BNF}
-
-Como siguiente paso en la adaptación de la gramática, se reemplazaron los terminales por los tokens que devuelve \textbf{LexAn}. Para esto, se adoptó la convención de dejar los no terminales en minúscula, mientras que los tokens (terminales) se encuentran en MAYÚSCULA. Luego, se eliminaron las extensiones propias de la notación EBNF.
-
-\begin{verbatim}
-<program> ::= <program_heading> <block> <END_PROGRAM>
-
-<program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
-
-<block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
-
-<block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
-
-<block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
-
-<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part>
-
-<constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
-
-<constant_definition_rest> ::= <SEMI_COLON> <constant_definition_rest_rest>
-
-<constant_definition_rest_rest> ::= <constant_definition> <constant_definition_rest> | <LAMBDA>
-
-<constant_definition> ::= <IDENTIFIER> <EQUAL> <constant>
-
-<constant> ::= <NUMBER> | <IDENTIFIER> | <CHAR> | <sign> <constant_rest>
-
-<constant_rest> ::= <NUMBER> | <IDENTIFIER>
-
-<sign> ::= <ADD_OP> | <MINUS_OP>
-
-<type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
-
-<type_definition_rest> ::= <SEMI_COLON> <type_definition_rest_rest>
-
-<type_definition_rest_rest> ::= <type_definition> <type_definition_rest> | <LAMBDA>
-
-<type_definition> ::= <IDENTIFIER> <EQUAL> <type>
-
-<type> ::= <simple_type> | <structured_type>
-
-<simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest> | <IDENTIFIER> <simple_type_rest>
-
-<simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> | <LAMBDA>
-
-<subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
-
-<structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
-
-<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
-
-<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
-
-<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_part_rest> | <LAMBDA>
-
-<variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
-
-<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
-
-<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
-
-<procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
-
-<procedure_declaration> ::= <procedure_heading> <block>
-
-<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest>
-
-<procedure_heading_rest> ::= <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
-
-<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest> | <CLOSE_PARENTHESIS> <SEMI_COLON>
-
-<formal_parameter_section> ::= <parameter_group> | <VAR> <parameter_group>
-
-<parameter_group> ::= <IDENTIFIER> <parameter_group_rest>
-
-<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest> | <TYPE_DECLARATION> <IDENTIFIER>
-
-<function_declaration> ::= <function_heading> <block>
-
-<function_heading> ::= <FUNCTION> <IDENTIFIER> <function_heading_rest>
-
-<function_heading_rest> ::= <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
-
-<formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
-
-<statement_part> ::= <compound_statement>
-
-<compound_statement> ::= <BEGIN> <statement> <compound_statement_rest> <END>
-
-<compound_statement_rest> ::= <SEMI_COLON> <statement> <compound_statement_rest> | <LAMBDA>
-
-<statement> ::= <simple_statement> | <structured_statement>
-
-<simple_statement> ::= <IDENTIFIER> <simple_statement_rest>
-
-<simple_statement_rest> ::= <ASSIGNMENT> <expression> | <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
-
-<component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
-
-<expression> ::= <simple_expression> <expression_rest>
-
-<expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
-
-<simple_expression> ::= <term> <simple_expression_other> | <sign> <term> <simple_expression_other>
-
-<simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
-
-<term> ::= <factor> <term_other>
-
-<term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
-
-<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR>
-
-<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
-
-<actual_parameter> ::= <expression>
-
-<actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
-
-<multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
-
-<adding_operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
-
-<relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <NOT_EQUAL_OP> | <EQUAL> 
-
-<procedure_statement> ::= <IDENTIFIER> <procedure_statement_rest>
-
-<procedure_statement_rest> ::= <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
-
-<structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
-
-<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_rest>
-
-<conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
-
-<repetitive_statement> ::= <WHILE> <expression> <DO> <repetitive_statement_rest>
-
-<repetitive_statement_rest> ::= <statement> | <LAMBDA>
-\end{verbatim}
 
 \section{Gramática final}
 Para llegar a la gramática utilizada para implementar el analizador sintáctico, se realizaron varios pasos:
