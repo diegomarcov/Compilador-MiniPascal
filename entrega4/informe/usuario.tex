@@ -138,7 +138,7 @@ Los comentarios son textos que se encuentran dentro del código del programa,y no
 	\item \textbf{Comentarios de bloque}: Hay dos comentarios posibles: \verb|{ y }|, ó \verb|(* y *)|.
 \end{itemize}
 
-\begin{figure}
+\begin{figure}[h]
 \begin{verbatim}
 { 
  Descripcion del programa : Este programa muestra un mensaje por pantalla
@@ -167,6 +167,11 @@ Un número es una secuencia de dígitos decimales.
 <digit sequence> ::= <digit>{<digit>}
 \end{verbatim}
 
+\subsection{Caracteres}
+Un caracter es una una letra o un número entre comillas simples.
+\begin{verbatim}
+<char> ::= '<letter>' | '<digit>'
+\end{verbatim}
 \section{Declaraciones}
 
 \subsection{Constantes}
@@ -272,24 +277,121 @@ Puede tener parámtros por valor o referencia, como los procedimientos.
 
 \section{Expresiones}
 
-Las expresiones denotan la computación a llevar a cabo en una determinada sentencia. Se computan a partir de átomos, y generan un valor de salida, luego de haber aplicado todos los operadores, con su determinado tipo.
+Las expresiones denotan la computación a llevar a cabo en una determinada sentencia. Se computan a partir de átomos, y generan un valor de salida, con su determinado tipo, luego de haber aplicado todos los operadores.
 
 \subsection{Operadores}
 
 Los operadores que se detallarán son binarios, que reciben dos argumentos del mismo tipo, y generan un nuevo valor a partir de ellas. 
 
+\subsubsection{Operadores de multiplicación}
 \begin{verbatim}
 <multiplying operator> ::= * | div | and
+\end{verbatim}
 
+\begin{figure}[h]
+\begin{tabular}{|r|r|r|r|}
+\hline
+Operador & Operación & Tipo de los operandos & Tipo del resultado\\
+\hline
+* & Multiplcación / intersección de conjuntos & integer & integer\\
+\hline
+div & División entera & integer & Integer\\
+\hline
+and & ``and'' lógico & boolean & boolean\\
+\hline
+\end{tabular}
+\caption{Operadores de multiplicación}
+\end{figure}
+
+\subsubsection{Operadores de adición}
+
+\begin{verbatim}
 <adding operator> ::= + | - | or
+\end{verbatim}
 
+\begin{figure}[h]
+\begin{tabular}{|r|r|r|r|}
+\hline
+Operador & Operación & Tipo de operandos & Tipo de resultado\\
+\hline
++ & Suma & integer & integer\\
+\hline
+- & Diferencia & integer & integer\\
+\hline
+or & Disyunción lógica & boolean & boolean\\
+\hline
+\end{tabular}
+\caption{Operadores de adición}
+\end{figure}
+
+
+\subsubsection{Operadores de comparación}
+\begin{verbatim}
 <relational operator> ::= = | <> | < | <= | >= | >
 \end{verbatim}
 
+\begin{figure}[h]
+\begin{tabular}{|r|r|r|r|}
+\hline
+Operador & Operación & Tipo de Operandos & Resultado\\
+\hline
+<>   & Distinto & Integer, char, boolean & boolean\\
+\hline
+=  & Igual & Integer, char, boolean & boolean\\
+\hline
+< & Menor & Integer, char, boolean & boolean\\
+\hline
+>  & Mayor & Integer, char, boolean & boolean\\
+\hline
+<=   & Menos o igual & Integer, char, boolean & boolean\\
+\hline
+>= & Mayor o igual & Integer, char, boolean & boolean\\
+\hline
+\end{tabular}
+\caption{Operadores de adición}
+\end{figure}
 
+\subsection{Factores, Término, Expresiones Simples y Comparaciones}
+Los átomos a los que se les aplican las operaciones se los conoce como \textit{factores}. Pueden ser literales (como números o caracteres), variables o constantes, funciones, o otras expresiones más complejas, que se encierran entre paréntesis. A su vez, se cuenta con el operador unario \texttt{not}, que opera valores de verdad (booleanos), retornando el complemento.
+
+En las expresiones, se aplican los operadores vistos en la sección anterior, a estos átomos, con un orden determinado por la gramática de más abajo.
+\begin{verbatim}
+<expression> ::= <simple expression> | <simple expression><relational operator><simple expression>
+
+<simple expression> ::= <term> | <simple expression><adding operator><term> | <sign><term>
+
+<term>::= <factor> | <term><multiplying operator><factor>
+
+<factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | not <factor> | <char>
+
+<unsigned constant> ::= <unsigned number> | <constant identifier>
+\end{verbatim}
 
 \section{Sentencias Simples}
 
+
+
+\begin{verbatim}
+<simple statement> ::= <assignment statement> | <procedure statement> | <empty statement>
+
+<empty statement> ::= <empty>
+\end{verbatim}
+
+\subsection{Sentencias de Asignación}
+
+<assignment statement> ::= <variable>:=<expression> | <function identifier>:=<expression>
+
+<variable> ::= <entire variable> | <component variable>
+
+<entire variable> ::= <variable identifier>
+
+<variable identifier> ::= <identifier>
+
+<component variable> ::= <indexed variable>
+
+<indexed variable> ::= <array variable>[<expression>]
+
+<array variable> ::= <entire variable>
 
 \section{Sentencias Compuestas}
 
