@@ -92,7 +92,8 @@ Starting file lexical and syntactical analysis...
 
 
 
-"bateria\ejemplo10.pas", line 9: Syntactical error found: Expecting "," or ":", but ":=" was found
+"bateria\ejemplo10.pas", line 9: Syntactical error found: Expecting "," or ":",
+	but ":=" was found
 \end{verbatim}
 \caption{Salida por pantalla de un programa con un error sintáctico}
 \label{fig:error}
@@ -105,7 +106,8 @@ Starting file lexical and syntactical analysis...
 Starting file lexical and syntactical analysis...
 
 
-"bateria\unusedIdentifier.pas", line 1: WARNING: 'c' has never been initialized in program 'unusedidentifier'
+"bateria\unusedIdentifier.pas", line 1: WARNING: 'c' has never been initialized
+	in program 'unusedidentifier'
 
 The program is syntactically correct.
 \end{verbatim}
@@ -129,16 +131,18 @@ En esta sección definiremos todos los símbolos válidos en el lenguaje Mini-Pasca
 
 \subsection{Comentarios}
 
-Los comentarios son textos que se encuentran dentro del código del programa,y no generan código. Pueden contener cualquier tipo de símbolos, pertenezcan al lenguaje o no.
+Los comentarios son bloques de texto que se encuentran en el source del programa, pero son ignorados por el analizador léxico y no generan código intermedio. Pueden contener cualquier tipo de símbolos, pertenezcan al lenguaje o no.
 
 \textsc{pycomp} utiliza los siguientes:
 
 \begin{itemize}
-	\item \textbf{Comentarios de línea}: La doble barra (``//'') comienza un comentario que termina en el fin de línea.
-	\item \textbf{Comentarios de bloque}: Hay dos comentarios posibles: \verb|{ y }|, ó \verb|(* y *)|.
+	\item \textbf{Comentarios de línea}: la doble barra (``//'') comienza un comentario que termina en el fin de línea.
+	\item \textbf{Comentarios de bloque}: los comentarios de bloque comienzan cuando se detecta el primero de los símbolos, y terminan al encontrar el segundo; pueden abarcar cualquier cantidad de líneas. Es importante destacar que un comentario abierto, pero no cerrado, produce un error léxico. Hay dos maneras de marcar los comentarios de bloque: \verb|{ y }|, o \verb|(* y *)|.
 \end{itemize}
 
-\begin{figure}
+Puede verse un ejemplo de la utilización de los comentarios en la figura \ref{comentarios}.
+
+\begin{figure}[h]
 \begin{verbatim}
 { 
  Descripcion del programa : Este programa muestra un mensaje por pantalla
