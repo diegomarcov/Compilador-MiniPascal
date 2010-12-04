@@ -6,31 +6,31 @@
 %\usepackage{fancyvrb}
 \usepackage{float}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-%\usepackage{gmverb}
+\usepackage{gmverb}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
-\title{Compiladores e Int√©rpretes\\Manual del Usuario}
+\title{Compiladores e IntÈrpretes\\Manual del Usuario}
 
 \author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
 
 \date{2 de Diciembre de 2010}
-
+	
 \begin{document}
 	
 \maketitle
 		
 \tableofcontents
 
-\chapter*{Introducci√≥n}
-\addcontentsline{toc}{chapter}{Introducci√≥n}
+\chapter*{IntroducciÛn} 
+\addcontentsline{toc}{chapter}{IntroducciÛn}
 
-Este es el Manual del Usuario del Compilador de Mini-Pascal \textsc{pyComp}. Detallaremos el alcance del compilador, el lenguaje y los s√≠mbolos utilizados, los tipos de datos cubiertos; la forma de uso del lenguaje, la utilizaci√≥n en general del compilador, y las decisiones de dise√±o tomadas.
+Este es el Manual del Usuario del Compilador de Mini-Pascal \textsc{pyComp}. Detallaremos el alcance del compilador, el lenguaje y los sÌmbolos utilizados, los tipos de datos cubiertos; la forma de uso del lenguaje, la utilizaciÛn en general del compilador, y las decisiones de diseÒo tomadas.
 
 \chapter{Modo de Uso}
 
 \section{Requerimientos}
-Para ejecutar el compilador es necesario contar con las siguientes librer√≠as (que pueden encontrarse en la carpeta entregada a la c√°tedra).
+Para ejecutar el compilador es necesario contar con las siguientes librerÌas (que pueden encontrarse en la carpeta entregada a la c·tedra).
 
 \begin{itemize}\ttfamily
 	\item python27.dll
@@ -38,10 +38,10 @@ Para ejecutar el compilador es necesario contar con las siguientes librer√≠as (q
 	\item bz2.pyd
 	\item select.pyd
 	\item unicodedata.pyd
-	\item library.zip \rmfamily (que contiene las librer√≠as de Python utilizadas)
+	\item library.zip \rmfamily (que contiene las librerÌas de Python utilizadas)
 \end{itemize}
 
-\section{Ejecuci√≥n}
+\section{EjecuciÛn}
 
 \verb|pyComp IN_FILE [OUT_FILE] [-h] [-d] [-o DISPLAY_FILE]|
 
@@ -54,24 +54,24 @@ Para ejecutar el compilador es necesario contar con las siguientes librer√≠as (q
 \subsection*{Argumentos opcionales}
 
 \begin{description}
-	\item[\ttfamily OUT\_FILE] El archivo opcional de salida. En caso de especificarse, en √©ste archivo se generar√° el c√≥digo MEPa correspondiente a {\ttfamily IN\_FILE}; en caso de no especificarse, se remover√°n los √∫ltimos tres caracteres del {\ttfamily IN\_FILE}, y se reemplazar√°n por \"mepa\", creando un nuevo archivo con ese nombre.
+	\item[\ttfamily OUT\_FILE] El archivo opcional de salida. En caso de especificarse, en Èste archivo se generar· el cÛdigo MEPa correspondiente a {\ttfamily IN\_FILE}; en caso de no especificarse, se remover·n los ˙ltimos tres caracteres del {\ttfamily IN\_FILE}, y se reemplazar·n por \"mepa\", creando un nuevo archivo con ese nombre.
 	\item[\ttfamily -d] Modo \textit{debug} (utilizado durante el desarrollo, y dejado por la posible utilidad en el futuro).
 	\item[\ttfamily -h, --help] Muestra la ayuda por pantalla.
-	\item[\ttfamily -o DISPLAY\_FILE] Hace que la salida del compilador se muestre en el archivo {\ttfamily DISPLAY\_FILE}. Por defecto, {\ttfamily DISPLAY\_FILE} es el archivo de salida standard del sistema operativo, por lo que de no especificarse, la salida ser√° realizada por la pantalla.
+	\item[\ttfamily -o DISPLAY\_FILE] Hace que la salida del compilador se muestre en el archivo {\ttfamily DISPLAY\_FILE}. Por defecto, {\ttfamily DISPLAY\_FILE} es el archivo de salida standard del sistema operativo, por lo que de no especificarse, la salida ser· realizada por la pantalla.
 \end{description}
 
 \section{Formato de la salida}
-La salida por pantalla de \emph{pyComp} mostrar√° un mensaje de √©xito si el programa es correcto, o bien un mensaje de error indicando el tipo de error, y el n√∫mero de l√≠nea en el que fue detectado.
+La salida por pantalla de \emph{pyComp} mostrar· un mensaje de Èxito si el programa es correcto, o bien un mensaje de error indicando el tipo de error, y el n˙mero de lÌnea en el que fue detectado.
 
 Los errores posiblemente devueltos son:
 
 \begin{itemize}
-  \item \emph{Lexical error}: ocurre cuando el compilador se topa con un s√≠mbolo desconocido. La lista de s√≠mbolos v√°lidos puede ser encontrada en el cap√≠tulo correspondiente a \textbf{Lenguaje}.
-  \item \emph{Syntactical error}: ocurre cuando el compilador encuentra una sentencia que viola la gram√°tica definida.
-  \item \emph{Semantical error}: ocurre cuando se viola alguna de las reglas sem√°nticas definidas por el compilador; por ejemplo, cuando se referencia a una variable que no fue definida anteriormente, cuando se asignan dos elementos de tipos incompatibles, o cuando se declaran dos variables con el mismo identificador.
+  \item \emph{Lexical error}: ocurre cuando el compilador se topa con un sÌmbolo desconocido. La lista de sÌmbolos v·lidos puede ser encontrada en el capÌtulo correspondiente a \textbf{Lenguaje}.
+  \item \emph{Syntactical error}: ocurre cuando el compilador encuentra una sentencia que viola la gram·tica definida.
+  \item \emph{Semantical error}: ocurre cuando se viola alguna de las reglas sem·nticas definidas por el compilador; por ejemplo, cuando se referencia a una variable que no fue definida anteriormente, cuando se asignan dos elementos de tipos incompatibles, o cuando se declaran dos variables con el mismo identificador.
 \end{itemize}
 
-Por a√±adidura, se informar√° por pantalla en forma de \texttt{warning} cuando haya variables, funciones o procedimientos declarados que no hayan sido utilizados.
+Por aÒadidura, se informar· por pantalla en forma de \texttt{warning} cuando haya variables, funciones o procedimientos declarados que no hayan sido utilizados.
 
 \begin{figure}[h]
 \begin{verbatim}
@@ -80,7 +80,7 @@ Starting file lexical and syntactical analysis...
 
 The program is syntactically correct.
 \end{verbatim}
-\caption{Salida por pantalla de un programa sint√°cticamente correcto}
+\caption{Salida por pantalla de un programa sint·cticamente correcto}
 \label{fig:correct}
 \end{figure}
 
@@ -95,7 +95,7 @@ Starting file lexical and syntactical analysis...
 "bateria\ejemplo10.pas", line 9: Syntactical error found: Expecting "," or ":",
 	but ":=" was found
 \end{verbatim}
-\caption{Salida por pantalla de un programa con un error sint√°ctico}
+\caption{Salida por pantalla de un programa con un error sint·ctico}
 \label{fig:error}
 \end{figure}
 
@@ -115,11 +115,11 @@ The program is syntactically correct.
 \label{fig:warning}
 \end{figure}
 
-\chapter{Especificaci√≥n completa del lenguaje}
+\chapter{EspecificaciÛn completa del lenguaje}
 
-\section{An√°lisis l√©xico}
+\section{An·lisis lÈxico}
 
-En esta secci√≥n definiremos todos los s√≠mbolos v√°lidos en el lenguaje Mini-Pascal. √âstos se dividen en letras, n√∫meros, y s√≠mbolos especiales (dentro de los que se consideran tambi√©n las palabras reservadas).
+En esta secciÛn definiremos todos los sÌmbolos v·lidos en el lenguaje Mini-Pascal. …stos se dividen en letras, n˙meros, y sÌmbolos especiales (dentro de los que se consideran tambiÈn las palabras reservadas).
 
 \begin{verbatim}
 <letter> ::= A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
@@ -131,16 +131,16 @@ En esta secci√≥n definiremos todos los s√≠mbolos v√°lidos en el lenguaje Mini-Pa
 
 \subsection{Comentarios}
 
-Los comentarios son bloques de texto que se encuentran en el source del programa, pero son ignorados por el analizador l√©xico y no generan c√≥digo intermedio. Pueden contener cualquier tipo de s√≠mbolos, pertenezcan al lenguaje o no.
+Los comentarios son bloques de texto que se encuentran en el source del programa, pero son ignorados por el analizador lÈxico y no generan cÛdigo intermedio. Pueden contener cualquier tipo de sÌmbolos, pertenezcan al lenguaje o no.
 
 \textsc{pycomp} utiliza los siguientes:
 
 \begin{itemize}
-	\item \textbf{Comentarios de l√≠nea}: la doble barra (``//'') comienza un comentario que termina en el fin de l√≠nea.
-	\item \textbf{Comentarios de bloque}: los comentarios de bloque comienzan cuando se detecta el primero de los s√≠mbolos, y terminan al encontrar el segundo; pueden abarcar cualquier cantidad de l√≠neas. Es importante destacar que un comentario abierto, pero no cerrado, produce un error l√©xico. Hay dos maneras de marcar los comentarios de bloque: \verb|{ y }|, o \verb|(* y *)|.
+	\item \textbf{Comentarios de lÌnea}: la doble barra (``//'') comienza un comentario que termina en el fin de lÌnea.
+	\item \textbf{Comentarios de bloque}: los comentarios de bloque comienzan cuando se detecta el primero de los sÌmbolos, y terminan al encontrar el segundo; pueden abarcar cualquier cantidad de lÌneas. Es importante destacar que un comentario abierto, pero no cerrado, produce un error lÈxico. Hay dos maneras de marcar los comentarios de bloque: \verb|{ y }|, o \verb|(* y *)|.
 \end{itemize}
 
-Puede verse un ejemplo de la utilizaci√≥n de los comentarios en la figura \ref{comentarios}.
+Puede verse un ejemplo de la utilizaciÛn de los comentarios en la figura \ref{comentarios}.
 
 \begin{figure}[h]
 \begin{verbatim}
@@ -152,7 +152,7 @@ BEGIN
   Write('H') // Instruccion que muestra el mensaje por pantalla 
 END.
 
-(* Aqu√≠ termina el programa *)
+(* AquÌ termina el programa *)
 \end{verbatim}
 \caption{Ejemplo del uso de comentarios}
 \label{comentarios}
@@ -160,21 +160,30 @@ END.
 
 \subsection{Identificadores}
 
-Un identificador es utilizado para dar nombre a un programa, constante, tipo, variable, funci√≥n o procedimiento.
+Un identificador es utilizado para dar nombre a un programa, constante, tipo, variable, funciÛn o procedimiento.
 \begin{verbatim}
 <identifier> ::= <letter>{<letter or digit>}
 \end{verbatim}
 
-\subsection{N√∫meros}
-Un n√∫mero es una secuencia de d√≠gitos decimales.
+\subsection{N˙meros}
+Un n˙mero es una secuencia de dÌgitos decimales.
 \begin{verbatim}
 <digit sequence> ::= <digit>{<digit>}
 \end{verbatim}
 
+
+\section{Programas}
+Todo archivo fuente v·lido en Mini-Pascal es un programa; el programa est· compuesto de declaraciones y sentencias, como se ver· en las secciones siguientes del manual.
+
+\subsection{Tipos predefinidos}
+Los tipos predefinidos simples en Mini-Pascal son \texttt{char} (caracteres), \texttt{integer} (n˙meros enteros) y \texttt{boolean} (\textbf{true} y \textbf{false}).
+
+Por aÒadidura, pueden declararse estructuras de tipo arreglo con el constructor \texttt{array}, como se detallar· en la secciÛn siguiente.
+
 \section{Declaraciones}
 
 \subsection{Constantes}
-Cuando se define una constante, el identificador utilizado se liga al valor elegido durante toda la ejecuci√≥n del programa; dicho valor no podr√° ser cambiado.
+Cuando se define una constante, el identificador utilizado se liga al valor elegido durante toda la ejecuciÛn del programa; dicho valor no podr· ser cambiado.
 
 \begin{verbatim}
 <constant definition> ::= <identifier>=<constant>
@@ -185,7 +194,7 @@ Cuando se define una constante, el identificador utilizado se liga al valor eleg
 
 \subsection{Tipos}
 
-Los tipos determinan los valores posibles que puede tener una variable en Mini-Pascal, as√≠ como las posibles operaciones que se puedan aplicar sobre este. Se asocian a un identificador.
+Los tipos determinan los valores posibles que puede tener una variable en Mini-Pascal, asÌ como las posibles operaciones que se puedan aplicar sobre este. Se asocian a un identificador.
 
 \begin{verbatim}
 <type definition> ::= <identifier>=<type>
@@ -196,7 +205,7 @@ Los tipos determinan los valores posibles que puede tener una variable en Mini-P
 
 \subsubsection{Tipos Simples}
 
-Dentro de los tipos, se encuentran los tipos simples, que cumplen con la caracter√≠stica de ocupar s√≥lo una celda de memoria. Hay tres tipos simples predefinidos en Mini-Pascal, que ser√°n detallados luego en la secci√≥n pertinente.
+Dentro de los tipos, se encuentran los tipos simples, que cumplen con la caracterÌstica de ocupar sÛlo una celda de memoria. Hay tres tipos simples predefinidos en Mini-Pascal, que ser·n detallados luego en la secciÛn pertinente.
 
 A su vez, se encuentran los \textit{subrangos}, que definen cotas superiores e inferiores a partir de constantes, cuyos tipos deben coincidir en el tipo del subrango.
 
@@ -210,7 +219,7 @@ A su vez, se encuentran los \textit{subrangos}, que definen cotas superiores e i
 
 \subsubsection{Tipos Compuestos}
 
-El √∫nico tipo compuesto posible dentro de Mini-Pascal es el arreglo: una serie de locaciones de memoria referenciados por √≠ndices correlativos. √âste debe tener tipos simples tanto de elementos como de √≠ndices.
+El ˙nico tipo compuesto posible dentro de Mini-Pascal es el arreglo: una serie de locaciones de memoria referenciados por Ìndices correlativos. …ste debe tener tipos simples tanto de elementos como de Ìndices.
 \begin{verbatim}
 <structured type> ::= <unpacked structured type>
 
@@ -225,15 +234,17 @@ El √∫nico tipo compuesto posible dentro de Mini-Pascal es el arreglo: una serie 
 
 \subsection{Variables}
 
-Las variables son una abstracci√≥n de referencias a celdas de memoria, cuyo valor puede ser cambiado en tiempo de ejecuci√≥n. Tienen un tipo determinado en tiempo de compilaci√≥n, y est√°n asociados a un identificador.
+Las variables son una abstracciÛn de referencias a celdas de memoria, cuyo valor puede ser cambiado en tiempo de ejecuciÛn. Tienen un tipo determinado en tiempo de compilaciÛn, y est·n asociados a un identificador.
 
 \begin{verbatim}
+<variable definition part> ::= <empty> | var <variable declaration>{;<variable declaration>};
+
 <variable declaration> ::= <identifier>{,<identifier>} : <type>
 \end{verbatim}
 
 \subsection{Procedimientos}
 
-Los procedimientos pueden pensarse como subprogramas, determinados por un identificador que se utiliza para luego invocarlo.
+Los procedimientos pueden pensarse como subprogramas, determinados por un identificador que se utiliza para invocar m·s tarde al procedimiento.
 
 \begin{verbatim}
 <procedure declaration> ::= <procedure heading><block>
@@ -241,11 +252,11 @@ Los procedimientos pueden pensarse como subprogramas, determinados por un identi
 
 \subsubsection{Encabezado de procedimiento}
 
-Los procedimentos son asociados a un identificador, y pueden tener una serie de par√°metros, que se determinan en tiempo de compilaci√≥n.
+Adem·s del identificador, los procedimientos pueden tener una serie de par·metros que se determinan en tiempo de compilaciÛn.
 
-Un grupo de par√°metros que tengan antepuesta la palabra \texttt{var} ser√°n tratados como \textit{par√°matros por refencia}; es decir, no se copiar√°n los valores en nuevas locaciones de memoria, sino que se utilizar√° la misma locaci√≥n. √âsto puede generar efectos colaterales.
+Un grupo de par·metros que tenga antepuesta la palabra \texttt{var} se tratar· como \textit{par·matros por refencia}; es decir, no se copiar·n los valores en nuevas locaciones de memoria, sino que se utilizar· la misma locaciÛn. …sto puede generar efectos colaterales.
 
-Los par√°metros que no sean por referencia, son denominados \textit{par√°mtros por valor}. Se trata de variables que s√≥lo vivir√°n mientras se ejecute el procedimiento, y que ser√°n inicializadas a partir del valor que les sea pasado en la llamada.
+Los par·metros que no son por referencia son denominados \textit{par·metros por valor}. Se trata de variables que sÛlo vivir·n mientras se ejecute el procedimiento, y que ser·n inicializadas a partir del valor que les sea pasado en la llamada.
 
 \begin{verbatim}
 <procedure heading> ::= procedure <identifier>; | procedure <identifier>(<formal parameter section>{;<formal parameter section>});
@@ -256,7 +267,7 @@ Los par√°metros que no sean por referencia, son denominados \textit{par√°mtros p
 \end{verbatim}
 \subsection{Funciones}
 
-Las funciones son muy parecidas a los procedimientos, con la diferencia que devuelven un valor, por lo que no son utilizadas como sentencias de por s√≠, sino que se invocan dentro del contexto de una expresi√≥n.
+Las funciones son muy parecidas a los procedimientos, con la diferencia que devuelven un valor, por lo que no son utilizadas como sentencias de por sÌ, sino que se invocan dentro del contexto de una expresiÛn.
 
 \begin{verbatim}
 <function declaration> ::= <function heading><block>
@@ -264,10 +275,7 @@ Las funciones son muy parecidas a los procedimientos, con la diferencia que devu
 
 \subsubsection{Encabezado de funciones}
 
-As√≠ como los procedimientos, las funciones est√°n asociadas a un identificador, y tienen una signatura determinada en tiempo de compilaci√≥n. Puede tener par√°matros, con sus tipos, y debe tener un tipo de resultado, que ser√° el tipo del valor que devolver√°. En Mini-Pascal, s√≥lo se aceptar√°n como tipos de resultado, tipos simples.
-
-Puede tener par√°mtros por valor o referencia, como los procedimientos.
-
+AsÌ como los procedimientos, las funciones est·n asociadas a un identificador, y tienen una signatura determinada en tiempo de compilaciÛn. Puede tener par·metros por valor o referencia (acompaÒados tambiÈn de sus tipos), y debe tener un tipo de resultado, que ser· el tipo del valor que devolver·. En Mini-Pascal, sÛlo se aceptar·n como tipos de resultado a los tipos simples.
 \begin{verbatim}
 <function heading> ::= function<identifier>:<result type>; | <function identifier>(<formal parameter section>{;<formal parameter section>}):<result type>;
 
@@ -276,11 +284,11 @@ Puede tener par√°mtros por valor o referencia, como los procedimientos.
 
 \section{Expresiones}
 
-Las expresiones denotan la computaci√≥n a llevar a cabo en una determinada sentencia. Se computan a partir de √°tomos, y generan un valor de salida, luego de haber aplicado todos los operadores, con su determinado tipo.
+Las expresiones denotan la computaciÛn a llevar a cabo en una determinada sentencia. Se computan a partir de ·tomos, y generan un valor de salida, luego de haber aplicado todos los operadores con su determinado tipo.
 
 \subsection{Operadores}
 
-Los operadores que se detallar√°n son binarios, que reciben dos argumentos del mismo tipo, y generan un nuevo valor a partir de ellas. 
+Los operadores que se detallar·n son binarios (es decir, reciben dos argumentos del mismo tipo, y generan un nuevo valor a partir de ellas).
 
 \begin{verbatim}
 <multiplying operator> ::= * | div | and
@@ -293,8 +301,7 @@ Los operadores que se detallar√°n son binarios, que reciben dos argumentos del m
 
 \section{Sentencias Simples}
 
-Las sentencias simples componen los bloques de programa en el lenguaje Mini-Pascal. S√≥lo se contar√° con asignaciones, o llamadas a procedimientos. A su vez, una sentencia simple puede ser vac√≠a.
-
+Las sentencias simples componen los bloques de programa en el lenguaje Mini-Pascal. SÛlo se contar· con asignaciones o llamadas a procedimientos. A su vez, una sentencia simple puede ser vacÌa.
 
 
 \begin{verbatim}
@@ -304,9 +311,9 @@ Las sentencias simples componen los bloques de programa en el lenguaje Mini-Pasc
 \end{verbatim}
 
 \subsection{Asignaciones}
-Las asignaciones son sentencias que modifican el valor de una variable, o de un componente de una variable de tipo complejo. Para esto, se calcula el valor de una expresi√≥n, cuyo tipo debe coincidir con el tipo de la variable.
+Las asignaciones son sentencias que modifican el valor de una variable, o de un componente de una variable de tipo estructurado. Para esto se calcula el valor de una expresiÛn, cuyo tipo debe coincidir con el tipo de la variable.
 
-Existe el caso especial de la asignaci√≥n de valores de retorno de una funci√≥n. En este caso, en vez de utilizar el nombre de una variable al principio de una asignaci√≥n, se pone el nombre de la funci√≥n del mismo nivel l√©xico. El valor que retorne la expresi√≥n ser√° el valor que devuelva la funci√≥n, en el lugar donde haya sido llamada.
+Existe el caso especial de la asignaciÛn de valores de retorno de una funciÛn. En este caso, en vez de utilizar el nombre de una variable al principio de una asignaciÛn, se pone el nombre de la funciÛn del mismo nivel lÈxico. El valor que retorne la expresiÛn ser· el valor que devuelva la funciÛn, en el lugar donde haya sido llamada.
 
 \begin{verbatim}
 <assignment statement> ::= <variable>:=<expression> | <function identifier>:=<expression>
@@ -326,11 +333,11 @@ Existe el caso especial de la asignaci√≥n de valores de retorno de una funci√≥n.
 
 \subsection{Llamadas a procedimiento}
 
-Los procedimientos son llamados anteponiendo su identificador antes de la lista de par√°metros actuales. Estos √∫ltimos van entre par√©ntesis, y separados por comas. Deben mandarse la misma cantidad de par√°metros que tenga el procedimento invocado, y cada uno debe tener el mismo tipo que el par√°metro formal con la misma posici√≥n.
+Los procedimientos son llamados anteponiendo su identificador antes de la lista de par·metros actuales. Estos ˙ltimos van entre parÈntesis, y separados por comas. Es necesario enviar tantos par·metros actuales como par·metros formales tenga el procedimento invocado, y los tipos de cada uno de ellos deben coincidir.
 
-Los par√°metros actuales son expresiones, a las que se les calcula el valor resultante, y √©ste ser√° el valor que tomar√° el par√°metro que tenga la misma posici√≥n.
+Los par·metros actuales son expresiones a las que se les calcula el valor resultante, y Èste ser· el valor que tomar· el par·metro que tenga la misma posiciÛn.
 
-Existe el caso especial de los par√°metros por referencia, en el cual los par√°metros actuales deber√°n ser variables, o componentes de variables de tipo complejo. Dicha variable puede cambiar de valor al terminar el procedimiento, dado que si el par√°metro se modifica dentro del procedimiento, este cambio se mantendr√° terminada su ejecuci√≥n.
+Existe el caso especial de los par·metros por referencia, en el cual los par·metros actuales deber·n ser variables, o componentes de variables de tipo estructurado. Se debe tener en cuenta que una variable pasada por referencia puede cambiar su valor dentro del procedimiento, y dicho cambio ser· persistente.
 
 \begin{verbatim}
 <procedure statement> ::= <procedure identifier> | <procedure identifier>(<actual parameter>{,<actual parameter>})
@@ -342,23 +349,22 @@ Existe el caso especial de los par√°metros por referencia, en el cual los par√°m
 
 \section{Sentencias Compuestas}
 
-Las sentencias compuestas pueden ser una suceci√≥n de otras sentencias, agrupadas entre delimitadores; sentencias condicionales (\texttt{})
+Las sentencias compuestas permiten alterar el flujo de control en el programa fuente; las sentencias compuestas disponibles en Mini-Pascal son el condicional \texttt{if} y el bucle \texttt{while}. El cuerpo de las sentencias compuestas puede ser una ˙nica sentencia simple, o bien una sucesiÛn de otras sentencias agrupadas entre delimitadores \texttt{begin} y \texttt{end};
 
 \begin{verbatim}
 <structured statement> ::= <compound statement> | <conditional statement> | <repetitive statement>
+
+<conditional statement> ::= <if statement>
+
+<if statement> ::= if <expression> then <statement> | if <expression> then <statement> else <statement>
+
+<repetitive statement> ::= <while statement>
+
+<while statement> ::= while <expression> do <statement>
 \end{verbatim}
 
-\section{Declaraciones}
-
-
-\section{Programas}
-
-
-\subsection{Tipos predefinidos}
-Los tipos predefinidos en Mini-Pascal son \texttt{char} (caracteres), \texttt{integer} (n√∫meros enteros) y \texttt{boolean} (\textbf{true} y \textbf{false}).
-
-\section{Correcci√≥n de la gram√°tica}
-Antes de comenzar con la modificaci√≥n, se corrigieron los errores marcados por la c√°tedra.
+\section{CorrecciÛn de la gram·tica}
+Antes de comenzar con la modificaciÛn, se corrigieron los errores marcados por la c·tedra.
 \begin{verbatim}
 <program> ::= <program heading> <block>.
 
@@ -503,14 +509,14 @@ Antes de comenzar con la modificaci√≥n, se corrigieron los errores marcados por 
 \end{verbatim}
 
 
-\section{Gram√°tica final}
-Para llegar a la gram√°tica utilizada para implementar el analizador sint√°ctico, se realizaron varios pasos:
+\section{Gram·tica final}
+Para llegar a la gram·tica utilizada para implementar el analizador sint·ctico, se realizaron varios pasos:
 \begin{enumerate}
-	\item \textbf{Eliminar Ambiguedad}: √©sta tal vez sea la afirmaci√≥n m√°s peligrosa, ya que no se puede saber si una gram√°tica es ambigua o no. De cualquier manera, se eliminaron todas las ambiguedades que se encontraron, salvo el caso del \verb|if then else|, del cual se hablar√° m√°s adelante.
-	\item \textbf{Eliminar Recursi√≥n a Izquierda}: Se utiliz√≥ el algoritmo explicado en \cite[p√°g. 212]{aho}.
-	\item \textbf{Factorizar a Izquierda}: Se utiliz√≥ el algoritmo explicado en el mismo libro, en la p√°gina 214.
+	\item \textbf{Eliminar Ambiguedad}: Èsta tal vez sea la afirmaciÛn m·s peligrosa, ya que no se puede saber si una gram·tica es ambigua o no. De cualquier manera, se eliminaron todas las ambiguedades que se encontraron, salvo el caso del \verb|if then else|, del cual se hablar· m·s adelante.
+	\item \textbf{Eliminar RecursiÛn a Izquierda}: Se utilizÛ el algoritmo explicado en \cite[p·g. 212]{aho}.
+	\item \textbf{Factorizar a Izquierda}: Se utilizÛ el algoritmo explicado en el mismo libro, en la p·gina 214.
 \end{enumerate}
-Luego de esta serie de pasos, se lleg√≥ a la siguiente gram√°tica:
+Luego de esta serie de pasos, se llegÛ a la siguiente gram·tica:
 
 \begin{verbatim}
 <program> ::= <program_heading> <block> <END_PROGRAM> <EOF>
@@ -642,26 +648,24 @@ Luego de esta serie de pasos, se lleg√≥ a la siguiente gram√°tica:
 <repetitive_statement> ::= <WHILE> <expression> <DO> <statement>
 \end{verbatim}
 
-\section{¬øEs LL(1)?}
-La gram√°tica pas√≥ por todos los pasos especificados, en un intento de lograr una gram√°tica para ser utilizada como base de la implementaci√≥n de un Analizador Sint√°ctico Descendente Predictivo Recursivo. Cada regla tiene conjuntos disjuntos de la funci√≥n \textsc{Primero} para cada producci√≥n, por lo que el analizador puede saber que producci√≥n optar, leyendo un token. Por esto, se podr√≠a decir que la gram√°tica obtenida es LL(1).
+\section{øEs LL(1)?}
+La gram·tica pasÛ por todos los pasos especificados, en un intento de lograr una gram·tica para ser utilizada como base de la implementaciÛn de un Analizador Sint·ctico Descendente Predictivo Recursivo. Cada regla tiene conjuntos disjuntos de la funciÛn \textsc{Primero} para cada producciÛn, por lo que el analizador puede saber que producciÛn optar, leyendo un token. Por esto, se podrÌa decir que la gram·tica obtenida es LL(1).
 
-Sin embargo, como fue dicho en la secci√≥n anterior, la gram√°tica contiene por lo menos una ambig√ºedad: la del \verb|if then else|. La cadena de tokens \verb|<IF> ... <THEN> <IF> ... <THEN> ... <ELSE> ...| (donde los puntos suspensivos representan un grupo de statements v√°lidos) tiene dos √°rboles de derivaci√≥n posibles. 
+Sin embargo, como fue dicho en la secciÛn anterior, la gram·tica contiene por lo menos una ambig¸edad: la del \verb|if then else|. La cadena de tokens \verb|<IF> ... <THEN> <IF> ... <THEN> ... <ELSE> ...| (donde los puntos suspensivos representan un grupo de statements v·lidos) tiene dos ·rboles de derivaciÛn posibles. 
 
-Una soluci√≥n que se puede adoptar es la de utilizar precedencia, donde el \verb|<ELSE>| quedar√° ligado al \verb|<IF> ... <THEN>| sin \verb|<ELSE>| m√°s cercano. √âsta soluci√≥n ser√° la que se adopte para la implementaci√≥n del compilador de \textsc{Mini-Pascal}, y se llevar√° a cabo en la etapa de an√°lisis sem√°ntico.
+Una soluciÛn que se puede adoptar es la de utilizar precedencia, donde el \verb|<ELSE>| quedar· ligado al \verb|<IF> ... <THEN>| sin \verb|<ELSE>| m·s cercano. …sta soluciÛn ser· la que se adopte para la implementaciÛn del compilador de \textsc{Mini-Pascal}, y se llevar· a cabo en la etapa de an·lisis sem·ntico.
 
-Se puede concluir entonces que la gram√°tica no es LL(1), pero de cualquier manera, sirve para realizar el Analizador Sint√°ctico.
+Se puede concluir entonces que la gram·tica no es LL(1), pero de cualquier manera, sirve para realizar el Analizador Sint·ctico.
 
 \chapter{Errores detectados}
-Dado las caracter√≠sticas del Analizador Sint√°ctico solicitado por la c√°tedra, los errores detectados son disparados cuando se encuentra un \textit{token} distinto al que se esperaba. Por esto, el mensaje impreso por pantalla (o en el archivo de salida) muestra el dicho \textit{token}.
+Dado las caracterÌsticas del Analizador Sint·ctico solicitado por la c·tedra, los errores detectados son disparados cuando se encuentra un \textit{token} distinto al que se esperaba. Por esto, el mensaje impreso por pantalla (o en el archivo de salida) muestra el dicho \textit{token}.
 
-Muchas veces, est√° informaci√≥n no es suficiente para el programador, por lo que, en la mayor√≠a de los posibles errores, tambi√©n se detalla cu√°l era el token (o los tokens) esperados, como se muestra en la figura \ref{fig:error}.
+Muchas veces, est· informaciÛn no es suficiente para el programador, por lo que, en la mayorÌa de los posibles errores, tambiÈn se detalla cu·l era el token (o los tokens) esperados, como se muestra en la figura \ref{fig:error}.
 
 
 \begin{figure}[h]
 \begin{verbatim}
 Starting file lexical and syntactical analysis...
-
-
 
 "bateria\ejemplo5.pas", line 22: Unexpected token: ")" found.
 \end{verbatim}
@@ -670,7 +674,7 @@ Starting file lexical and syntactical analysis...
 \end{figure}
 
 \begin{thebibliography}{9}
-\addcontentsline{toc}{chapter}{Bibliograf√≠a}
+\addcontentsline{toc}{chapter}{BibliografÌa}
 \bibitem{aho}
   Alfred V. Aho, Monica S. Lam, Ravi Sethi, Jeffrey D. Ullman
   \emph{Compilers: principles, techniques, and tools}.
@@ -679,13 +683,13 @@ Starting file lexical and syntactical analysis...
   2007.
   
 \bibitem{enunciado}
-	C√°tedra de Compiladores e Int√©rpretes, DCIC, UNS
-	\emph{Proyecto N¬∫1: Compilador de Mini-Pascal-S}
+	C·tedra de Compiladores e IntÈrpretes, DCIC, UNS
+	\emph{Proyecto N∫1: Compilador de Mini-Pascal-S}
 	2010
 	
 \bibitem{consideraciones}
-	C√°tedra de Compiladores e Int√©rpretes, DCIC, UNS
-	\emph{Consideraciones Generales para la 3er entrega del Proyecto N¬∫1 - Analizador Sint√°ctico}
+	C·tedra de Compiladores e IntÈrpretes, DCIC, UNS
+	\emph{Consideraciones Generales para la 3er entrega del Proyecto N∫1 - Analizador Sint·ctico}
 	2010
 
 \end{thebibliography}
