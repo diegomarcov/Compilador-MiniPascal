@@ -316,7 +316,7 @@ class PyComp():
 				self.constant(attr)
 				self.stStack.addNewID(id,attr.ref)
 				self.out.write("\tConstant: "+id + ": " + str(attr.ref) +" at constant_definition\n")
-				self.imprimirST(self.stStack.top())
+				# self.imprimirST(self.stStack.top())
 				#########	
 				
 			else:
@@ -344,8 +344,7 @@ class PyComp():
 			if attr.ref.clase=="constant":
 				attr.ref = deepcopy(attr.ref)
 				self.out.write("\tConstant %s assigned to constant\n" % self.lexer.getLexeme())
-			# elif attr.ref.clase=="variable":
-				# attr.ref = Attr(valor = attr.ref.valor,) 
+
 			else:
 				raise SemanticError(self.lexer.errorLeader(),"Invalid assignment: constant expected")
 				#constMalAsignacion.pas
@@ -362,7 +361,7 @@ class PyComp():
 			attr.ref.valor = signValue.ref * attr.ref.valor
 			if attr.ref.valor<tipo.getLower() or attr.ref.valor>tipo.getUpper():
 				raise SemanticError(self.lexer.errorLeader(),"Invalid constant: Integer literal out of bounds")
-				#test: 
+
 		################
 		
 		else:
@@ -385,8 +384,6 @@ class PyComp():
 				else:
 					raise SemanticError(self.lexer.errorLeader(), "Can not apply sign operator to " + self.lexer.getLexeme())
 					# constMalTipo.pas
-			# elif attr.ref.clase=="variable":
-				# attr.ref = Attr(valor = attr.ref.valor,) 
 			else:
 				raise SemanticError(self.lexer.errorLeader(),"Constant value can only be assigned with another constant")
 			###########
@@ -805,6 +802,7 @@ class PyComp():
 		label = "L%s" % self.labelIndex
 		self.labelIndex += 1
 		##########
+		
 		tamanioParams = Ref()
 		parameterList = Ref()
 		id = Ref()
@@ -1161,6 +1159,8 @@ class PyComp():
 						else:
 							raise Exception("This error should not happen")
 					elif identifier.clase == "return":
+						# COSA AGREGADAD ACA!!!!!!!!!!
+						# self.escribir("CONT %s, %s" % (identifier.tipo.getLower(),identifier.tipo.getUpper()))
 						self.escribir("ALVL %s, %s" % (lexLevel, identifier.pos))
 					else:
 						raise Exception("This error should not happen")
