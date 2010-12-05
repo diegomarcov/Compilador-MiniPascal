@@ -1,0 +1,548 @@
+\documentclass[a4paper,oneside]{report}
+\usepackage[spanish]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{fullpage}
+%\usepackage{listings}
+%\usepackage{fancyvrb}
+\usepackage{float}
+\usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
+%\usepackage{gmverb}
+
+
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\title{Compiladores e Intérpretes\\Manual del Desarrollador}
+
+\author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
+
+\date{6 de Diciembre de 2010}
+	
+\begin{document}
+	
+\maketitle
+		
+\tableofcontents
+
+\chapter*{Introducción} 
+
+\addcontentsline{toc}{chapter}{Introducción}
+
+Éste es el Manual del Desarrollador del compilador \textsc{\textsl{pyComp}}, donde se explicará su desarrollo a partir de sus diferentes etapas.
+
+El compilador fue desarrollado íntegramente en el lengueje \textsc{Python}, en su versión 2.7. Fueron aprovechadas muchas de sus ventajas frente a otros lenguajes de programación, como su gran capacidad en el manejo de strings, archivos, y expresiones regulares; se ha utilizado herencia mútliple, y aprovechado el tipado dinámico en múltiples ocasiones. Además, el código escrito en Python es inherentemente legible, ya que su filosofía hace hincapié en una sintaxis muy limpia; y, finalmente, es \textbf{software libre}.
+
+En este manual, se detallarán las etapas por las que pasó el desarrollo del compilador: el análisis léxico, la gramática y su pasaje a LL(1), el análisis sintáctico, semántico, y la traducción a lenguaje intermedio, especificado en un EDT.
+
+\chapter{Analizador léxico}
+
+\section{Alfabeto de entrada}
+
+\begin{verbatim}
+<letter>::= A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
+
+<digit>::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<special symbol> ::=  + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
+\end{verbatim}
+
+El Analizador léxico del compilador se encuentra en la carpeta (paquete) \texttt{lexer}, y cuenta con dos módulos, en dos arhivos distintos: \texttt{myshlex.py}, y \texttt{lexan.py}.
+
+\section{Diseño general}
+
+Detallaremos a continuación la arquitectura general del analizador léxico, describiendo brevemente cada una de las clases que lo componen. 
+
+\subsection{Palabras reservadas}
+El Analizador Léxico reconoce las siguientes palabras reservadas especificadas en la tabla \ref{tab:palabras}
+
+\begin{table}[htbc]
+
+\begin{tabular}{|c|}
+\hline
+\textbf{Palabras reservadas} \\  \hline
+\ttfamily
+program \\ 
+\texttt{type} \\ 
+\texttt{const} \\ 
+\texttt{var} \\ 
+\texttt{array} \\ 
+\texttt{of} \\ 
+\texttt{function} \\ 
+\texttt{procedure} \\ 
+\texttt{begin} \\ 
+\texttt{end} \\ 
+\texttt{while} \\ 
+\texttt{do} \\ 
+\texttt{if} \\ 
+\texttt{then} \\ 
+\texttt{else} \\ 
+\texttt{div} \\ 
+\texttt{not} \\ 
+\texttt{or} \\ 
+\texttt{and} \\ 
+\hline
+\end{tabular}
+\label{tab:palabras}
+\caption{Palabras reservadas}
+\end{table}
+
+
+\subsection{LexAn}
+
+La clase {\bf LexAn}, cuyo código fuente puede ser encontrado en el archivo \texttt{lexan.py} de la carpeta \texttt{/src/lexer/}, procesa los lexemas provistos por {\bf shlex} para transformarlos en tokens, que finalmente serán volcados al archivo de salida. Para reconocer los lexemas, la clase cuenta con dos pilares: una estructura de diccionario de Python (un arreglo asociativo), y el reconocimiento de expresiones regulares utilizando la librería {\bf re}. La clase permite además saber qué lexema y número de línea del archivo fuente está siendo analizando.
+
+Los operadores y las palabras reservadas (que pueden ser encontradas en la tabla \ref{tab:palabras}) que cuentan con un token propio son cargadas inicialmente en el diccionario. Al momento de analizar un lexema, se realiza un checkeo para ver si dicho lexema es uno de los \textit{id} del diccionario. En ese caso, se retorna inmediatamente el token asociado. En caso contrario, se compara el lexema con las expresiones regulares de identificador, número, y caracter (devolviendo el respectivo token en caso de match). Si ninguna de estas opciones tiene éxito, se dispara la excepción \textit{LexError}, indicando que el lexema no pudo ser reconocido.
+
+
+Por último, si al intentar obtener el siguiente lexema de {\bf shlex} se captura la excepción \textit{EOFError}, dicha excepción es propagada, informando que un comentario se mantuvo abierto hasta el final del archivo.
+
+\subsection{shlex}
+
+Ésta clase se encuentra en el archivo \texttt{myshlex.py}, y contiene el código de la librería {\bf shlex} de Python (creada originalmente para procesar scripts de consola) modificado para que elimine los comentarios del archivo fuente a medida que lee los caracteres, y adaptado para los separadores y el alfabeto propio de Mini-Pascal. El procedimiento más importante de la clase devuelve un lexema del archivo fuente, y permite además saber en qué línea se encuentra dicho lexema.
+
+Además de las modificaciones mencionadas, se agregó la excepción \textit{EOFError}, que es lanzada cuando se encuentra el caracter de fin de archivo cuando todavía se estaba procesando un comentario. Ésta excepción es aprovechada por LexAn para saber cuándo un comentario multilínea se mantiene abierto de manera errónea.
+
+\section{Tokens}
+El Analizador Léxico reconoce los tokens especificados en la tabla \ref{tab:tokens}, cuando encuentra su expresión regular.
+
+\begin{table}[htbp]
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Token}			& \textbf{Expresión Regular} \\ \hline
+Identifier 					& {\ttfamily [a-zA-Z][a-zA-Z0-9]*} \\ \hline
+Number							& {\ttfamily [0-9]+} \\ \hline
+Char								& {\ttfamily '[a-zA-Z0-9]'} \\ \hline
+Less\_Op						& {\ttfamily <\ }  \\ \hline %si se le sacan el backslash espacio se re pincha. es una mierda latex
+Greater\_Op					& {\ttfamily >\ } \\ \hline
+Greater\_Equal\_Op	& {\ttfamily >=} \\ \hline
+Less\_Equal\_Op			& {\ttfamily <=} \\ \hline
+Not\_Equal\_Op			& {\ttfamily <>\ } \\ \hline
+Add\_Op		 					& {\ttfamily +}\\ \hline
+Minus\_Op 					& {\ttfamily -}\\ \hline
+Multiply\_Op				& {\ttfamily *}\\ \hline
+Div\_Op							& {\ttfamily [dD][iI][vV]}\\\hline
+Not\_LogOp 					& {\ttfamily [nN][oO][tT]} \\ \hline
+Or\_LogOp 					& {\ttfamily [oO][rR]} \\ \hline
+And\_LogOp 					& {\ttfamily [aA][nN][dD]} \\ \hline
+Equal 							& {\ttfamily =} \\ \hline
+Type\_Declaration 	& {\ttfamily :} \\ \hline
+Assignment 					& {\ttfamily :=} \\ \hline
+Comma 							& {\ttfamily ,} \\ \hline
+Semicolon 					& {\ttfamily ;} \\ \hline
+End\_Program			 	& {\ttfamily .} \\ \hline
+Subrange\_Separator & {\ttfamily ..} \\ \hline 
+Open\_Parenthesis 	& {\ttfamily (} \\ \hline
+Close\_Parenthesis 	& {\ttfamily )} \\ \hline
+Open\_Bracket 			& {\ttfamily [} \\ \hline
+Close\_Bracket 			& {\ttfamily ]} \\ \hline
+Program 						& {\ttfamily [pP][rR][oO][gG][rR][aA][mM]} \\ \hline
+Type 								& {\ttfamily [tT][yY][pP][eE]} \\ \hline
+Const 							& {\ttfamily [cC][oO][nN][sS][tT]} \\ \hline
+Var 								& {\ttfamily [vV][aA][rR]} \\ \hline
+Function 						& {\ttfamily [fF][uU][nN][cC][tT][iI][oO][nN]} \\ \hline
+Procedure 					& {\ttfamily [pP][rR][oO][cC][eE][dD][uU][rR][eE]} \\ \hline
+Array 							& {\ttfamily [aA][rR][rR][aA][yY]} \\ \hline
+Of 									& {\ttfamily [oO][fF]} \\ \hline
+Begin 							& {\ttfamily [bB][eE][gG][iI][nN]} \\ \hline
+End 								& {\ttfamily [eE][nN][dD]} \\ \hline
+While 							& {\ttfamily [wW][hH][iI][lL][eE]} \\ \hline
+Do 									& {\ttfamily [dD][oO]} \\ \hline
+If 									& {\ttfamily [iI][fF]} \\ \hline
+Then 								& {\ttfamily [tT][hH][eE][nN]} \\ \hline
+Else 								& {\ttfamily [eE][lL][sS][eE]} \\ \hline
+EOF 								&  \\ \hline
+\end{tabular}
+\label{tab:tokens}
+\caption{Tokens}
+\end{table}
+
+
+\section{Errores detectados}
+El analizador léxico tiene un nivel moderado de detección de errores. Entre éstos, se encuentran:
+
+\begin{itemize}
+	\item Caracter no reconocido: si se intenta ingresar un caracter que no pertenece al alfabeto, como ``@'', se producirá un error.
+	\item Comentarios abiertos: si el programa fuente tiene un comentario sin cerrar cuando termina el archivo, se informa el error.
+	\item Números mal formados: si se intenta ingresar un número como 38a7, se informará el error.
+	\item Lexema no reconocido: cualquier lexema que no corresponda con ninguna expresión regular que no se encuentre en un comentario, disparará una excepción.
+\end{itemize}
+
+Las excepciones que disparará el analizador léxico serán las \texttt{LexError}. Los mensajes de error mostrarán el número de línea, con el lexema que generó el error, cuando corresponda.
+
+\chapter{Gramática}
+
+En esta sección se detallará la gramática utilizada, sus transformaciones, y consideraciones.
+
+\section{EBNF}
+
+En el Manual del Usuario, se encuentra desglosada e íntegramente explicada la primera versión de la gramática, extraida de la gramática escrita por Wirth, y modificada para satisfacer los requerimientos de nuestra versión del lenguaje (Mini-Pascal). Por conveniencia, esta primera versión, en formato EBNF, será replicada aquí de manera completa.
+
+\begin{verbatim}
+<program> ::= <program heading> <block>.
+
+<program heading> ::= program <identifier>;
+
+<block> ::= <constant definition part><type definition part><variable declaration part><procedure and function declaration part><statement part>
+
+<constant definition part> ::= <empty> | const <constant definition>{;<constant definition>};
+
+<constant definition> ::= <identifier>=<constant>
+
+<identifier> ::= <letter>{<letter or digit>}
+
+<letter or digit> ::= <letter> | <digit>
+
+<letter> ::= A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
+
+<digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+<constant> ::= <unsigned number> | <sign><unsigned number> | <constant identifier> | <sign><constant identifier> | <char>
+
+<unsigned number> ::= <unsigned integer>
+
+<unsigned integer> ::= <digit sequence>
+
+<digit sequence> ::= <digit>{<digit>}
+
+<sign> ::= + | -
+
+<constant identifier> ::= <identifier>
+
+<type definition part> ::= <empty> | type <type definition>{;<type definition>};
+
+<type definition> ::= <identifier>=<type>
+
+<type> ::= <simple type> | <structured type>
+
+<simple type> ::= <subrange type> | <type identifier>
+
+<subrange type> ::= <constant>..<constant>
+
+<type identifier> ::= <identifier>
+
+<structured type> ::= <unpacked structured type>
+
+<unpacked structured type> ::= <array type>
+
+<array type> ::= array[<index type>] of <component type>
+
+<index type> ::= <simple type>
+
+<component type> ::= <simple type>
+
+<variable definition part> : := <empty> | var<variable declaration>{;<variable declaration>};
+
+<variable declaration> ::= <identifier>{,<identifier>} : <type>
+
+<procedure and function declaration part> ::= {<procedure or function declaration part>;}
+
+<procedure or function declaration part> ::= <procedure declaration> | <function declaration>
+
+<procedure declaration> ::= <procedure heading><block>
+
+<procedure heading> ::= procedure <identifier>; | procedure <identifier>(<formal parameter section>{;<formal parameter section>});
+
+<formal parameter section> ::= <parameter group> | var <parameter group>
+
+<parameter group> ::= <identifier>{,<identifier>}:<type identifier>
+
+<function declaration> ::= <function heading><block>
+
+<function heading> ::= function<identifier>:<result type>; | <function identifier>(<formal parameter section>{;<formal parameter section>}):<result type>;
+
+<result type> ::= <type identifier>
+
+<statement part> ::= <compound statement>
+
+<compound statement> ::= begin <statement>{;<statement>} end
+
+<statement> ::= <unlabelled statement>
+
+<unlabelled statement> ::= <simple statement> | <structured statement>
+
+<simple statement> ::= <assignment statement> | <procedure statement> | <empty statement>
+
+<assignment statement> ::= <variable>:=<expression> | <function identifier>:=<expression>
+
+<variable> ::= <entire variable> | <component variable>
+
+<entire variable> ::= <variable identifier>
+
+<variable identifier> ::= <identifier>
+
+<component variable> ::= <indexed variable>
+
+<indexed variable> ::= <array variable>[<expression>]
+
+<array variable> ::= <entire variable>
+
+<expression> ::= <simple expression> | <simple expression><relational operator><simple expression>
+
+<simple expression> ::= <term> | <simple expression><adding operator><term> | <sign><term>
+
+<term>::= <factor> | <term><multiplying operator><factor>
+
+<factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | not <factor> | <char>
+
+<char> ::= '<letter>' | '<digit>'
+
+<unsigned constant> ::= <unsigned number> | <constant identifier>
+
+<function designator> ::= <function identifier> | <function identifier>(<actual parameter>{,<actual parameter>})
+
+<function identifier> ::= <identifier>
+
+<actual parameter> ::= <expression> | <variable>
+
+<multiplying operator> ::= * | div | and
+
+<adding operator> ::= + | - | or
+
+<relational operator> ::= = | <> | < | <= | >= | >
+
+<procedure statement> ::= <procedure identifier> | <procedure identifier>(<actual parameter>{,<actual parameter>})
+
+<procedure identifier> ::= <identifier>
+
+<empty statement> ::= <empty>
+
+<structured statement> ::= <compound statement> | <conditional statement> | <repetitive statement>
+
+<conditional statement> ::= <if statement>
+
+<if statement> ::= if <expression> then <statement> | if <expression> then <statement> else <statement>
+
+<repetitive statement> ::= <while statement>
+
+<while statement> ::= while <expression> do <statement>
+
+<special symbol> ::= + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
+
+\end{verbatim}
+
+\section{Gramática final}
+
+Como siguiente paso en la adaptación de la gramática, se reemplazaron los terminales por los tokens que devuelve \textbf{LexAn}. Para esto, se adoptó la convención de dejar los no terminales en minúscula, mientras que los tokens (terminales) se encuentran en MAYÚSCULA. Luego, se eliminaron las extensiones propias de la notación EBNF.
+
+Finalmente, para llegar a la gramática utilizada para implementar el analizador sintáctico, se realizaron los siguientes pasos:
+\begin{enumerate}
+	\item \textbf{Eliminar Ambiguedad}: Ésta tal vez sea la afirmación más peligrosa, ya que no se puede saber si una gramática es ambigua o no. De cualquier manera, se eliminaron todas las ambiguedades que se encontraron, salvo el caso del \verb|if then else|, del cual se hablará más adelante.
+	\item \textbf{Eliminar Recursión a Izquierda}: Se utilizó el algoritmo explicado en \cite[pág. 212]{aho}.
+	\item \textbf{Factorizar a Izquierda}: Se utilizó el algoritmo explicado en el mismo libro, en la página 214.
+\end{enumerate}
+
+Luego de esta serie de pasos, se llegó a la siguiente gramática:
+
+\begin{verbatim}
+<program> ::= <program_heading> <block> <END_PROGRAM> <EOF>
+
+<program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
+
+<block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
+
+<block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
+
+<block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
+
+<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part>
+
+<constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
+
+<constant_definition_rest> ::= <SEMI_COLON> <constant_definition_rest_rest>
+
+<constant_definition_rest_rest> ::= <constant_definition> <constant_definition_rest> | <LAMBDA>
+
+<constant_definition> ::= <IDENTIFIER> <EQUAL> <constant>
+
+<constant> ::= <NUMBER> | <IDENTIFIER> | <CHAR> | <sign> <constant_rest>
+
+<constant_rest> ::= <NUMBER> | <IDENTIFIER>
+
+<sign> ::= <ADD_OP> | <MINUS_OP>
+
+<type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
+
+<type_definition_rest> ::= <SEMI_COLON> <type_definition_rest_rest>
+
+<type_definition_rest_rest> ::= <type_definition> <type_definition_rest> | <LAMBDA>
+
+<type_definition> ::= <IDENTIFIER> <EQUAL> <type>
+
+<type> ::= <simple_type> | <structured_type>
+
+<simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest> | <IDENTIFIER> <simple_type_rest>
+
+<simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> | <LAMBDA>
+
+<subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
+
+<structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
+
+<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
+
+<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
+
+<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_part_rest> | <LAMBDA>
+
+<variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
+
+<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
+
+<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
+
+<procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
+
+<procedure_declaration> ::= <procedure_heading> <block>
+
+<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest>
+
+<procedure_heading_rest> ::= <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
+
+<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest> | <CLOSE_PARENTHESIS> <SEMI_COLON>
+
+<formal_parameter_section> ::= <parameter_group> | <VAR> <parameter_group>
+
+<parameter_group> ::= <IDENTIFIER> <parameter_group_rest>
+
+<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest> | <TYPE_DECLARATION> <IDENTIFIER>
+
+<function_declaration> ::= <function_heading> <block>
+
+<function_heading> ::= <FUNCTION> <IDENTIFIER> <function_heading_rest>
+
+<function_heading_rest> ::= <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
+
+<formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
+
+<statement_part> ::= <compound_statement>
+
+<compound_statement> ::= <BEGIN> <statement> <statement_part_rest> <END>
+
+<statement_part_rest> ::= <SEMI_COLON> <statement> <statement_part_rest> | <LAMBDA>
+
+<statement> ::= <simple_statement> | <structured_statement>
+
+<simple_statement> ::= <IDENTIFIER> <simple_statement_rest> | <LAMBDA>
+
+<simple_statement_rest> ::= <ASSIGNMENT> <expression> | <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
+
+<expression> ::= <simple_expression> <expression_rest>
+
+<expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
+
+<simple_expression> ::= <term> <simple_expression_other> 
+
+<simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
+
+<term> ::= <factor> <term_other>
+
+<term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
+
+<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR> | <sign> <factor>
+
+<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
+
+<actual_parameter> ::= <expression>
+
+<actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
+
+<multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
+
+<adding_operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
+
+<relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <NOT_EQUAL_OP> | <EQUAL>
+
+<structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
+
+<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_other>
+
+<conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
+
+<repetitive_statement> ::= <WHILE> <expression> <DO> <statement>
+\end{verbatim}
+
+\section{¿Es LL(1)?}
+La gramática pasó por todos los pasos especificados, en un intento de lograr una gramática para ser utilizada como base de la implementación de un Analizador Sintáctico Descendente Predictivo Recursivo. Cada regla tiene conjuntos disjuntos de la función \textsc{Primero} para cada producción, por lo que el analizador puede saber que producción optar, leyendo un token. Por esto, se podría decir que la gramática obtenida es LL(1).
+
+Sin embargo, como fue dicho en la sección anterior, la gramática contiene por lo menos una ambigüedad: la del \verb|if then else|. La cadena de tokens \verb|<IF> ... <THEN> <IF> ... <THEN> ... <ELSE> ...| (donde los puntos suspensivos representan un grupo de statements válidos) tiene dos árboles de derivación posibles. 
+
+Una solución que se puede adoptar es la de utilizar precedencia, donde el \verb|<ELSE>| quedará ligado al \verb|<IF> ... <THEN>| sin \verb|<ELSE>| más cercano. Ésta solución será la que se adopte para la implementación del compilador de \textsc{Mini-Pascal}, y se llevará a cabo en la etapa de análisis semántico.
+
+Se puede concluir entonces que la gramática no es LL(1), pero de cualquier manera, sirve para realizar el Analizador Sintáctico.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Analizador Sintáctico}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Diseño General}
+En esta sección se detallará la arquitectura del Analizador Sintáctico \textbf{SynAn}, describiendo la serie de archivos y clases que lo componen, así como las decisiones de diseño tomadas. 
+
+\subsection{VortexWriter}
+Se encuentra en \verb|utils.py|. Su única función es la de ser una clase con un método \textit{write}, que no hace nada (como escribir en \verb|/dev/null| en los sistemas GNU/Linux). En la sección siguiente se detallará su uso.
+
+
+\subsection{SysAn}
+La clase se encuentra, como se especificó antes, en el archivo \verb|SynAn.py|. Para su inicialización, requiere el Analizador Léxico \textbf{LexAn}. Se le puede pasar un flag de debug, y un archivo en el cual escribir la salida (que puede ser \textit{stdout}). Si el flag es falso, se asigna la salida a una clase que no escribe nada (VortexWriter). Esta decisión se tomó para no tener que siempre realizar un \textsl{if} cada vez que se escriba un mensaje, sino que directamente se escriba siempre, y dependiendo de la clase del objeto escribirá o no.
+
+El método \verb|execute| inicializa el proceso de análisis sintáctico, y devuevle el mensaje de éxito.
+
+Los siguientes procedimientos serían los que se mapean a los no-terminales de la gramática. Básicamente su funcionamiento es la de pedir un token al analizador léxico, para decidir que regla tomar, y luego se llama a los debidos procedimientos, o se piden más tokens, para chequear que sean los esperados.
+
+En los casos que esto no sucede, se levanta una excepción.
+
+\subsection{Excepciones}
+
+En el archivo \verb|utils.py| se encuentra \verb|SynError|, que devuelve errores precisos, en el sentido que dice tanto lo que se obtuvo, como lo que se esperaba, junto con el número de línea y el nombre del archivo donde se encontró el error.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%ESQUEMA
+
+\chapter{Esquema de Traducción}
+
+%momia
+
+\chapter{Analizador Semántico}
+
+%lalala
+
+\section{Tablas de Símbolos}
+
+% hashstack
+
+\subsection{Tipos}
+
+%toda la jerarquía de tipos
+
+\subsection{El coso que es apuntado por la tabla de símbolos, mal llamado attr}
+
+\section{Implementación del EDT}
+
+
+
+\begin{thebibliography}{9}
+\addcontentsline{toc}{chapter}{Bibliografía}
+\bibitem{aho}
+  Alfred V. Aho, Monica S. Lam, Ravi Sethi, Jeffrey D. Ullman
+  \emph{Compilers: principles, techniques, and tools}.
+  Addison Wesley
+  2nd Edition
+  2007.
+  
+\bibitem{enunciado}
+	Cátedra de Compiladores e Intérpretes, DCIC, UNS
+	\emph{Proyecto Nº1: Compilador de Mini-Pascal-S}
+	2010
+	
+\bibitem{consideraciones}
+	Cátedra de Compiladores e Intérpretes, DCIC, UNS
+	\emph{Consideraciones Generales para la entrega final del Proyecto Nº1 - Compilador + MEPa}
+	2010
+
+\end{thebibliography}
+
+\end{document}

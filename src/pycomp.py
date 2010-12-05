@@ -933,7 +933,7 @@ class PyComp():
 				############
 				
 			else:
-				raise UnexpectedTokenError(self.lexer.errorLeader(),self.lexer.getLexeme())
+				self.synErr('an identifier')
 		elif self.currentToken == "<TYPE_DECLARATION>":
 			self.currentToken = self.lexer.getNextToken()
 			if self.currentToken == "<IDENTIFIER>":
