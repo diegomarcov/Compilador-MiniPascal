@@ -1,17 +1,17 @@
 \documentclass[a4paper,oneside]{report}
 \usepackage[spanish]{babel}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage{fullpage}
 %\usepackage{listings}
 %\usepackage{fancyvrb}
 \usepackage{float}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-%\usepackage{gmverb}
+\usepackage{gmverb}
 
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
-\title{Compiladores e IntÈrpretes\\Manual del Desarrollador}
+\title{Compiladores e Int√©rpretes\\Manual del Desarrollador}
 
 \author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
 
@@ -20,22 +20,26 @@
 \begin{document}
 	
 \maketitle
-		
+
 \tableofcontents
 
-\chapter*{IntroducciÛn} 
+\chapter*{Introducci√≥n} 
 
-\addcontentsline{toc}{chapter}{IntroducciÛn}
+\addcontentsline{toc}{chapter}{Introducci√≥n}
 
-…ste es el Manual del Desarrollador del compilador \textsc{\textsl{pyComp}}, donde se explicar· su desarrollo a partir de sus diferentes etapas.
+√âste es el Manual del Desarrollador del compilador \textsc{pyComp}, donde se explicar√° su desarrollo a partir de sus diferentes etapas. En los cap√≠tulos que siguen se detallar√°n las etapas por las que pas√≥ el desarrollo del compilador: el an√°lisis l√©xico, la gram√°tica y su pasaje a LL(1), el an√°lisis sint√°ctico, sem√°ntico, y la traducci√≥n a c√≥digo intermedio especificado en un EdT.
 
-El compilador fue desarrollado Ìntegramente en el lengueje \textsc{Python}, en su versiÛn 2.7. Fueron aprovechadas muchas de sus ventajas frente a otros lenguajes de programaciÛn, como su gran capacidad en el manejo de strings, archivos, y expresiones regulares; se ha utilizado herencia m˙tliple, y aprovechado el tipado din·mico en m˙ltiples ocasiones. Adem·s, el cÛdigo escrito en Python es inherentemente legible, ya que su filosofÌa hace hincapiÈ en una sintaxis muy limpia; y, finalmente, es \textbf{software libre}.
+El compilador fue desarrollado √≠ntegramente en la versi√≥n 2.7 del lenguaje \textsc{Python}. La elecci√≥n fue realizada debido a muchas caracter√≠sticas del lenguaje; fue particularmente aprovechado el poderoso manejo de strings, archivos, y expresiones regulares; tambi√©n se utiliz√≥ herencia m√∫ltiple, y se aprovech√≥ el tipado din√°mico en reiteradas ocasiones. Adem√°s, dado que \textsc{Python} hace hincapi√© en una sintaxis muy limpia, el c√≥digo escrito resulta muy facilmente legible; por √∫ltimo, es especialmente valorado por los miembros de la comisi√≥n al tratarse de una herramienta con c√≥digo abierto y licencia GPL.
 
-En este manual, se detallar·n las etapas por las que pasÛ el desarrollo del compilador: el an·lisis lÈxico, la gram·tica y su pasaje a LL(1), el an·lisis sint·ctico, sem·ntico, y la traducciÛn a lenguaje intermedio, especificado en un EDT.
+Toda la evoluci√≥n de cada una de las etapas compilador, los informes y las pruebas realizadas fue gestionada utilizando el sistema de control de versiones {\bf git}, y puede ser encontrada en los repositorios del servidor \texttt{github} en la direcci√≥n: \url{https://github.com/diegomarcov/Compilador-MiniPascal}
 
-\chapter{Analizador lÈxico}
+\chapter{Analizador l√©xico}
+
+El Analizador L√©xico del compilador se encuentra en la carpeta (paquete) \texttt{lexer}, y cuenta con dos m√≥dulos: \texttt{myshlex.py}, y \texttt{lexan.py}. Veremos a continuaci√≥n cada una de las secciones reelevantes del analizador.
 
 \section{Alfabeto de entrada}
+
+Los \textit{tokens} del analizador est√°n compuestos por letras, d√≠gitos, y s√≠mbolos especiales; dentro de los s√≠mbolos especiales consideramos, adem√°s, las palabras reservadas del lenguaje Mini-Pascal. Cualquier caracter le√≠do que no forme parte de los s√≠mbolos mostrados produce un \texttt{Lexical error}, que aborta inmediatamente la compilaci√≥n.
 
 \begin{verbatim}
 <letter>::= A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
@@ -45,17 +49,15 @@ En este manual, se detallar·n las etapas por las que pasÛ el desarrollo del comp
 <special symbol> ::=  + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
 \end{verbatim}
 
-El Analizador lÈxico del compilador se encuentra en la carpeta (paquete) \texttt{lexer}, y cuenta con dos mÛdulos, en dos arhivos distintos: \texttt{myshlex.py}, y \texttt{lexan.py}.
+\section{Dise√±o general}
 
-\section{DiseÒo general}
-
-Detallaremos a continuaciÛn la arquitectura general del analizador lÈxico, describiendo brevemente cada una de las clases que lo componen. 
+Detallaremos a continuaci√≥n la arquitectura general del analizador l√©xico, describiendo brevemente cada una de las clases que lo componen. 
 
 \subsection{Palabras reservadas}
-El Analizador LÈxico reconoce las siguientes palabras reservadas especificadas en la tabla \ref{tab:palabras}
+El Analizador L√©xico reconoce las palabras especificadas en la tabla \ref{tab:palabras} como palabras reservadas. Esto significa, por un lado, que si dichas palabras son utilizadas en cualquier contexto que no sea el esperado, se producir√° un error sint√°ctico; por otro lado, un identificador nunca podr√° ser una de las palabras reservadas.
 
 \begin{table}[htbc]
-
+\centering
 \begin{tabular}{|c|}
 \hline
 \textbf{Palabras reservadas} \\  \hline
@@ -88,26 +90,26 @@ program \\
 
 \subsection{LexAn}
 
-La clase {\bf LexAn}, cuyo cÛdigo fuente puede ser encontrado en el archivo \texttt{lexan.py} de la carpeta \texttt{/src/lexer/}, procesa los lexemas provistos por {\bf shlex} para transformarlos en tokens, que finalmente ser·n volcados al archivo de salida. Para reconocer los lexemas, la clase cuenta con dos pilares: una estructura de diccionario de Python (un arreglo asociativo), y el reconocimiento de expresiones regulares utilizando la librerÌa {\bf re}. La clase permite adem·s saber quÈ lexema y n˙mero de lÌnea del archivo fuente est· siendo analizando.
+La clase {\bf LexAn}, cuyo c√≥digo fuente puede ser encontrado en el archivo \texttt{lexan.py} de la carpeta \texttt{/src/lexer/}, procesa los lexemas provistos por {\bf shlex} para transformarlos en tokens, que finalmente ser√°n utilizados por el analizador sint√°ctico (como se detallar√° en el cap√≠tulo correspondiente). Para reconocer los lexemas, la clase cuenta con dos pilares: una estructura de diccionario de Python (un arreglo asociativo), y el reconocimiento de expresiones regulares utilizando la librer√≠a {\bf re}. La clase permite adem√°s saber qu√© lexema y n√∫mero de l√≠nea del archivo fuente est√° siendo analizando.
 
-Los operadores y las palabras reservadas (que pueden ser encontradas en la tabla \ref{tab:palabras}) que cuentan con un token propio son cargadas inicialmente en el diccionario. Al momento de analizar un lexema, se realiza un checkeo para ver si dicho lexema es uno de los \textit{id} del diccionario. En ese caso, se retorna inmediatamente el token asociado. En caso contrario, se compara el lexema con las expresiones regulares de identificador, n˙mero, y caracter (devolviendo el respectivo token en caso de match). Si ninguna de estas opciones tiene Èxito, se dispara la excepciÛn \textit{LexError}, indicando que el lexema no pudo ser reconocido.
+Los operadores y las palabras reservadas (que pueden ser encontradas en la tabla \ref{tab:palabras}) que cuentan con un token propio son cargadas inicialmente en el diccionario. Al momento de analizar un lexema, se realiza un checkeo para ver si dicho lexema es uno de los \textit{id} del diccionario. En ese caso, se retorna inmediatamente el token asociado. En caso contrario, se compara el lexema con las expresiones regulares de identificador, n√∫mero, y caracter (devolviendo el respectivo token en caso de match). Si ninguna de estas opciones tiene √©xito, se dispara la excepci√≥n \textit{LexError}, indicando que el lexema no pudo ser reconocido.
 
-
-Por ˙ltimo, si al intentar obtener el siguiente lexema de {\bf shlex} se captura la excepciÛn \textit{EOFError}, dicha excepciÛn es propagada, informando que un comentario se mantuvo abierto hasta el final del archivo.
+Por √∫ltimo, si al intentar obtener el siguiente lexema de {\bf shlex} se captura la excepci√≥n \textit{EOFError}, dicha excepci√≥n es propagada, informando que un comentario se mantuvo abierto hasta el final del archivo.
 
 \subsection{shlex}
 
-…sta clase se encuentra en el archivo \texttt{myshlex.py}, y contiene el cÛdigo de la librerÌa {\bf shlex} de Python (creada originalmente para procesar scripts de consola) modificado para que elimine los comentarios del archivo fuente a medida que lee los caracteres, y adaptado para los separadores y el alfabeto propio de Mini-Pascal. El procedimiento m·s importante de la clase devuelve un lexema del archivo fuente, y permite adem·s saber en quÈ lÌnea se encuentra dicho lexema.
+Esta clase se encuentra en el archivo \texttt{myshlex.py}, y contiene el c√≥digo de la librer√≠a {\bf shlex} de Python (creada originalmente para procesar scripts de consola) modificado para que ignore los comentarios del archivo fuente a medida que lee los caracteres, y adaptado para los separadores y el alfabeto propio de Mini-Pascal. El procedimiento m√°s importante de la clase devuelve un lexema del archivo fuente, y permite adem√°s saber en qu√© l√≠nea se encuentra dicho lexema.
 
-Adem·s de las modificaciones mencionadas, se agregÛ la excepciÛn \textit{EOFError}, que es lanzada cuando se encuentra el caracter de fin de archivo cuando todavÌa se estaba procesando un comentario. …sta excepciÛn es aprovechada por LexAn para saber cu·ndo un comentario multilÌnea se mantiene abierto de manera errÛnea.
+Adem√°s de las modificaciones mencionadas, se agreg√≥ la excepci√≥n \textit{EOFError}, que es lanzada cuando se encuentra el caracter de fin de archivo cuando todav√≠a se estaba procesando un comentario. Esta excepci√≥n es aprovechada por LexAn para saber cu√°ndo un comentario multil√≠nea se mantiene abierto de manera err√≥nea.
 
 \section{Tokens}
-El Analizador LÈxico reconoce los tokens especificados en la tabla \ref{tab:tokens}, cuando encuentra su expresiÛn regular.
+El Analizador L√©xico reconoce todos los tokens especificados en la tabla \ref{tab:tokens} cuando encuentra una expresi√≥n regular que coincide con las mostradas. Los tokens son utilizados posteriormente por el analizador sint√°ctico.
 
 \begin{table}[htbp]
+\centering
 \begin{tabular}{|l|l|}
 \hline
-\textbf{Token}			& \textbf{ExpresiÛn Regular} \\ \hline
+\textbf{Token}			& \textbf{Expresi√≥n Regular} \\ \hline
 Identifier 					& {\ttfamily [a-zA-Z][a-zA-Z0-9]*} \\ \hline
 Number							& {\ttfamily [0-9]+} \\ \hline
 Char								& {\ttfamily '[a-zA-Z0-9]'} \\ \hline
@@ -157,24 +159,24 @@ EOF 								&  \\ \hline
 
 
 \section{Errores detectados}
-El analizador lÈxico tiene un nivel moderado de detecciÛn de errores. Entre Èstos, se encuentran:
+El analizador l√©xico es, adem√°s, el encargado de detectar algunos errores particulares. Entre √©stos se encuentran:
 
 \begin{itemize}
-	\item Caracter no reconocido: si se intenta ingresar un caracter que no pertenece al alfabeto, como ``@'', se producir· un error.
+	\item Caracter no reconocido: si se intenta ingresar un caracter que no pertenece al alfabeto, como ``@'', se producir√° un error.
 	\item Comentarios abiertos: si el programa fuente tiene un comentario sin cerrar cuando termina el archivo, se informa el error.
-	\item N˙meros mal formados: si se intenta ingresar un n˙mero como 38a7, se informar· el error.
-	\item Lexema no reconocido: cualquier lexema que no corresponda con ninguna expresiÛn regular que no se encuentre en un comentario, disparar· una excepciÛn.
+	\item N√∫meros mal formados: si se intenta ingresar un n√∫mero como 38a7, se informar√° el error.
+	\item Lexema no reconocido: cualquier lexema que no corresponda con ninguna expresi√≥n regular de las mencionadas anteriormente, disparar√° una excepci√≥n. Cabe aclarar que este control no es realizado dentro de los comentarios, por lo que un bloque de comentarios puede tener cualquier conjunto de caracteres sin producir errores.
 \end{itemize}
 
-Las excepciones que disparar· el analizador lÈxico ser·n las \texttt{LexError}. Los mensajes de error mostrar·n el n˙mero de lÌnea, con el lexema que generÛ el error, cuando corresponda.
+Las excepciones que disparar√° el analizador l√©xico ser√°n las \texttt{LexError}. Los mensajes de error mostrar√°n el n√∫mero de l√≠nea, con el lexema que gener√≥ el error, cuando corresponda.
 
-\chapter{Gram·tica}
+\chapter{Gram√°tica}
 
-En esta secciÛn se detallar· la gram·tica utilizada, sus transformaciones, y consideraciones.
+En esta secci√≥n se detallar√° la gram√°tica utilizada, sus transformaciones, y consideraciones.
 
 \section{EBNF}
 
-En el Manual del Usuario, se encuentra desglosada e Ìntegramente explicada la primera versiÛn de la gram·tica, extraida de la gram·tica escrita por Wirth, y modificada para satisfacer los requerimientos de nuestra versiÛn del lenguaje (Mini-Pascal). Por conveniencia, esta primera versiÛn, en formato EBNF, ser· replicada aquÌ de manera completa.
+En el Manual del Usuario se encuentra desglosada e √≠ntegramente explicada la primera versi√≥n de la gram√°tica, adaptada de la escrita por Wirth, y modificada para satisfacer los requerimientos de nuestra versi√≥n del lenguaje (Mini-Pascal). Por conveniencia, esta primera versi√≥n, en formato EBNF, ser√° replicada aqu√≠ de manera completa.
 
 \begin{verbatim}
 <program> ::= <program heading> <block>.
@@ -319,18 +321,18 @@ En el Manual del Usuario, se encuentra desglosada e Ìntegramente explicada la pr
 
 \end{verbatim}
 
-\section{Gram·tica final}
+\section{Gram√°tica final}
 
-Como siguiente paso en la adaptaciÛn de la gram·tica, se reemplazaron los terminales por los tokens que devuelve \textbf{LexAn}. Para esto, se adoptÛ la convenciÛn de dejar los no terminales en min˙scula, mientras que los tokens (terminales) se encuentran en MAY⁄SCULA. Luego, se eliminaron las extensiones propias de la notaciÛn EBNF.
+Como siguiente paso en la adaptaci√≥n de la gram√°tica, se reemplazaron los terminales por los tokens que devuelve \textbf{LexAn}. Para esto, se adopt√≥ la convenci√≥n de dejar los no terminales en min√∫scula, mientras que los tokens (terminales) se encuentran en MAY√öSCULA. Luego, se eliminaron las extensiones propias de la notaci√≥n EBNF.
 
-Finalmente, para llegar a la gram·tica utilizada para implementar el analizador sint·ctico, se realizaron los siguientes pasos:
+Finalmente, para llegar a la gram√°tica utilizada para implementar el analizador sint√°ctico, se realizaron los siguientes pasos:
 \begin{enumerate}
-	\item \textbf{Eliminar Ambiguedad}: …sta tal vez sea la afirmaciÛn m·s peligrosa, ya que no se puede saber si una gram·tica es ambigua o no. De cualquier manera, se eliminaron todas las ambiguedades que se encontraron, salvo el caso del \verb|if then else|, del cual se hablar· m·s adelante.
-	\item \textbf{Eliminar RecursiÛn a Izquierda}: Se utilizÛ el algoritmo explicado en \cite[p·g. 212]{aho}.
-	\item \textbf{Factorizar a Izquierda}: Se utilizÛ el algoritmo explicado en el mismo libro, en la p·gina 214.
+	\item \textbf{Eliminar Ambiguedad}: √âsta tal vez sea la afirmaci√≥n m√°s peligrosa, ya que no se puede saber si una gram√°tica es ambigua o no. De cualquier manera, se eliminaron todas las ambiguedades que se encontraron, salvo el caso del \verb|if-then-else|, del cual se hablar√° m√°s adelante.
+	\item \textbf{Eliminar Recursi√≥n a Izquierda}: Se utiliz√≥ el algoritmo explicado en \cite[p√°g. 212]{aho}.
+	\item \textbf{Factorizar a Izquierda}: Se utiliz√≥ el algoritmo explicado en el mismo libro, en la p√°gina 214.
 \end{enumerate}
 
-Luego de esta serie de pasos, se llegÛ a la siguiente gram·tica:
+Luego de esta serie de pasos, se lleg√≥ a la siguiente gram√°tica:
 
 \begin{verbatim}
 <program> ::= <program_heading> <block> <END_PROGRAM> <EOF>
@@ -462,70 +464,86 @@ Luego de esta serie de pasos, se llegÛ a la siguiente gram·tica:
 <repetitive_statement> ::= <WHILE> <expression> <DO> <statement>
 \end{verbatim}
 
-\section{øEs LL(1)?}
-La gram·tica pasÛ por todos los pasos especificados, en un intento de lograr una gram·tica para ser utilizada como base de la implementaciÛn de un Analizador Sint·ctico Descendente Predictivo Recursivo. Cada regla tiene conjuntos disjuntos de la funciÛn \textsc{Primero} para cada producciÛn, por lo que el analizador puede saber que producciÛn optar, leyendo un token. Por esto, se podrÌa decir que la gram·tica obtenida es LL(1).
+\section{¬øEs LL(1)?}
+La gram√°tica pas√≥ por todos los pasos especificados, en un intento de lograr una gram√°tica para ser utilizada como base de la implementaci√≥n de un Analizador Sint√°ctico Descendente Predictivo Recursivo. Cada regla tiene conjuntos disjuntos de la funci√≥n \textsc{Primero} para cada producci√≥n, por lo que el analizador puede saber qu√© producci√≥n optar leyendo un √∫nico token. Por esto, se podr√≠a decir que la gram√°tica obtenida es LL(1).
 
-Sin embargo, como fue dicho en la secciÛn anterior, la gram·tica contiene por lo menos una ambig¸edad: la del \verb|if then else|. La cadena de tokens \verb|<IF> ... <THEN> <IF> ... <THEN> ... <ELSE> ...| (donde los puntos suspensivos representan un grupo de statements v·lidos) tiene dos ·rboles de derivaciÛn posibles. 
+Sin embargo, como fue dicho en la secci√≥n anterior, la gram√°tica contiene por lo menos una ambig√ºedad: la del \verb|if-then-else|. La cadena de tokens \verb|<IF> ... <THEN> <IF> ... <THEN> ... <ELSE> ...| (donde los puntos suspensivos representan un grupo de statements v√°lidos) tiene dos √°rboles de derivaci√≥n posibles.
 
-Una soluciÛn que se puede adoptar es la de utilizar precedencia, donde el \verb|<ELSE>| quedar· ligado al \verb|<IF> ... <THEN>| sin \verb|<ELSE>| m·s cercano. …sta soluciÛn ser· la que se adopte para la implementaciÛn del compilador de \textsc{Mini-Pascal}, y se llevar· a cabo en la etapa de an·lisis sem·ntico.
+La soluci√≥n adoptada para resolver el conflicto es la de utilizar precedencia, donde el \verb|<ELSE>| quedar√° ligado al \verb|<IF> ... <THEN>| sin \verb|<ELSE>| m√°s cercano. √âsta soluci√≥n se lleva a cabo en la etapa de an√°lisis sem√°ntico.
 
-Se puede concluir entonces que la gram·tica no es LL(1), pero de cualquier manera, sirve para realizar el Analizador Sint·ctico.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\chapter{Analizador Sint·ctico}
+Se puede concluir, entonces, que la gram√°tica no es LL(1), pero de cualquier manera sirve para implementar el Analizador Sint√°ctico.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{DiseÒo General}
-En esta secciÛn se detallar· la arquitectura del Analizador Sint·ctico \textbf{SynAn}, describiendo la serie de archivos y clases que lo componen, asÌ como las decisiones de diseÒo tomadas. 
+\chapter{Analizador Sint√°ctico}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Dise√±o General}
+En esta secci√≥n se detallar√° la arquitectura del Analizador Sint√°ctico \textbf{SynAn}, describiendo la serie de archivos y clases que lo componen, as√≠ como las decisiones de dise√±o tomadas. 
 
 \subsection{VortexWriter}
-Se encuentra en \verb|utils.py|. Su ˙nica funciÛn es la de ser una clase con un mÈtodo \textit{write}, que no hace nada (como escribir en \verb|/dev/null| en los sistemas GNU/Linux). En la secciÛn siguiente se detallar· su uso.
+Se encuentra en \verb|utils.py|. Su √∫nica funci√≥n es proveer un m√©todo \textit{write} que no hace nada (como escribir en \verb|/dev/null| en los sistemas GNU/Linux). En la secci√≥n siguiente se detallar√° su uso.
 
 
-\subsection{SysAn}
-La clase se encuentra, como se especificÛ antes, en el archivo \verb|SynAn.py|. Para su inicializaciÛn, requiere el Analizador LÈxico \textbf{LexAn}. Se le puede pasar un flag de debug, y un archivo en el cual escribir la salida (que puede ser \textit{stdout}). Si el flag es falso, se asigna la salida a una clase que no escribe nada (VortexWriter). Esta decisiÛn se tomÛ para no tener que siempre realizar un \textsl{if} cada vez que se escriba un mensaje, sino que directamente se escriba siempre, y dependiendo de la clase del objeto escribir· o no.
+\subsection{SynAn}
+El c√≥digo de esta clase se encuentra en el archivo \verb|SynAn.py|. Para su inicializaci√≥n requiere el Analizador L√©xico \textbf{LexAn}. Se le puede pasar un flag de debug y un archivo en el cual escribir la salida. Si el flag de debug es falso, se asigna la salida de debug a una clase que no escribe nada (VortexWriter). Esta decisi√≥n se tom√≥ para no tener que realizar un \texttt{if} cada vez que se escriba un mensaje de debug, sino que directamente se escriba siempre, y dependiendo de la clase del objeto se mostrar√° en el archivo de salida o no. En caso de especificar el flag, todos los mensajes de debug ser√°n mostrados en el archivo de salida. A su vez, si el archivo de salida no es especificado, se considerar√° por defecto como \textit{stdout}, por lo que la salida por defecto del compilador se realiza por pantalla.
 
-El mÈtodo \verb|execute| inicializa el proceso de an·lisis sint·ctico, y devuevle el mensaje de Èxito.
+El analizador contiene el m√©todo \verb|execute| que inicializa el proceso de an√°lisis sint√°ctico, y devuelve el mensaje de √©xito.
 
-Los siguientes procedimientos serÌan los que se mapean a los no-terminales de la gram·tica. B·sicamente su funcionamiento es la de pedir un token al analizador lÈxico, para decidir que regla tomar, y luego se llama a los debidos procedimientos, o se piden m·s tokens, para chequear que sean los esperados.
+El resto de los procedimientos se mapean a los no-terminales de la gram√°tica; su funcionamiento se basa en pedir tokens al analizador l√©xico, decidir que regla tomar, y luego llamar a los procedimientos correspondientes o pedir m√°s tokens para checkear que sean los esperados.
 
-En los casos que esto no sucede, se levanta una excepciÛn.
+En los casos en los que esto no sucede, se arroja una excepci√≥n.
 
 \subsection{Excepciones}
 
-En el archivo \verb|utils.py| se encuentra \verb|SynError|, que devuelve errores precisos, en el sentido que dice tanto lo que se obtuvo, como lo que se esperaba, junto con el n˙mero de lÌnea y el nombre del archivo donde se encontrÛ el error.
-
-
-
+El analizador sint√°ctico arroja excepciones del tipo \verb|SynError|, declarada en el archivo \verb|utils.py|, que devuelve errores con el mayor grado de precisi√≥n posible, incluyendo las cadenas encontradas (que produjeron el error), lo que se esperaba encontrar, el n√∫mero de l√≠nea y el nombre del archivo donde se encontr√≥ el error.
 
 %%%%%%%%%%%%%%%%%%%%%ESQUEMA
 
-\chapter{Esquema de TraducciÛn}
+\chapter{Esquema de Traducci√≥n}
 
-%momia
+Antes de comenzar con la implementaci√≥n del analizador sem√°ntico se especific√≥ un Esquema de Traducci√≥n como los estudiados durante el cuatrimestre para tener una buena representaci√≥n de las acciones que el compilador debe realizar durante el an√°lisis de los archivos fuente.
 
-\chapter{Analizador Sem·ntico}
+Cabe destacar que el Esquema de Traducci√≥n se presenta en \emph{pseudo-c√≥digo}, y en √©l se detallan todos los controles que realiza el compilador durante el an√°lisis, pero {\bf no} la generaci√≥n de c√≥digo intermedio. En su lugar, simplemente se indica textualmente qu√© debe hacer el c√≥digo que se debe generar; √©sta decisi√≥n se tom√≥ para no ensuciar el Esquema de Traducci√≥n, puesto que el c√≥digo MEPa fue generado en la √∫ltima parte de la implementaci√≥n del compilador.
 
-%lalala
+\chapter{Analizador Sem√°ntico}
 
-\section{Tablas de SÌmbolos}
+Una vez especificado el Esquema de Traducci√≥n, se procedi√≥ a implementar la √∫ltima etapa del compilador; se detallar√°n a continuaci√≥n las secciones m√°s reelevantes del desarrollo.
 
-% hashstack
+\section{Tablas de S√≠mbolos}
+La primera clase agregada por el analizador sem√°ntico es la Tabla de s√≠mbolos, cuyo c√≥digo puede ser encontrado en el archivo \texttt{hashStack.py}. Como el nombre del archivo indica, la implementaci√≥n consiste de una {\bf pila de tablas de s√≠mbolos}; la pila se encuentra implementada utilizando una lista de Python (que por defecto posee las operaciones caracter√≠sticas de las pilas, como \texttt{Push()} y \texttt{Pop()}); cada una de las tablas de s√≠mbolos est√° implementada con diccionarios de Python, que son tablas hash optimizadas y cuentan con la ventaja de que tanto la inserci√≥n como la b√∫squeda en la tabla es de orden constante.
+
+Inicialmente, la pila contiene una tabla de s√≠mbolos con todos los identificadores predefinidos mostrados en la tabla \ref{predefinidos}.
+
+Por cada nivel l√©xico analizado se apila una nueva tabla de s√≠mbolos, que es utilizada durante todo el bloque y desapilada una vez que dicho nivel l√©xico termina de ser analizado.
+
+Las b√∫squedas de identificadores se realizan desde la √∫ltima tabla de s√≠mbolos apilada hacia las anteriores, recorriendo todos los niveles l√©xicos alcanzables desde donde se solicit√≥ el identificador. Si √©ste no se encuentra una vez que se recorrieron todas las tablas, se arroja la excepci√≥n \texttt{SymbolTableError} indicando que el identificador no est√° declarado.
+
+Cuando se declara un nuevo identificador, √©ste se inserta autom√°ticamente en la tabla de s√≠mbolos del nivel l√©xico actual; si bien no importa lo que se haya declarado en los niveles l√©xicos superiores, s√≠ se arroja una excepci√≥n en caso de que el identificador ya exista en el nivel actual.
+
+\subsection{Contenido}
+Las tablas de s√≠mbolos de todos los niveles est√°n compuestas por un identificador y un objeto de tipo \texttt{Attr} que contiene todos los atributos que se consider√≥ necesario guardar del identificador.
+
+La clase \texttt{Attr} est√° compuesta de cinco atributos:
+
+\begin{itemize}
+ \item {\bf Clase}: define si el identificador corresponde a un \emph{program}, \emph{type}, \emph{variable}, \emph{function}, \emph{procedure} o \emph{constant}.
+ \item {\bf Pos}: indica el n√∫mero de identificador en el programa, funci√≥n o procedimiento actual. Es utilizado junto con otros valores para la reserva y la referencia de memoria.
+ \item {\bf Valor}: retiene el valor de las constantes, variables y caracteres.
+ \item {\bf Tipo}: contiene el tipo espec√≠fico del identificador, apuntando a un objeto de la jerarqu√≠a de tipos que se detallar√° en la secci√≥n siguiente. Referenciando a este objeto se puede obtener, adem√°s, mucha informaci√≥n espec√≠fica del identificador.
+ \item {\bf Used}: valor booleano que indica si el identificador fue utilizado en el bloque en el que fue declarado o no. Es utilizado para mostrar \textit{warnings} en caso de que sea falso.
+\end{itemize}
 
 \subsection{Tipos}
 
-%toda la jerarquÌa de tipos
+Como se mencion√≥, cada uno de los identificadores en la tabla de s√≠mbolos posee un tipo determinado dentro de la jerarqu√≠a de tipos. Dicha jerarqu√≠a se encuentra graficada en la figura \ref{jerarquia}, y la implementaci√≥n de cada uno de los tipos que la componen se encuentra en el archivo \texttt{tipos.py}.
 
-\subsection{El coso que es apuntado por la tabla de sÌmbolos, mal llamado attr}
-
-\section{ImplementaciÛn del EDT}
-
+\section{Implementaci√≥n del EDT}
 
 
 \begin{thebibliography}{9}
-\addcontentsline{toc}{chapter}{BibliografÌa}
+\addcontentsline{toc}{chapter}{Bibliograf√≠a}
 \bibitem{aho}
   Alfred V. Aho, Monica S. Lam, Ravi Sethi, Jeffrey D. Ullman
   \emph{Compilers: principles, techniques, and tools}.
@@ -534,13 +552,13 @@ En el archivo \verb|utils.py| se encuentra \verb|SynError|, que devuelve errores
   2007.
   
 \bibitem{enunciado}
-	C·tedra de Compiladores e IntÈrpretes, DCIC, UNS
-	\emph{Proyecto N∫1: Compilador de Mini-Pascal-S}
+	C√°tedra de Compiladores e Int√©rpretes, DCIC, UNS
+	\emph{Proyecto N¬∫1: Compilador de Mini-Pascal-S}
 	2010
 	
 \bibitem{consideraciones}
-	C·tedra de Compiladores e IntÈrpretes, DCIC, UNS
-	\emph{Consideraciones Generales para la entrega final del Proyecto N∫1 - Compilador + MEPa}
+	C√°tedra de Compiladores e Int√©rpretes, DCIC, UNS
+	\emph{Consideraciones Generales para la entrega final del Proyecto N¬∫1 - Compilador + MEPa}
 	2010
 
 \end{thebibliography}
