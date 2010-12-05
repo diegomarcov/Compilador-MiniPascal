@@ -45,7 +45,7 @@ class HashStack(list):
 	def addNewID(self,key,element):
 		st = self.top()
 		key = key.lower()
-		if not (key in st):
+		if not (key in st) and not (("$" + key) in st) :
 			st[key] = element
 		else:
 			raise SymbolTableError(True,key) 
