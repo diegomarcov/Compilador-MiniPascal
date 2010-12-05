@@ -1250,6 +1250,7 @@ class PyComp():
 			proc = self.stStack.getGlobalValue(id)
 			nivel = self.stStack.lastLexicalLevel()
 			if proc.clase == "procedure":
+				proc.used = True
 				if proc.tipo.params==[]:
 					self.escribir("LLPR %s" %proc.tipo.label)
 				else:
