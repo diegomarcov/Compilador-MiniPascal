@@ -523,7 +523,7 @@ Antes de comenzar con la implementación del analizador semántico se especificó u
 
 Cabe destacar que el Esquema de Traducción se presenta en \emph{pseudo-código}, y en él se detallan todos los controles que realiza el compilador durante el análisis, pero {\bf no} la generación de código intermedio. En su lugar, simplemente se indica textualmente qué debe hacer el código que se debe generar; ésta decisión se tomó para no ensuciar el Esquema de Traducción, puesto que el código MEPa fue generado en la última parte de la implementación del compilador.
 
-\begin{lstlisting}
+\begin{lstlisting}[tabsize=4]
 <program> ::= 	{
 					stStack = newSymbolTableStack()
 					
@@ -1574,7 +1574,7 @@ succ 					& {\ttfamily Attr(tipo = Funcion(params = [("x",Simple(),False)], ret 
 \caption{Identificadores predefinidos}
 \label{tab:predefinidos}
 \end{table}
-Por cada nivel léxico analizado se apila una nueva tabla de símbolos, que es utilizada durante todo el bloque y desapilada una vez que dicho nivel léxico termina de ser analizado.
+Por cada nivel léxico ana	lizado se apila una nueva tabla de símbolos, que es utilizada durante todo el bloque y desapilada una vez que dicho nivel léxico termina de ser analizado.
 
 Las búsquedas de identificadores se realizan desde la última tabla de símbolos apilada hacia las anteriores, recorriendo todos los niveles léxicos alcanzables desde donde se solicitó el identificador. Si éste no se encuentra una vez que se recorrieron todas las tablas, se arroja la excepción \texttt{SymbolTableError} indicando que el identificador no está declarado.
 
