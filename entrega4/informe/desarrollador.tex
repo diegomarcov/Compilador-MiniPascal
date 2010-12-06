@@ -6,7 +6,7 @@
 %\usepackage{fancyvrb}
 \usepackage{float}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-\usepackage{gmverb}
+%\usepackage{gmverb}
 \usepackage{graphicx}
 
 
@@ -508,6 +508,1025 @@ Antes de comenzar con la implementación del analizador semántico se especificó u
 
 Cabe destacar que el Esquema de Traducción se presenta en \emph{pseudo-código}, y en él se detallan todos los controles que realiza el compilador durante el análisis, pero {\bf no} la generación de código intermedio. En su lugar, simplemente se indica textualmente qué debe hacer el código que se debe generar; ésta decisión se tomó para no ensuciar el Esquema de Traducción, puesto que el código MEPa fue generado en la última parte de la implementación del compilador.
 
+\begin{verbatim}
+
+<program> ::= 	{
+					stStack = newSymbolTableStack()
+					
+				} 
+				<program_heading>
+				{
+					<block>.idPrograma = <program_heading>.id
+					#inicializar el programa con INPP
+				}
+				<block> <END_PROGRAM> <EOF>
+				{
+					#escribe los procedimientos de read usados
+					#finalizar el programa (PARA)
+				}
+
+<program_heading> ::= <PROGRAM> <IDENTIFIER>
+					{
+						<program_heading>.id = <IDENTIFIER>.lex
+					}
+					<SEMI_COLON>
+
+<block> ::= { 
+				stStack.pushNewSymbolTable() 
+				if <block>.idPrograma != None:
+					stStack.addNewID(<block>.idPrograma], Attr(tipo="program", type = Program()))
+				if <block>.parameterList!= None:
+					n = <block>.parameterList.tamanio # se calcula el tamaño de las variables, para conocer el offset de los parametros.
+					
+				if <block>.returnType!=None:
+					addNewID("$" + <block>.idFuncion, Attr(clase = "return", tipo = <block>.returnType.tipo, pos = -(n+3)))
+					
+				i=0
+				for x in <block>.parameterList:
+					if x.referencia:
+						clase = "reference"
+					else:
+						clase = "variable"
+					addNewID(x.nombre, Attr(clase = clase, tipo = x.tipo, pos = -(n+3-i))
+					if x.referencia:
+						i+=1
+					else:
+			}
+            <constant_definition_part> <block_cons_rest> 
+			{
+				stStack.pop()
+			}
+            | 
+            { 
+				stStack.pushNewSymbolTable() 
+				if <block>.idPrograma != None:
+					stStack[-1][<block>.idPrograma] = newAttr(tipo="program", type = Program())
+					
+				if <block>.parameterList!= None:
+					n = <block>.parameterList.tamanio # se calcula el tamaño de las variables, para conocer el offset de los parametros.
+					
+				if <block>.returnType!=None:
+					addNewID("$" + <block>.idFuncion, Attr(clase = "return", tipo = <block>.returnType.tipo, pos = -(n+3)))
+					
+				i=0
+				for x in <block>.parameterList:
+					if x.referencia:
+						clase = "reference"
+					else:
+						clase = "variable"
+					addNewID(x.nombre, Attr(clase = clase, tipo = x.tipo, pos = -(n+3-i))
+					if x.referencia:
+						i+=1
+					else:
+						i+=x.tipo.tamanio
+			}
+            <block_cons_rest>
+			{
+				stStack.pop()
+			}
+
+<block_cons_rest> ::= <type_definition_part> <block_type_rest> 
+						{
+							#libero memoria (<block_type_rest>.tamanioVariables)
+						}
+						| 
+						<block_type_rest>
+						{
+							#libero memoria (<block_type_rest>.tamanioVariables)
+						}
+
+<block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
+
+<block_var_rest> ::= 	{
+							#poner el salto al principio de los statements
+						}
+						<procedure_and_function_declaration_part> 
+						{
+							#poner el label del principio de los statements
+						}
+						<statement_part> 
+						| 
+						<statement_part>
+
+<constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
+
+<constant_definition_rest> ::= <SEMI_COLON> <constant_definition_rest_rest>
+
+<constant_definition_rest_rest> ::= <constant_definition> <constant_definition_rest> | <LAMBDA>
+
+<constant_definition> ::= <IDENTIFIER> <EQUAL> <constant> 
+							{
+                                # addNewID deberá tener un identificador, y un objeto;
+                                # dicho objeto tendrá las propiedades: TIPO, VALOR, y un valor booleano que indica si es constante
+								addNewID(<IDENTIFIER>.lex, <constant>.attr, clase = "constant")
+							}
+
+<constant> ::= 	<NUMBER>
+				{
+					if Entero.inBounds(int(<NUMBER>.lex)): #chequeo que no se vaya de los valores posibles
+						<constant>.attr = newAttr(clase="constant", type=Entero(), value=<NUMBER>.lex)
+				}
+				|
+				<IDENTIFIER>
+				{
+					val = getGlobalValue(<IDENTIFIER>.lex)
+					if ((val != None)):
+						if (val.clase=="constant"):
+							<constant>.attr = copy(val) #copio el attr
+						else:
+							error("Invalid assignment: constant expected")
+
+					else:
+						error("Undeclared identifier " + <IDENTIFIER>.lex)
+				}
+				| 
+				<CHAR> 
+				{
+                    <constant>.attr = newAttr(clase="constant", type=Char(), value=<CHAR>.lex)
+				}
+				| <sign> <constant_rest>
+				{
+					if !<constant_rest>.tipo.instancia(Entero):
+						error("Can not apply "+<sign>.lex+" operator to "+<constant_rest>.tipo) #como redefino __str__ de todos los tipos puedo hacer cosas como esa
+					else:
+                        <constant_rest>.attr.value = <sign>.value * <constant_rest>.attr.value
+                        <constant>.attr = <constant_rest>.attr
+				}
+				
+
+<constant_rest> ::= <NUMBER> 
+					{
+						<constant_rest>.attr = newAttr(clase="constant", type=Entero(), value=<NUMBER>.lex)
+					}
+					|
+					<IDENTIFIER>
+					{
+						val = getGlobalValue(<IDENTIFIER>.lex)
+						if ((val != None)):
+							if (val.clase=="constant"):
+								<constant>.attr = copy(val) #copio el attr
+							else:
+								error(<IDENTIFIER>.lex + "is not a valid identifier")
+						else:
+							error("Undeclared identifier " + <IDENTIFIER>.lex)
+					}
+
+<sign> ::= <ADD_OP>
+			{
+				<sign>.value = 1
+			}
+			|
+			<MINUS_OP>
+			{
+				<sign>.value = -1
+			}
+
+<type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
+
+<type_definition_rest> ::= <SEMI_COLON> <type_definition_rest_rest>
+
+<type_definition_rest_rest> ::= <type_definition> <type_definition_rest> | <LAMBDA>
+
+<type_definition> ::= <IDENTIFIER> <EQUAL> <type>
+						{
+                            # incluimos en la tabla de símbolos el tipo, indicando que es un "TIPO" e
+                            # incluyendo la estructura que servirá para saber si es un subrango, un array,
+                            # o cualquier otro tipo simple
+							addNewID(<IDENTIFIER>.lex, newAttr(clase="type", type=<type>.tipo))
+						}
+
+<type> ::= <simple_type> 
+            {
+                <type>.tipo = <simple_type>.tipo
+            }
+            |
+            <structured_type>
+            {
+                <type>.tipo = <structured_type>.tipo
+            }
+
+<simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> 
+					{
+						if !<constant>.tipo.instancia(Entero):
+							error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
+						else:
+							if <NUMBER>.lex <= <constant>.value:
+                                # la estructura devuelta por newType contendrá el TIPO,
+                                # y las referencias a los valores lowerBound y upperBound
+                                lower = newAttr("constant",type = Entero(),value=<NUMBER>.lex) 
+                                upper = newAttr("constant",type = Entero(),value=constant.value)
+								<simple_type>.tipo = SubEntero(lowerBound=lower, upperBound=upper)
+							else:
+								error("Invalid subrange: lower bound must be smaller than upper bound.")
+					}
+					|
+					<CHAR> <SUBRANGE_SEPARATOR> <constant> 
+					{
+						if !<constant>.tipo.instancia(Caracter):
+							error("Non compatible subrange bounds (char expected, "+<constant>.tipo+" found).")
+						else:
+							if <CHAR>.lex <= <constant>.value:
+                                # la estructura devuelta por newType contendrá el TIPO,
+                                # y las referencias a los valores lowerBound y upperBound
+                                lower = newAttr("constant",type = Caracter(),value=<CHAR>.lex)
+                                upper = newAttr("constant",type = Caracter(),value=constant.value)
+								<simple_type>.tipo = SubCaracter(lowerBound=lower, upperBound=upper)
+							else:
+								error("Invalid subrange: lower bound must be smaller than upper bound.")
+					}
+					| 
+					<sign> <subrange_type_rest> 
+					{
+						<subrange_type_rest>.tipo.lowerBound.value = <sign>.value * <subrange_type_rest>.tipo.lowerBound.value
+						if <subrange_type_rest>.value.lowerBound.value <= <subrange_type_rest>.tipo.upperBound.value:
+							<simple_type>.tipo = <subrange_type_rest>.tipo
+						else:
+							error("Invalid subrange: lower bound must be smaller than upper bound.")
+					}
+					| 
+					<IDENTIFIER> <simple_type_rest>
+					{
+						#en este caso hay que pedir el tipo a la tabla de tipos
+                        val = getGlobalValue(<IDENTIFIER>.lex)
+						if <simple_type_rest>.tipo is not None:
+							if val.tipo.instancia(type(simple_type_rest>.value)):
+								if val.value <= <simple_type_rest>.value.upperBound.value:
+									<simple_type_rest>.value.lowerBound = val
+								else:
+									error("Invalid subrange: lower bound must be smaller than upper bound.")
+							else:
+								error("Non compatible subrange bounds ("+ <IDENTIFIER>.tipo +" expected, "+ <simple_type_rest>.value.upperBound.tipo.nombre +" found).")
+                        else:
+							<simple_type>.tipo = val.tipo
+					}
+
+<simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> 
+						{
+                            # la estructura devuelta por newType contendrá el TIPO,
+                            # que a su vez contendrá las referencias a los valores lowerBound y upperBound
+							if <constant>.tipo.instancia(Entero):
+								<simple_type_rest>.value = SubEntero(None,<constant>.value)
+							elif <constant>.tipo.instancia(Caracter):
+								<simple_type_rest>.value = SubCaracter(None,<constant>.value)
+							elif <constant>.tipo.instancia(Booleano):
+								<simple_type_rest>.value = SubBooleano(None,<constant>.value)
+							else:
+								error("Yype "+ constant.tipo + "cannot be used in a subrange")
+						}
+                        |
+                        <LAMBDA>
+                        {
+                            <simple_type_rest>.tipo = None
+                        }
+
+<subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> 
+						{
+							if !<constant>.tipo.instancia(Entero):
+								error("Non compatible subrange bounds (int expected, "+<constant>.tipo+" found).")
+							else:
+								if <NUMBER>.lex <= <constant>.value:
+									# la estructura devuelta por newType contendrá el TIPO,
+									# y las referencias a los valores lowerBound y upperBound
+									lower = newAttr("constant",type = Entero(),value=<NUMBER>.lex)
+									upper = newAttr("constant",type = Entero(),value=constant.value)
+									<subrange_type_rest>.tipo = SubEntero(lowerBound=lower, upperBound=upper)
+								else:
+									error("Invalid subrange: lower bound must be smaller than upper bound.")
+						}
+						| 
+                        # únicamente se puede llegar a este caso con un signo + o -
+                        # así que los identificadores deben ser enteros!
+						<IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
+                        {
+                            id = getGlobalValue(<IDENTIFIER>.lex)
+                            if (id.tipo.instancia(Entero)) and (<constant>.attr.tipo.instancia(Entero)):
+                                # la estructura devuelta por newType contendrá el TIPO,
+                                # y las referencias a los valores lowerBound y upperBound
+                                <subrange_type_rest>.tipo = SubEntero(lowerBound=id, upperBound=<constant>.attr)
+                             else:
+								 error("Integer subrange expected")
+                        }
+
+						
+						#consulta aca... sobre el tipo del índice. Sólo puede ser subrango no?
+<structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type1>
+                        {	
+							if <simple_type>.tipo.instancia(Simple):
+								if <simple_type1>.tipo.instancia(Simple):
+								
+									<structured_type>.tipo = Arreglo(indexRange=<simple_type>.tipo, elementType = <simple_type1>.tipo)
+								else:
+									error("The element type must be a simple type")
+								<structured_type>.tipo = Arreglo(indexRange=<simple_type>.tipo, elementType = <simple_type1>.tipo)
+							else:
+								error("The index type must be a simple type")
+                        }
+
+<variable_definition_part> ::= <VAR> 
+								{
+									# globalVarIndex: es el índice actual de la variable, usada en la declaración
+									
+									<variable_declaration>.tamanioVariables = 0
+								}
+								<variable_declaration> 
+								{
+									<variable_declaration_part_rest>.tamanioVariables = <variable_declaration>.tamanioVariables
+								}
+								<variable_declaration_part_rest>
+								{
+									<variable_definition_part>.tamanioVariables = <variable_declaration_part_rest>.tamanioVariables
+									#libero la memoria con RMEM y el tamaño de las variables
+								}
+
+<variable_declaration_part_rest> ::= <SEMI_COLON> 
+										{
+											<variable_declaration_rest_rest>.tamanioVariables = <variable_declaration_part_rest>.tamanioVariables
+										}
+										<variable_declaration_rest_rest>
+										{
+											<variable_declaration_part_rest>.tamanioVariables = <variable_declaration_rest_rest>.tamanioVariables
+										}
+
+<variable_declaration_rest_rest> ::={
+										<variable_declaration>.tamanioVariables = <variable_declaration_rest_rest>.tamanioVariables
+									} 
+									<variable_declaration> 
+									{
+										<variable_declaration_part_rest>.tamanioVariables = <variable_declaration>.tamanioVariables
+									} 
+									<variable_declaration_part_rest> 	
+									{
+										<variable_declaration_rest_rest>.tamanioVariables = <variable_declaration_part_rest>.tamanioVariables
+									} 
+									| 
+									<LAMBDA>
+
+<variable_declaration> ::= <IDENTIFIER> 
+                            {
+								<variable_declaration_rest>.idList = [<IDENTIFIER>.lex] 
+							}
+                            # en este caso, idList es un atributo heredado Y sintetizado
+                            # el valor heredado es "lista vacía", y al volver, contendrá todos los ID después de la , en caso de que haya.
+                            <variable_declaration_rest>
+                            {
+                               
+                                for var in <variable_declaration>.idList:
+                                    # el valor por defecto de las variables en la tabla de símbolos podría ser None
+                                    addNewID(var.lex, newAttr(clase="variable", type=<variable_declaration_rest>.tipo, value=None))
+									<variable_declaration>.tamanioVariables += <variable_declaration_rest>.tipo.tamanio
+								
+                            }
+
+<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest1>
+                                {
+                                    <variable_declaration_rest>.idList = <variable_declaration_rest1>.idList.append(<IDENTIFIER>.lex)
+                                }
+                                |
+                                <TYPE_DECLARATION> <type>
+                                {
+                                    <variable_declaration_rest>.tipo = <type>.tipo
+                                }
+
+<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> 
+												| 
+												<LAMBDA>
+
+<procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
+
+<procedure_declaration> ::= {
+								#pongo un label para indicar el principio del procedimiento
+							}
+							<procedure_heading> 
+							{
+								#pongo un ENPR con el nivel léxico actual
+								<block>.parameterList = <procedure_heading>.parameterList
+								<block>.idProc = <procedure_heading>.id
+							}
+							<block>
+							{
+								#ponge el retorno de procedimiento, con el nivel léxico actual, y el tamaño que viene en <procedure_heading>.tamanioParams
+							}
+
+<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> 
+                        {
+                            # parameterList es un atributo heredado y sintetizado
+                            <procedure_heading_rest>.parameterList = []
+							<procedure_heading>.id = <IDENTIFIER>.lex
+                        }
+                        <procedure_heading_rest>
+                        {
+                            # <procedure_heading_rest>.parameterList es una lista de listas de parámetros con un tipo asociado, e indicando si es por refer; ejemplo:
+                            # para facilidad en la parte de las expresiones, puse que la lista va a tener una serie de tuplas con parametro, tipo y booleano que indica si es por referencia
+							# [(p1,int,referencia),(p2,int, referencia)...].
+							
+                            addNewID(<IDENTIFIER>.lex, newAttr(clase = "procedure", Procedimiento( parameterList = <procedure_heading_rest>.parameterList)))
+                            
+                        }
+
+<procedure_heading_rest> ::= <SEMI_COLON> 
+                            |
+                            <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
+                            {
+                                <procedure_heading_rest>.parameterList = <formal_parameter_section>.parameterList + <formal_parameter_rest>.parameterList
+                            }
+
+<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest1> 
+                            {
+                                # el resultado va a ser una lista de listas de parámetros, cada una con un tipo asociado
+                                <procedure_heading_rest>.parameterList = <formal_parameter_section>.parameterList + <formal_parameter_rest1>.parameterList
+                            }
+                            |
+                            <CLOSE_PARENTHESIS> <SEMI_COLON>
+
+<formal_parameter_section> ::= <parameter_group> 
+                                { 
+									<formal_parameter_section>.parameterList=[]
+									for x in <parameter_group>.parameterList:
+										<formal_parameter_section>.parameterList += (x,<parameter_group>.tipo,False)
+                                }
+                                |
+                                <VAR> <parameter_group>
+                                { 
+									<formal_parameter_section>.parameterList=[]
+									for x in <parameter_group>.parameterList:
+										<formal_parameter_section>.parameterList += (x,<parameter_group>.tipo,True)
+                                }
+
+<parameter_group> ::=   <IDENTIFIER> 
+                        { <parameter_group_rest>.parameterList = [] }
+                        <parameter_group_rest>
+                        { 
+                            <parameter_group>.parameterList = [<IDENTIFIER>.lex] + <parameter_group_rest>.parameterList
+                            <parameter_group>.tipo = <parameter_group_rest>.tipo
+                        }
+
+<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest1> 
+                            {
+                                <parameter_group_rest>.parameterList = [<IDENTIFIER>.lex] + <parameter_group_rest1>.parameterList
+                                <parameter_group_rest>.tipo = <parameter_group_rest1>.tipo
+                            }
+                            |
+                            <TYPE_DECLARATION> <IDENTIFIER>
+                            {
+                                id = getGlobalValue(<IDENTIFIER>.lex)
+                                if id.clase = "type":
+                                    <parameter_group_rest>.tipo = id.tipo
+                                else:
+                                    error("Type expected, but " + <IDENTIFIER>.lex + " found.")
+                            }
+
+<function_declaration> ::= {
+								#pongo un label para indicar el principio del procedimiento
+							}
+							<function_heading> 
+							{
+								<block>.functionID = <function_heading>.functionID #heredo el id de la funcion en bloque para después usarla en el retorno de la funcion
+							}
+							<block>
+							{
+								#ponge el retorno de procedimiento, con el nivel léxico actual, y el tamaño que viene en <procedure_heading>.tamanioParams
+							}
+
+<function_heading> ::= <FUNCTION> <IDENTIFIER>
+						{
+                            # parameterList es un atributo heredado y sintetizado
+                            <procedure_heading_rest>.parameterList = []
+                        }
+						<function_heading_rest>
+						{
+                            # <function_heading_rest>.parameterList es una lista de tuplas de parámetros con un tipo asociado, e indicando si es por refer; ejemplo:
+                            # [(p1,int,referencia),(p2,int, referencia)...].
+							#<function_heading_rest>.returnType es el tipo que retorna la funcion. Debe ser simple
+							if <function_heading_rest>.returnType.instancia(Simple):
+								addNewID(<IDENTIFIER>.lex, newAttr(clase = "function", Funcion( parameterList = <procedure_heading_rest>.parameterList,<function_heading_rest>.returnType)))
+								<function_heading>.functionID = <IDENTIFIER>.lex
+								
+							else:	
+								error("Functions must return a simple type")
+                        }
+
+<function_heading_rest> ::= <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON> 
+							{
+								id = getGlobalValue(<IDENTIFIER>.lex)
+								if id.clase=="type":
+									<function_heading_rest>.returnType = id.tipo
+								else:
+									error("Type expected but " + <IDENTIFIER>.lex + " found")
+							}
+							|
+							<OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
+							{
+								<function_heading_rest>.parameterList = [(<formal_parameter_section>.parameterList, <formal_parameter_section>.tipo, <formal_parameter_section>.byReference)] + <formal_parameter_function_rest>.parameterList
+								<function_heading_rest>.returnType =  <formal_parameter_function_rest>.returnType
+							}
+							
+
+<formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> 
+									{
+										<formal_parameter_function_rest>.parameterList = [(<formal_parameter_section>.parameterList, <formal_parameter_section>.tipo, <formal_parameter_section>.byReference)] + <formal_parameter_function_rest>.parameterList
+									}
+									| <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
+									{
+										id = getGlobalValue(<IDENTIFIER>.lex)
+										if id.clase=="type":
+											<formal_parameter_function_rest>.returnType = id.tipo
+										else:
+											error("Type expected but " + <IDENTIFIER>.lex + " found")
+									}
+
+<statement_part> ::= <compound_statement>
+
+<compound_statement> ::= <BEGIN> <statement> <statement_part_rest> <END>
+
+<statement_part_rest> ::= <SEMI_COLON> <statement> <statement_part_rest> | <LAMBDA>
+
+<statement> ::= <simple_statement> | <structured_statement>
+
+<simple_statement> ::= <IDENTIFIER> 
+                        {
+                            <simple_statement_rest>.ID = <IDENTIFIER>.lex
+						}
+                        <simple_statement_rest> 
+						| 
+						<LAMBDA>
+
+<simple_statement_rest> ::= <ASSIGNMENT> <expression> 
+                            {
+								#busco primero un retorno de función
+                                identifier = getGlobalValue("$" + <simple_statement_rest>.ID)
+								if identifier== None:
+									identifier = getGlobalValue(<simple_statement_rest>.ID)
+                                if identifier.clase == "variable" or identifier== "reference" or identifier=="return":#este control lo hacemos dos veces para poder tirar mejor el error
+                                    if checkTypes(identifier.tipo, <expression>.tipo):
+                                        if identifier.clase == "variable":
+											if identifier.tipo.instancia(Simple):
+												#controlo los bounds del tipo, y asigno el valor a la variable
+												
+											elif identifier.tipo.instancia(Arreglo):
+												#asigno todo el arreglo a la variable
+											
+										elif identifier.clase == "reference":
+											if identifier.tipo.instancia(Simple):
+												#controlo los bounds del tipo, y asigno el valor a la variable indirecta
+												
+											elif identifier.tipo.instancia(Arreglo):
+												#asigno todo el arreglo a la variable indirecta
+											
+												
+										elif identifier.clase == "return":
+											
+											#controlo por los bounds, y asigno el valor de la expresión al retorno de función
+                                    else:
+                                        error("Incompatible types: "+identifier.tipo.nombre+" expected, but "+<expression>.tipo.nombre+" found.")
+                            }
+                            |
+                            <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression1>
+                            {
+								array = getGlobalValue(<simple_statement_rest>.ID)
+                                if checkTypes(id.tipo.indexType, <expression>.tipo):
+									if checkTypes(id.tipo.rangeType, <expression1>.tipo):
+										
+										# estamos asignando una expresión que estará en la pila a un elemento de un arreglo
+										#para esto se le resta el lower bound al índice
+										if array.clase == "variable":
+											#guardo en el arreglo, en la posición determinada
+										elif array.clase == "reference":
+											#guardo en el arreglo indirecto, en la posición determinada
+									else:
+										error("Non compatible types in assignment. %s expected, but %s found" % (id.tipo.indexType, <expression>.tipo))
+                                else:                                    
+                                    error("Non compatible types in assignment. %s expected as index, but %s found" % (id.tipo.indexType, <expression>.tipo))
+                            }
+                            |
+                            <OPEN_PARENTHESIS> 
+							{
+								identifier = getGlobalValue(<simple_statement_rest>.ID)
+								if identifier.clase== "procedure":
+									#armar el nuevo entorno, con su registro de activacion, guardar las variables, y apuntar la ejecucion al codigo del procedimiento
+									<actual_parameter>.attr = identifier.tipo.params[0]
+									<actual_parameter_rest>.params = identifier.tipo.params[1:]
+									nivel = lastLexicalLevel()
+									<actual_parameter>.esperado == identifier.tipo.listParams[0]
+									<actual_parameter>.id == <simple_statement_rest>.ID
+									if nivel == -1:
+										<actual_parameter>.id == <simple_statement_rest>.ID
+									else:
+										<actual_parameter>.id == None
+										
+								else:
+									error(<simple_statement_rest>.ID+ " is not a procedure")
+									
+							}
+							<actual_parameter>
+							<actual_parameter_rest> 
+							| 
+							<LAMBDA>
+							{
+								identifier = getGlobalValue(<simple_statement_rest>.ID)
+								if identifier.clase== "procedure":
+									#llamo al procedimiento con label identifier.label
+								else:
+									error(<simple_statement_rest>.ID+ " is not a procedure")
+							}
+
+<expression> ::={
+					<simple_expression>.porRef = <expression>.porRef
+					<expression_rest>.porRef = <expression>.porRef
+				} 
+				<simple_expression> 
+				{
+					<expression_rest>.attr = <simple_expression>.attr
+					
+					#expression_rest debe heredar el valor de simple_expression
+					
+				}
+				<expression_rest>
+				{
+					<expression>.attr = <expression_rest>.attr
+				}
+				
+
+<expression_rest> ::= <relational_operator> <simple_expression> 
+					  {
+						if <expression_rest>.porRef:
+							error("Reference parameter expected")
+						if <simple_expression>.attr.tipo.instancia(Simple):
+							if checkTypes(<expression_rest>.attr.tipo,<simple_expression>.attr.tipo):
+								#se debe apilar el valor de simple_expression, y luego aplicar el operador relacional de relational_operator
+								<expression_rest>.attr = Attr(clase="subexpression", tipo = Booleano())
+							else:
+								error("non compatible types")
+						else:
+							error("invalid types")
+					  }
+					  | 
+					  <LAMBDA>
+
+<simple_expression> ::= {
+							<term>.porRef = <simple_expression>.porRef
+						}
+						<term> 
+						{
+							<simple_expression_other>.attr=<term>.attr
+							<simple_expression_other>.porRef = <simple_expression>.porRef
+						}
+						<simple_expression_other> 
+						{
+							<simple_expression>.attr = <simple_expression_other>.attr
+						}
+
+<simple_expression_other> ::= <adding_operator> <term> 
+							  {
+								if <simple_expression_other>.porRef:
+									error("reference parameter expected")
+								if <term>.attr.tipo.instancia(<adding_operator>.tipo):
+									if checkTypes(<simple_expression_other>.attr.tipo,<term>.attr.tipo):
+										# aplicar adding_operator.op
+										<simple_expression_other1>.attr = newAttr(tipo=<adding_operator>.tipo,clase="subexpresion")
+									else:
+								else:
+									error("invalid types") 
+							  }
+							  <simple_expression_other1> 
+							  {	
+								<simple_expression_other>.attr = <simple_expression_other1>.attr
+							  }
+							  | 
+							  <LAMBDA>
+
+<term> ::= {
+			<factor>.porRef = <term>.porRef
+			<term_other>.porRef = <term>.porRef
+		   }
+			<factor>
+		   {
+			<term_other>.attr = <factor>.attr
+		   }
+		   <term_other>
+		   {
+			<term>.attr = <term_other>.attr
+		   }
+
+<term_other> ::= <multiplying_operator> <factor>
+				 {
+					if <term_other>.porRef:
+						error("reference parameter expected") 
+					if checkTypes(<term_other>.attr.tipo,<factor>.attr.tipo) and <factor>.attr.tipo.instancia(multiplying_operator.tipo):
+						# aplicar el operador
+						<term_other1>.attr = <factor>.attr
+					else:
+						error("invalid types")
+					<term_other1>.porRef = <term_other>.porRef
+				 }
+				 <term_other1> 
+				 {
+					
+					<term_other>.attr = <term_other1>.attr
+				 }
+				 | 
+				 <LAMBDA>
+
+<factor> ::= <IDENTIFIER> 
+			 {
+				<factor_rest>.id=<IDENTIFIER>.lex
+				<factor_rest>.porRef=<factor>.porRef
+			 }
+			 <factor_rest> 
+			 {
+				<factor>.attr=<factor_rest>.attr
+			 }
+			 | 
+			 <NUMBER> 
+			 {
+				if <factor>.porRef:
+					error("reference parameter expected") 
+				<factor>.attr = newAttr(valor=<NUMBER>.lex,tipo=Entero(),clase="subexpression")
+				#apilo la constante
+			 }
+			 | 
+			 <OPEN_PARENTHESIS> 
+			 {
+				<expression>.porRef = <factor>.porRef
+			 }
+			 <expression> <CLOSE_PARENTHESIS> 
+			 {
+				if <factor>.porRef:
+					error("reference parameter expected") 
+				<factor>.attr = <expression>.attr
+			 }
+			 | 
+			 <NOT_LOGOP> <factor1> 
+			 {
+				if <factor>.porRef:
+					error("reference parameter expected") 
+				if <factor1>.attr.tipo.instancia(Booleano):
+					<factor>.attr = newAttr(tipo=Booleano(),clase="subexpresion")
+					#aplicar la negación lógica
+				else:
+					error("Boolean expected but "+<factor1>.tipo+" found")
+			 }
+			 | 
+			 <CHAR>
+			 {
+				if <factor>.porRef:
+					error("reference parameter expected") 
+				
+				<factor>.attr = newAttr(valor=<CHAR>.lex,tipo=Caracter(),clase="literal")
+				#apilo la constante char
+			 }
+			 |
+			 <sign> <factor1>
+			 {
+				if <factor>.porRef:
+					error("reference parameter expected") 
+				if <factor1>.attr.tipo.instancia(Entero):
+					<factor>.attr = newAttr(tipo=Entero(),clase="subexpresion")
+					if <sign>.value==-1:
+						# UMEN
+				else:
+					error("Integer expected but  "+<factor1>.tipo+" found")
+			 }
+			 # modifique esto de la gramatica y simple_expression porque sino habia que heredar el signo y era un quilombo
+
+<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> 
+				  {
+					array = getGlobalValue(<factor_rest>.id)
+					nivel = lastLexicalLevel()
+					if array.tipo.instancia(Arreglo):
+						if checkTypes(<expression>.attr.tipo,array.tipo.index):
+							#chequear que el resultado de la expresion este dentro del rango, sino tirar index out of bounds
+							#restar el lower bound del arreglo
+							<factor_rest>.attr = newAttr(tipo=array.tipo.element,clase="subexpresion")
+							if <factor_rest>.porRef:
+								#apilo el valor indirecto 
+							else:
+								#apilo el valor
+						else:
+							error(array.tipo + " expected as index but " + <expression>.attr.tipo + " found")
+					else:
+						error(<factor_rest>.id + " is not a valid array")
+						
+				  }
+				  | 
+				  <OPEN_PARENTHESIS> 
+				  {
+					if <factor_rest>.porRef:
+						error("reference parameter expected") 
+					fun = getGlobalValue(<factor_rest>.id)
+					if fun.clase=="function":
+						if len(fun.tipo.listParams)>0:
+							if lastLexicalLevel()==-1:
+								#la función es predefinida, por lo que a partir del identificador, se invoca a un macro que ejecute la función
+							else:
+								#reservar espacio para el valor de retorno
+								<actual_parameter>.esperado = fun.tipo.listParams[0]
+								<actual_parameter_rest>.listParams = listParams[1:]
+						else:
+							error("More parameters than expected")
+					else:
+						error(<factor_rest>.id + " is not a function")
+				  } 
+				  <actual_parameter>
+				  <actual_parameter_rest> 
+				  {
+					# llamar a la funcion con los parametros que estaran debidamente apilados
+					<factor_rest>.attr=newAttr(tipo=id.tipo.ret,clase="subexpresion")
+				  }
+				  | 
+				  <LAMBDA>
+				  {
+					id = getGlobalValue(<factor_rest>.id)
+					if id.clase=="function":
+						if <factor_rest>.porRef:
+							error("reference parameter expected") 
+						#llamar a la funcion sin parametros
+						<factor_rest>.attr = newAttr(tipo=id.tipo.ret,clase="subexpresion")
+					elif id.clase=="variable":
+						if <factor_rest>.porRef:
+							#apilar la dirección de memoria de la variable
+						else:
+							if id.tipo.instancia(Simple): #es una variable o una constante.
+								# se coloca el valor del id en la pila
+							elif id.tipo.instancia(Arreglo):
+								# se coloca el arreglo entero en la pila
+						<factor_rest>.attr = deepcopy(id)
+					elif id.clase=="constant": 
+						if <factor_rest>.porRef:
+							error("reference parameter expected") 
+						# se apila el valor de la constante
+						<factor_rest>.attr = deepcopy(id)
+					elif id.clase=="reference":
+						if porRef:
+							# apilar la direccion de la variable
+						else:
+							if identifier.tipo.instancia(Simple):
+								# apilo un valor de una variable con una inderección
+							elif identifier.tipo.instancia(Arreglo):
+								# apilo todo un arreglo con una indirección
+						attr.ref = deepcopy(identifier)
+					else:
+						error("Function, variable or constant expected, but "+id.tipo+" found")
+					
+				  }
+
+<actual_parameter> ::= {
+						<expression>.porRef=<actual_parameter>.expected[2]#aca viene el booleano de si es por referencia o on
+						
+					   }
+					   <expression>
+					   {
+						if <actual_parameter>.id!= None: # si es True, es una función predefinida
+							# se escribe la macro para imprimir, que depende de la instrucción, y del tipo del parámetro
+						else:
+							if not checkTypes(<expression>.attr.tipo,<actual_parameter>.esperado[1]):
+								error("another type expected")
+					   }
+
+<actual_parameter_rest> ::= <COMMA> 
+							{
+								if len(<actual_parameter_rest>.parameterList)>0:
+									<actual_parameter>.expected = <actual_parameter_rest>.parameterList[0][1:2]
+								else:
+									error("More parameters than expected")
+							}
+							<actual_parameter>
+							{
+								#colocar el parametro en la pila
+								<actual_parameter_rest>.parameterList=parameterList[1:]
+							}
+							<actual_parameter_rest> 
+							| 
+							<CLOSE_PARENTHESIS>
+							{
+								if len(<actual_parameter_rest>.parameterList)>0:
+									error("Less parameters than expected")
+							}
+
+<multiplying_operator> ::= <MULTIPLY_OP> 
+							{
+								<multiplying_operator>.op = "MULT"
+								<multiplying_operator>.tipo = Entero()
+							
+							}
+							| 
+							<DIV_OP> 
+							{
+								<multiplying_operator>.op = "DIVI"
+								<multiplying_operator>.tipo = Entero()
+							}
+							| 
+							<AND_LOGOP>
+							{
+								<multiplying_operator>.op = "DISJ"
+								<multiplying_operator>.tipo = Booleano()
+							}
+
+<adding_operator> ::= <ADD_OP> 
+						{
+							<multiplying_operator>.op = "SUMA"
+							<multiplying_operator>.tipo = Entero()
+						
+						}
+						|
+						<MINUS_OP> 
+						{
+							<multiplying_operator>.op = "SUST"
+							<multiplying_operator>.tipo = Entero()
+						
+						}
+						|
+						<OR_LOGOP>
+						{
+							<multiplying_operator>.op = "CONJ"
+							<multiplying_operator>.tipo = Booleano()
+						
+						}
+
+<relational_operator> ::= <LESS_OP> 
+							{
+								<multiplying_operator>.op = "CMME"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
+							| 
+							<LESS_EQUAL_OP> 	
+							{
+								<multiplying_operator>.op = "CMNI"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
+							| 
+							<GREATER_OP> 
+							{
+								<multiplying_operator>.op = "CMMA"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
+							| 
+							<GREATER_EQUAL_OP> 
+							{
+								<multiplying_operator>.op = "CMYI"
+								<multiplying_operator>.tipo = Simple()
+							
+							}
+							| 
+							<NOT_EQUAL_OP> 
+							{
+								<multiplying_operator>.op = "CMDG"
+								<multiplying_operator>.tipo = Tipo() #no estoy seguro si se pueden comparar tipos estructurados tmb ...
+							}
+							| 
+							<EQUAL>
+							{
+								<multiplying_operator>.op = "CMIG"
+								<multiplying_operator>.tipo = Tipo()#no estoy seguro si se pueden comparar tipos estructurados tmb ...
+							
+							}
+
+<structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
+
+<conditional_statement> ::= <IF> <expression> 
+							{
+								if <expression>.tipo.instancia(Booleano):
+									#apilar su valor en la lista..
+									#aplicar desvio si falso a la etiqueta de despues del if
+									<conditional_statement_other>.label = #label de después del if
+								else:
+									error("Boolean expected")
+							}
+							<THEN> <statement> <conditional_statement_other>
+
+<conditional_statement_other> ::= <ELSE>
+								  {
+									#desvio si verdadero a la etiqueta de despues del if
+								  } 
+								  <statement> 
+								  | 
+								  {
+									#pongo etiqueta de después del if
+								  }
+								  <LAMBDA>
+
+<repetitive_statement> ::= <WHILE> 
+							{
+								#poner un label de inicio de expresion
+							}
+							<expression> 
+							{
+								if <expression>.tipo.instancia(Booleano):
+									#apilar su valor en la lista..
+									#aplicar desvio si falso a la etiqueta de despues del while
+								else:
+									error("Boolean expected")
+							}
+							<DO> <statement> 
+							{
+								#desvío siempre al comienzo de la expresión
+								#label de fin de while
+							}
+
+\end{verbatim}
+
 \chapter{Analizador Semántico}
 
 Una vez especificado el Esquema de Traducción, se procedió a implementar la última etapa del compilador; se detallarán a continuación las secciones más reelevantes del desarrollo.
@@ -515,7 +1534,7 @@ Una vez especificado el Esquema de Traducción, se procedió a implementar la últi
 \section{Tablas de Símbolos}
 La primera clase agregada por el analizador semántico es la Tabla de símbolos, cuyo código puede ser encontrado en el archivo \texttt{hashStack.py}. Como el nombre del archivo indica, la implementación consiste de una {\bf pila de tablas de símbolos}; la pila se encuentra implementada utilizando una lista de Python (que por defecto posee las operaciones características de las pilas, como \texttt{Push()} y \texttt{Pop()}); cada una de las tablas de símbolos está implementada con diccionarios de Python, que son tablas hash optimizadas y cuentan con la ventaja de que tanto la inserción como la búsqueda en la tabla es de orden constante.
 
-Inicialmente, la pila contiene una tabla de símbolos con todos los identificadores predefinidos mostrados en la tabla \ref{predefinidos}.
+Inicialmente, la pila contiene una tabla de símbolos con todos los identificadores predefinidos mostrados en el cuadro \ref{tab:predefinidos}.
 
 \begin{table}[htbp]
 \centering
@@ -537,8 +1556,9 @@ chr							& {\ttfamily Attr(tipo = Funcion(params = [("`x"',Entero(),False)], re
 pred 					& {\ttfamily Attr(tipo = Funcion(params = [("x",Simple(),False)], ret = Simple()), clase = "function")} \\ \hline
 succ 					& {\ttfamily Attr(tipo = Funcion(params = [("x",Simple(),False)], ret = Simple()), clase = "function")} \\ \hline
 \end{tabular}
-\label{tab:predefinidos}
+
 \caption{Identificadores predefinidos}
+\label{tab:predefinidos}
 \end{table}
 Por cada nivel léxico analizado se apila una nueva tabla de símbolos, que es utilizada durante todo el bloque y desapilada una vez que dicho nivel léxico termina de ser analizado.
 
@@ -563,15 +1583,17 @@ La clase \texttt{Attr} está compuesta de cinco atributos:
 
 Como se mencionó, cada uno de los identificadores en la tabla de símbolos posee un tipo determinado dentro de la jerarquía de tipos. Dicha jerarquía se encuentra graficada en la figura \ref{jerarquia}, y la implementación de cada uno de los tipos que la componen se encuentra en el archivo \texttt{tipos.py}.
 
-\begin{figure}
+\begin{figure}[htbc]
+
 \centering
 \includegraphics[width=150mm]{jerarquia.png}
+
+\caption{Jeraqu\'{i}a de tipos}
 \label{jerarquia}
-\caption{Jeraqu\'ia de tipos}
 \end{figure}
 
 \section{Implementación del EDT}
-La implementación del Esquema de Traducción en Python fue realizada adaptando todas las acciones indicadas en el EdT a instrucciones propias del lenguaje. Los atributos heredados en el esquema se implementaron mediante parámetros pasados por valor; en cuanto a los atributos sintetizados, dado que Python no posee parámetros por referencia (que hubiese sido el salto a implementación ideal), se utilizó un nivel de indirección extra, enviando una referencia a un objeto que simboliza el atributo sintetizado. De esta manera, el procedimiento en el nivel "`inferior"' modifica el contenido del objeto, y una vez que finaliza, el procedimiento de nivel "`superior"' puede acceder a los atributos del objeto modificados.
+La implementación del Esquema de Traducción en Python fue realizada adaptando todas las acciones indicadas en el EdT a instrucciones propias del lenguaje. Los atributos heredados en el esquema se implementaron mediante parámetros pasados por valor; en cuanto a los atributos sintetizados, dado que Python no posee parámetros por referencia (que hubiese sido el salto a implementación ideal), se utilizó un nivel de indirección extra, enviando una referencia a un objeto que simboliza el atributo sintetizado. De esta manera, el procedimiento en el nivel ``inferior'' modifica el contenido del objeto, y una vez que finaliza, el procedimiento de nivel ``superior'' puede acceder a los atributos del objeto modificados.
 
 \begin{thebibliography}{9}
 \addcontentsline{toc}{chapter}{Bibliografía}
