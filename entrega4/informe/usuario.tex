@@ -6,7 +6,7 @@
 %\usepackage{fancyvrb}
 \usepackage{float}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-%\usepackage{gmverb}
+\usepackage{gmverb}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
@@ -14,7 +14,7 @@
 
 \author{Diego Marcovecchio (LU: 83815)\and Leonardo Molas (LU: 82498)}
 
-\date{2 de Diciembre de 2010}
+\date{6 de Diciembre de 2010}
 	
 \begin{document}
 	
@@ -27,7 +27,7 @@
 
 \addcontentsline{toc}{chapter}{Introducción}
 
-Este es el Manual del Usuario del Compilador de Mini-Pascal \textsc{pyComp}. Detallaremos el alcance del compilador, el lenguaje y los símbolos utilizados, los tipos de datos cubiertos; la forma de uso del lenguaje, la utilización en general del compilador, y las decisiones de diseño tomadas.
+Este es el Manual del Usuario del Compilador de Mini-Pascal \textsc{pyComp}. En los capítulos encontrados a continuación detallaremos la utilización en general del compilador, el lenguaje y los símbolos utilizados, el alcance del compilador, los tipos de datos cubiertos, la forma de uso del lenguaje, y las decisiones de diseño tomadas.
 
 \chapter{Modo de Uso}
 
@@ -56,14 +56,14 @@ Para ejecutar el compilador es necesario contar con las siguientes librerías (qu
 \subsection*{Argumentos opcionales}
 
 \begin{description}
-	\item[\ttfamily OUT\_FILE] El archivo opcional de salida. En caso de especificarse, en éste archivo se generará el código MEPa correspondiente a {\ttfamily IN\_FILE}; en caso de no especificarse, se removerán los últimos tres caracteres del {\ttfamily IN\_FILE}, y se reemplazarán por \"mepa\", creando un nuevo archivo con ese nombre.
+	\item[\ttfamily OUT\_FILE] El archivo opcional de salida. En caso de especificarse, en éste archivo se generará el código MEPa correspondiente a {\ttfamily IN\_FILE}; en caso de no especificarse, se removerán los últimos tres caracteres del {\ttfamily IN\_FILE}, y se reemplazarán por \verb|mepa|, creando un nuevo archivo con ese nombre.
 	\item[\ttfamily -d] Modo \textit{debug} (utilizado durante el desarrollo, y dejado por la posible utilidad en el futuro).
 	\item[\ttfamily -h, --help] Muestra la ayuda por pantalla.
 	\item[\ttfamily -o DISPLAY\_FILE] Hace que la salida del compilador se muestre en el archivo {\ttfamily DISPLAY\_FILE}. Por defecto, {\ttfamily DISPLAY\_FILE} es el archivo de salida standard del sistema operativo, por lo que de no especificarse, la salida será realizada por la pantalla.
 \end{description}
 
 \section{Formato de la salida}
-La salida por pantalla de \emph{pyComp} mostrará un mensaje de éxito si el programa es correcto, o bien un mensaje de error indicando el tipo de error, y el número de línea en el que fue detectado.
+La salida por pantalla de \textsc{pyComp} mostrará un mensaje de éxito si el programa es correcto, o bien un mensaje de error indicando el tipo de error, y el número de línea en el que fue detectado.
 
 Los errores posiblemente devueltos son:
 
@@ -174,14 +174,6 @@ Un número es una secuencia de dígitos decimales.
 \end{verbatim}
 
 
-\section{Programas}
-Todo archivo fuente válido en Mini-Pascal es un programa; el programa está compuesto de declaraciones y sentencias, como se verá en las secciones siguientes del manual.
-
-\subsection{Tipos predefinidos}
-Los tipos predefinidos simples en Mini-Pascal son \texttt{char} (caracteres), \texttt{integer} (números enteros) y \texttt{boolean} (\textbf{true} y \textbf{false}).
-
-Por añadidura, pueden declararse estructuras de tipo arreglo con el constructor \texttt{array}, como se detallará en la sección siguiente.
-
 \section{Declaraciones}
 
 \subsection{Constantes}
@@ -207,9 +199,9 @@ Los tipos determinan los valores posibles que puede tener una variable en Mini-P
 
 \subsubsection{Tipos Simples}
 
-Dentro de los tipos, se encuentran los tipos simples, que cumplen con la característica de ocupar sólo una celda de memoria. Hay tres tipos simples predefinidos en Mini-Pascal, que serán detallados luego en la sección pertinente.
+Los tipos simples cumplen con la característica de ocupar sólo una celda de memoria. Además de los tres tipos simples predefinidos  mencionados anteriormente, Mini-Pascal permite definir \textit{subrangos}.
 
-A su vez, se encuentran los \textit{subrangos}, que definen cotas superiores e inferiores a partir de constantes, cuyos tipos deben coincidir en el tipo del subrango.
+Los \textit{subrangos} incluyen un subconjunto de valores de un tipo simple, y se definen a partir de una cota inferior y una cota superior a través de constantes; naturalmente, ambas constantes deben ser del mismo tipo simple.
 
 \begin{verbatim}
 <simple type> ::= <subrange type> | <type identifier>
@@ -221,7 +213,7 @@ A su vez, se encuentran los \textit{subrangos}, que definen cotas superiores e i
 
 \subsubsection{Tipos Compuestos}
 
-El único tipo compuesto posible dentro de Mini-Pascal es el arreglo: una serie de locaciones de memoria referenciados por índices correlativos. Éste debe tener tipos simples tanto de elementos como de índices.
+El único tipo compuesto posible dentro de Mini-Pascal es el arreglo: una serie de locaciones de memoria referenciados por índices correlativos. Tanto el índice como los elementos de los arreglos deben ser de tipos simples.
 \begin{verbatim}
 <structured type> ::= <unpacked structured type>
 
@@ -305,6 +297,7 @@ Los operadores que se detallarán son binarios (es decir, reciben dos argumentos 
 
 % Table generated by Excel2LaTeX from sheet 'Hoja1'
 \begin{table}[htbp]
+	 \centering
     \begin{tabular}{|l|l|l|l|}
 	    
 	    \hline \textbf{Operador} & \textbf{Operación} & \textbf{Tipo de los operandos }& \textbf{Tipo del resultado} \\
@@ -323,7 +316,7 @@ Los operadores que se detallarán son binarios (es decir, reciben dos argumentos 
 % Table generated by Excel2LaTeX from sheet 'Hoja1'
 \begin{table}[htbp]
 
-  
+   \centering
     \begin{tabular}{|l|l|l|l|}
     \hline
     \textbf{Operador} & \textbf{Operación} & \textbf{Tipo de los operandos }& \textbf{Tipo del resultado} \\
@@ -349,17 +342,17 @@ Los operadores que se detallarán son binarios (es decir, reciben dos argumentos 
     \hline
     \textbf{Operador} & \textbf{Operación} & \textbf{Tipo de los operandos }& \textbf{Tipo del resultado} \\
     \hline
-    <>    & Distinto & Integer,Caracteres y Subrango & Booleano \\
+    \textless \textgreater    & Distinto & Integer,Caracteres y Subrango & Booleano \\
     \hline
     =     & Igual & Integer,Caracteres y Subrango & Booleano \\
     \hline
-    <     & Menor o igual & Integer,Caracteres y Subrango & Booleano \\
+    \textless     & Menor & Integer,Caracteres y Subrango & Booleano \\
     \hline
-    >     & Mayor & Integer,Caracteres y Subrango & Booleano \\
+    \textgreater     & Mayor & Integer,Caracteres y Subrango & Booleano \\
     \hline
-    <=    & Menor o igual & Integer,Caracteres y Subrango & Booleano \\
+    \textless=    & Menor o igual & Integer,Caracteres y Subrango & Booleano \\
     \hline
-    >=    & Mayor o igual & Integer,Caracteres y Subrango & Booleano \\
+    \textgreater=    & Mayor o igual & Integer,Caracteres y Subrango & Booleano \\
     \hline
     
     \end{tabular}%
@@ -371,7 +364,7 @@ Los operadores que se detallarán son binarios (es decir, reciben dos argumentos 
 
 \subsection{Factores}
 
-Los átomos a partir de los cuales se calculan las expresiones son denominados \textsl{factores}. Pueden ser literales numéricos o caracteres, así como constantes, cuyos valores se sabrán en tiempo de compilación; o también variables, componentes de variables de tipo complejo, o llamadas a función, cuyos valores serán computados en tiepmo de ejecución. Finalmente, puede haber valores booleanos negados, al utilizar la función \textsl{not}, y expresiones completas, encerradas entre paréntesis.
+Los átomos a partir de los cuales se calculan las expresiones son denominados \textsl{factores}. Si el factor es un literal numéricos, un caracter, o una constante, los valores se determinarán en tiempo de compilación; en caso de que el factor sea una variables, un componente de una variables de tipo estructurado o una llamada a función, su valore será computado en tiempo de ejecución. Finalmente, puede haber valores booleanos negados, utilizando el operador \textsl{not}, y expresiones completas encerradas entre paréntesis.
 
 \begin{verbatim}
 <factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | not <factor> | <char>
@@ -391,9 +384,8 @@ Los parámetros actuales serán explicados luego, en la sección de procedimientos.
 <function identifier> ::= <identifier>
 \end{verbatim}
 
-\subsection{Expresiones simples}
-
-Las expresiones siguen se computan a partir de los factores, aplicando las operaciones, siguiendo la sintaxis especificada en la sección de la gramática siguiente.
+\subsection{Forma de las expresiones}
+Vistos los operadores y los factores, pasamos ahora a ver el formato de las expresiones que denotan el cálculo a realizar:
 
 \begin{verbatim}
 <expression> ::= <simple expression> | <simple expression><relational operator><simple expression>
@@ -403,13 +395,18 @@ Las expresiones siguen se computan a partir de los factores, aplicando las opera
 <term>::= <factor> | <term><multiplying operator><factor>
 \end{verbatim}
 
+\section{Sentencias}
 
-\section{Sentencias Simples}
+Las sentencias denotan qué es lo que debe hacer el programa especificando acciones a realizar.
 
+\begin{verbatim}
+<statement> ::= <unlabelled statement>
 
+<unlabelled statement> ::= <simple statement> | <structured statement>
+\end{verbatim}
+
+\subsection{Sentencias Simples}
 Las sentencias simples componen los bloques de programa en el lenguaje Mini-Pascal. Sólo se contará con asignaciones o llamadas a procedimientos. A su vez, una sentencia simple puede ser vacía.
-
-
 
 \begin{verbatim}
 <simple statement> ::= <assignment statement> | <procedure statement> | <empty statement>
@@ -417,10 +414,9 @@ Las sentencias simples componen los bloques de programa en el lenguaje Mini-Pasc
 <empty statement> ::= <empty>
 \end{verbatim}
 
-\subsection{Asignaciones}
+\subsubsection{Asignaciones}
 
 Las asignaciones son sentencias que modifican el valor de una variable, o de un componente de una variable de tipo estructurado. Para esto se calcula el valor de una expresión, cuyo tipo debe coincidir con el tipo de la variable.
-
 
 Existe el caso especial de la asignación de valores de retorno de una función. En este caso, en vez de utilizar el nombre de una variable al principio de una asignación, se pone el nombre de la función del mismo nivel léxico. El valor que retorne la expresión será el valor que devuelva la función, en el lugar donde haya sido llamada.
 
@@ -440,8 +436,7 @@ Existe el caso especial de la asignación de valores de retorno de una función. E
 <array variable> ::= <entire variable>
 \end{verbatim}
 
-\subsection{Llamadas a procedimiento}
-
+\subsubsection{Llamadas a procedimiento}
 
 Los procedimientos son llamados anteponiendo su identificador antes de la lista de parámetros actuales. Estos últimos van entre paréntesis, y separados por comas. Es necesario enviar tantos parámetros actuales como parámetros formales tenga el procedimento invocado, y los tipos de cada uno de ellos deben coincidir.
 
@@ -458,113 +453,117 @@ Existe el caso especial de los parámetros por referencia, en el cual los parámet
 
 
 
-\section{Sentencias Estructuradas}
+\subsection{Sentencias Estructuradas}
 
-
-Las sentencias compuestas permiten alterar el flujo de control en el programa fuente; las sentencias compuestas disponibles en Mini-Pascal son el condicional \texttt{if} y el bucle \texttt{while}. El cuerpo de las sentencias compuestas puede ser una única sentencia simple, o bien una sucesión de otras sentencias agrupadas entre delimitadores \texttt{begin} y \texttt{end};
+Las sentencias estructuradas pueden ser sentencias compuestas (sentencias agrupadas entre los delimitadores \texttt{begin} y \texttt{end}), o sentencias especiales que permiten alterar el flujo de control en el programa fuente; las únicas sentencias disponibles en Mini-Pascal de este estilo son el condicional \texttt{if} y el bucle \texttt{while}. El cuerpo de estas sentencias es, a su vez, otra sentencia simple o compuesta.
 
 
 \begin{verbatim}
 <structured statement> ::= <compound statement> | <conditional statement> | <repetitive statement>
+<compound statement> ::= begin <statement>{;<statement>} end
 \end{verbatim}
 
-\subsection{Sentencias Compuestas}
-
-\subsection{Condicionales}
+\subsubsection{Condicionales}
+Las sentencias condicionales bifurcan el flujo de control en un programa; únicamente se ejecutará el grupo de sentencias contenidas en la sección marcada por \texttt{then} si la expresión condicional booleana resulta verdadera al ser evaluada. En caso de que la evaluación de dicha condición resulte falsa, se ejecutará la sección del \texttt{else} si ésta está presente. Posteriormente, se resumirá la ejecución con la sentencia siguiente a las del condicional.
 \begin{verbatim}
 <conditional statement> ::= <if statement>
 
 <if statement> ::= if <expression> then <statement> | if <expression> then <statement> else <statement>
 \end{verbatim}
-\subsection{Sentencias repetitivas}
+\subsubsection{Sentencias repetitivas}
+El bucle \texttt{while} permite ejecutar un conjunto de sentencias repetidas veces dependiendo de una condición booleana; mientras la evaluación de la expresión condicional resulte verdadera, todas las sentencias dentro del cuerpo del bucle se ejecutarán una vez más. Una vez que la expresión condicional resulta falsa, se prosigue ejecutando la sentencia siguiente al bucle.
 \begin{verbatim}
 <repetitive statement> ::= <while statement>
 
 <while statement> ::= while <expression> do <statement>
 \end{verbatim}
-\section{Declaraciones}
 
+\section{Predefinidos}
+
+\subsection{Constantes predefinidas}
+
+Se cuenta con tres constantes predefinidas.
+
+\begin{itemize}
+	\item [\texttt{true}] Constante de tipo booleano, correspondiente al valor lógico ``\textbf{verdadero}''.
+	\item [\texttt{false}] Constante de tipo booleano, correspondiente al valor lógico ``\textbf{false}''.
+	\item [\texttt{maxint}] Constante de tipo entero, igual a 32767. Indica el máximo valor posible para un entero.
+\end{itemize}
 
 \subsection{Tipos predefinidos}
-Los tipos predefinidos en Mini-Pascal son \texttt{char} (caracteres), \texttt{integer} (números enteros) y \texttt{boolean} (\textbf{true} y \textbf{false}).
+Los tipos predefinidos simples en Mini-Pascal son \texttt{char} (caracteres), \texttt{integer} (números enteros) y \texttt{boolean} (\textbf{true} y \textbf{false}).
+
+\subsubsection{\texttt{char}}
+
+Los caracteres son todos los que se encuentran en el código ASCII \footnote{Para más información, dirigirse a \url{http://es.wikipedia.org/wiki/ASCII}.} Se pueden generar a partir de liteles. Como se ha detallado, éstos pueden ser números o letras (mayúsculas y minúsculas). Sin embargo, una variable declarada de este tipo puede obtener otros valores a partir de la función \verb|chr|, o las funciones \verb|pred| y \verb|succ|.
+
+\subsubsection{\texttt{integer}}
+
+Los enteros son enteros signados de 16 bits. Pueden tomar valores de $-2^{15}$ ($-maxint-1$) a $2^{15}-1$ ($maxint$).
+
+\subsubsection{\texttt{boolean}}
+
+Los booleanos están definidos a partir de las constantes especificadas antes: \verb|true| y \verb|false|, pudiendo tener sólo estos valores.
+
+\subsection{Procedimientos predefinidos}
+
+Existen algunos procedimientos predefinidos, que serán útiles en la entrada y salida, para la interacción con el usuario.
+
+\subsubsection{\texttt{write}}
+
+Puede recibir como único parámetro un carácter, o un entero (así como subrangos definidos sobre esos tipos). Genera como salida por pantalla la impresión del carácter, o número.
+
+\subsubsection{\texttt{writeln}}
+
+Es análogo al procedimiento anterior, con la diferencia de imprimir además un salto de línea.
+
+\subsubsection{\texttt{read}}
+
+Este procedimiento toma un parámetro por referencia de tipo \verb|integer| o \verb|char|, y en éste devuelve el valor de la entrada por pantalla, ya sea un número o un caracter.
 
 
-\section{Corrección de la gramática}
-Antes de comenzar con la modificación, se corrigieron los errores marcados por la cátedra.
+\subsubsection{\texttt{readln}}
+
+Es análogo al anterior, pero al leer el parámetro, ignora el resto de la línea.
+
+\subsection{Funciones predefinidas}
+
+\subsubsection{\texttt{chr}}
+
+Esta función se puede ver como un \textit{cast}, de \verb|integer| a \verb|char|. Dado un entero (de 0 a 255) devuelve un caracter de ese código ASCII.
+
+\subsubsection{\texttt{ord}}
+
+Es la función inversa a la anterior. Dado un caracter, devuelve su código ASCII.
+
+\subsubsection{\texttt{pred}}
+
+Esta función puede tener como parámetro valores de tipo \verb|char| o \verb|integer| (así como subrangos definidos sobre éstos), y devuelve el valor anterior dentro de los valores posibles.
+
+\subsubsection{\texttt{succ}}
+
+Es análoga a la anterior, sólo que devuelve el sucesor.
+
+\section{Programas}
+
+Todo archivo fuente válido en Mini-Pascal es un programa; el programa está compuesto por las declaraciones y sentencias antes definidas.
+
+\subsection{Bloques}
+
+Un bloque es la estructura principal de un programa (o subprograma) en Mini-Pascal. En la siguiente gramática, se detalla como se declara.
+
 \begin{verbatim}
-<program> ::= <program heading> <block>.
-
-<program heading> ::= program <identifier>;
-
 <block> ::= <constant definition part><type definition part><variable declaration part><procedure and function declaration part><statement part>
 
 <constant definition part> ::= <empty> | const <constant definition>{;<constant definition>};
 
-<constant definition> ::= <identifier>=<constant>
-
-<identifier> ::= <letter>{<letter or digit>}
-
-<letter or digit> ::= <letter> | <digit>
-
-<letter> ::= A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
-
-<digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-
-<constant> ::= <unsigned number> | <sign><unsigned number> | <constant identifier> | <sign><constant identifier> | <char>
-
-<unsigned number> ::= <unsigned integer>
-
-<unsigned integer> ::= <digit sequence>
-
-<digit sequence> ::= <digit>{<digit>}
-
-<sign> ::= + | -
-
-<constant identifier> ::= <identifier>
-
 <type definition part> ::= <empty> | type <type definition>{;<type definition>};
 
-<type definition> ::= <identifier>=<type>
-
-<type> ::= <simple type> | <structured type>
-
-<simple type> ::= <subrange type> | <type identifier>
-
-<subrange type> ::= <constant>..<constant>
-
-<type identifier> ::= <identifier>
-
-<structured type> ::= <unpacked structured type>
-
-<unpacked structured type> ::= <array type>
-
-<array type> ::= array[<index type>] of <component type>
-
-<index type> ::= <simple type>
-
-<component type> ::= <simple type>
-
 <variable definition part> : := <empty> | var<variable declaration>{;<variable declaration>};
-
-<variable declaration> ::= <identifier>{,<identifier>} : <type>
 
 <procedure and function declaration part> ::= {<procedure or function declaration part>;}
 
 <procedure or function declaration part> ::= <procedure declaration> | <function declaration>
-
-<procedure declaration> ::= <procedure heading><block>
-
-<procedure heading> ::= procedure <identifier>; | procedure <identifier>(<formal parameter section>{;<formal parameter section>});
-
-<formal parameter section> ::= <parameter group> | var <parameter group>
-
-<parameter group> ::= <identifier>{,<identifier>}:<type identifier>
-
-<function declaration> ::= <function heading><block>
-
-<function heading> ::= function<identifier>:<result type>; | <function identifier>(<formal parameter section>{;<formal parameter section>}):<result type>;
-
-<result type> ::= <type identifier>
 
 <statement part> ::= <compound statement>
 
@@ -573,231 +572,38 @@ Antes de comenzar con la modificación, se corrigieron los errores marcados por l
 <statement> ::= <unlabelled statement>
 
 <unlabelled statement> ::= <simple statement> | <structured statement>
-
-<simple statement> ::= <assignment statement> | <procedure statement> | <empty statement>
-
-<assignment statement> ::= <variable>:=<expression> | <function identifier>:=<expression>
-
-<variable> ::= <entire variable> | <component variable>
-
-<entire variable> ::= <variable identifier>
-
-<variable identifier> ::= <identifier>
-
-<component variable> ::= <indexed variable>
-
-<indexed variable> ::= <array variable>[<expression>]
-
-<array variable> ::= <entire variable>
-
-<expression> ::= <simple expression> | <simple expression><relational operator><simple expression>
-
-<simple expression> ::= <term> | <simple expression><adding operator><term> | <sign><term>
-
-<term>::= <factor> | <term><multiplying operator><factor>
-
-<factor> ::= <variable> | <unsigned constant> | <function designator> | (<expression>) | not <factor> | <char>
-
-<char> ::= '<letter>' | '<digit>'
-
-<unsigned constant> ::= <unsigned number> | <constant identifier>
-
-<function designator> ::= <function identifier> | <function identifier>(<actual parameter>{,<actual parameter>})
-
-<function identifier> ::= <identifier>
-
-<actual parameter> ::= <expression> | <variable>
-
-<multiplying operator> ::= * | div | and
-
-<adding operator> ::= + | - | or
-
-<relational operator> ::= = | <> | < | <= | >= | >
-
-<procedure statement> ::= <procedure identifier> | <procedure identifier>(<actual parameter>{,<actual parameter>})
-
-<procedure identifier> ::= <identifier>
-
-<empty statement> ::= <empty>
-
-<structured statement> ::= <compound statement> | <conditional statement> | <repetitive statement>
-
-<conditional statement> ::= <if statement>
-
-<if statement> ::= if <expression> then <statement> | if <expression> then <statement> else <statement>
-
-<repetitive statement> ::= <while statement>
-
-<while statement> ::= while <expression> do <statement>
-
-<special symbol> ::= + | - | * | = | <> | < | > | <= | >= | ( | ) | [ | ] | { | } | := | . | , | ; | : | div | or | and | not | if | then | else | while | do | begin | end | const | var | type | array | function | procedure | program
-
 \end{verbatim}
 
+\subsection{Sintaxis del programa}
 
-\section{Gramática final}
-Para llegar a la gramática utilizada para implementar el analizador sintáctico, se realizaron varios pasos:
-\begin{enumerate}
-	\item \textbf{Eliminar Ambiguedad}: ésta tal vez sea la afirmación más peligrosa, ya que no se puede saber si una gramática es ambigua o no. De cualquier manera, se eliminaron todas las ambiguedades que se encontraron, salvo el caso del \verb|if then else|, del cual se hablará más adelante.
-	\item \textbf{Eliminar Recursión a Izquierda}: Se utilizó el algoritmo explicado en \cite[pág. 212]{aho}.
-	\item \textbf{Factorizar a Izquierda}: Se utilizó el algoritmo explicado en el mismo libro, en la página 214.
-\end{enumerate}
-Luego de esta serie de pasos, se llegó a la siguiente gramática:
+Un programa cuenta con su encabezado, que declara el nombre del programa, y un bloque, como ha sido definido en la sección anterior.
 
 \begin{verbatim}
-<program> ::= <program_heading> <block> <END_PROGRAM> <EOF>
+<program> ::= <program heading> <block>.
 
-<program_heading> ::= <PROGRAM> <IDENTIFIER> <SEMI_COLON>
-
-<block> ::= <constant_definition_part> <block_cons_rest> | <block_cons_rest>
-
-<block_cons_rest> ::= <type_definition_part> <block_type_rest> | <block_type_rest>
-
-<block_type_rest> ::= <variable_definition_part> <block_var_rest> | <block_var_rest>
-
-<block_var_rest> ::= <procedure_and_function_declaration_part> <statement_part> | <statement_part>
-
-<constant_definition_part> ::= <CONST> <constant_definition> <constant_definition_rest>
-
-<constant_definition_rest> ::= <SEMI_COLON> <constant_definition_rest_rest>
-
-<constant_definition_rest_rest> ::= <constant_definition> <constant_definition_rest> | <LAMBDA>
-
-<constant_definition> ::= <IDENTIFIER> <EQUAL> <constant>
-
-<constant> ::= <NUMBER> | <IDENTIFIER> | <CHAR> | <sign> <constant_rest>
-
-<constant_rest> ::= <NUMBER> | <IDENTIFIER>
-
-<sign> ::= <ADD_OP> | <MINUS_OP>
-
-<type_definition_part> ::= <TYPE> <type_definition> <type_definition_rest>
-
-<type_definition_rest> ::= <SEMI_COLON> <type_definition_rest_rest>
-
-<type_definition_rest_rest> ::= <type_definition> <type_definition_rest> | <LAMBDA>
-
-<type_definition> ::= <IDENTIFIER> <EQUAL> <type>
-
-<type> ::= <simple_type> | <structured_type>
-
-<simple_type> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <CHAR> <SUBRANGE_SEPARATOR> <constant> | <sign> <subrange_type_rest> | <IDENTIFIER> <simple_type_rest>
-
-<simple_type_rest> ::= <SUBRANGE_SEPARATOR> <constant> | <LAMBDA>
-
-<subrange_type_rest> ::= <NUMBER> <SUBRANGE_SEPARATOR> <constant> | <IDENTIFIER> <SUBRANGE_SEPARATOR> <constant>
-
-<structured_type> ::= <ARRAY> <OPEN_BRACKET> <simple_type> <CLOSE_BRACKET> <OF> <simple_type>
-
-<variable_definition_part> ::= <VAR> <variable_declaration> <variable_declaration_part_rest>
-
-<variable_declaration_part_rest> ::= <SEMI_COLON> <variable_declaration_rest_rest>
-
-<variable_declaration_rest_rest> ::= <variable_declaration> <variable_declaration_part_rest> | <LAMBDA>
-
-<variable_declaration> ::= <IDENTIFIER> <variable_declaration_rest>
-
-<variable_declaration_rest> ::= <COMMA> <IDENTIFIER> <variable_declaration_rest> | <TYPE_DECLARATION> <type>
-
-<procedure_and_function_declaration_part> ::= <procedure_or_function_declaration_part> <SEMI_COLON> <procedure_and_function_declaration_part> | <LAMBDA>
-
-<procedure_or_function_declaration_part> ::= <procedure_declaration> | <function_declaration>
-
-<procedure_declaration> ::= <procedure_heading> <block>
-
-<procedure_heading> ::= <PROCEDURE> <IDENTIFIER> <procedure_heading_rest>
-
-<procedure_heading_rest> ::= <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_rest>
-
-<formal_parameter_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_rest> | <CLOSE_PARENTHESIS> <SEMI_COLON>
-
-<formal_parameter_section> ::= <parameter_group> | <VAR> <parameter_group>
-
-<parameter_group> ::= <IDENTIFIER> <parameter_group_rest>
-
-<parameter_group_rest> ::= <COMMA> <IDENTIFIER> <parameter_group_rest> | <TYPE_DECLARATION> <IDENTIFIER>
-
-<function_declaration> ::= <function_heading> <block>
-
-<function_heading> ::= <FUNCTION> <IDENTIFIER> <function_heading_rest>
-
-<function_heading_rest> ::= <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON> | <OPEN_PARENTHESIS> <formal_parameter_section> <formal_parameter_function_rest>
-
-<formal_parameter_function_rest> ::= <SEMI_COLON> <formal_parameter_section> <formal_parameter_function_rest> | <CLOSE_PARENTHESIS> <TYPE_DECLARATION> <IDENTIFIER> <SEMI_COLON>
-
-<statement_part> ::= <compound_statement>
-
-<compound_statement> ::= <BEGIN> <statement> <statement_part_rest> <END>
-
-<statement_part_rest> ::= <SEMI_COLON> <statement> <statement_part_rest> | <LAMBDA>
-
-<statement> ::= <simple_statement> | <structured_statement>
-
-<simple_statement> ::= <IDENTIFIER> <simple_statement_rest> | <LAMBDA>
-
-<simple_statement_rest> ::= <ASSIGNMENT> <expression> | <OPEN_BRACKET> <expression> <CLOSE_BRACKET> <ASSIGNMENT> <expression> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
-
-<component_variable> ::= <IDENTIFIER> <OPEN_BRACKET> <expression> <CLOSE_BRACKET>
-
-<expression> ::= <simple_expression> <expression_rest>
-
-<expression_rest> ::= <relational_operator> <simple_expression> | <LAMBDA>
-
-<simple_expression> ::= <term> <simple_expression_other> 
-
-<simple_expression_other> ::= <adding_operator> <term> <simple_expression_other> | <LAMBDA>
-
-<term> ::= <factor> <term_other>
-
-<term_other> ::= <multiplying_operator> <factor> <term_other> | <LAMBDA>
-
-<factor> ::= <IDENTIFIER> <factor_rest> | <NUMBER> | <OPEN_PARENTHESIS> <expression> <CLOSE_PARENTHESIS> | <NOT_LOGOP> <factor> | <CHAR> | <sign> <factor>
-
-<factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> | <OPEN_PARENTHESIS> <actual_parameter> <actual_parameter_rest> | <LAMBDA>
-
-<actual_parameter> ::= <expression>
-
-<actual_parameter_rest> ::= <COMMA> <actual_parameter> <actual_parameter_rest> | <CLOSE_PARENTHESIS>
-
-<multiplying_operator> ::= <MULTIPLY_OP> | <DIV_OP> | <AND_LOGOP>
-
-<adding_operator> ::= <ADD_OP> | <MINUS_OP> | <OR_LOGOP>
-
-<relational_operator> ::= <LESS_OP> | <LESS_EQUAL_OP> | <GREATER_OP> | <GREATER_EQUAL_OP> | <NOT_EQUAL_OP> | <EQUAL>
-
-<structured_statement> ::= <compound_statement> | <conditional_statement> | <repetitive_statement>
-
-<conditional_statement> ::= <IF> <expression> <THEN> <statement> <conditional_statement_other>
-
-<conditional_statement_other> ::= <ELSE> <statement> | <LAMBDA>
-
-<repetitive_statement> ::= <WHILE> <expression> <DO> <statement>
+<program heading> ::= program <identifier>;
 \end{verbatim}
 
-\section{¿Es LL(1)?}
-La gramática pasó por todos los pasos especificados, en un intento de lograr una gramática para ser utilizada como base de la implementación de un Analizador Sintáctico Descendente Predictivo Recursivo. Cada regla tiene conjuntos disjuntos de la función \textsc{Primero} para cada producción, por lo que el analizador puede saber que producción optar, leyendo un token. Por esto, se podría decir que la gramática obtenida es LL(1).
-
-Sin embargo, como fue dicho en la sección anterior, la gramática contiene por lo menos una ambigüedad: la del \verb|if then else|. La cadena de tokens \verb|<IF> ... <THEN> <IF> ... <THEN> ... <ELSE> ...| (donde los puntos suspensivos representan un grupo de statements válidos) tiene dos árboles de derivación posibles. 
-
-Una solución que se puede adoptar es la de utilizar precedencia, donde el \verb|<ELSE>| quedará ligado al \verb|<IF> ... <THEN>| sin \verb|<ELSE>| más cercano. Ésta solución será la que se adopte para la implementación del compilador de \textsc{Mini-Pascal}, y se llevará a cabo en la etapa de análisis semántico.
-
-Se puede concluir entonces que la gramática no es LL(1), pero de cualquier manera, sirve para realizar el Analizador Sintáctico.
-
-\chapter{Errores detectados}
-Dado las características del Analizador Sintáctico solicitado por la cátedra, los errores detectados son disparados cuando se encuentra un \textit{token} distinto al que se esperaba. Por esto, el mensaje impreso por pantalla (o en el archivo de salida) muestra el dicho \textit{token}.
-
-Muchas veces, está información no es suficiente para el programador, por lo que, en la mayoría de los posibles errores, también se detalla cuál era el token (o los tokens) esperados, como se muestra en la figura \ref{fig:error}.
 
 
-\begin{figure}[h]
-\begin{verbatim}
-Starting file lexical and syntactical analysis...
+\chapter{Decisiones de diseño}
 
-"bateria\ejemplo5.pas", line 22: Unexpected token: ")" found.
-\end{verbatim}
-\label{fig:error2}
-\caption{Error posible: Token inesperado}
-\end{figure}
+Dado que algunas situaciones no están consideradas completamente en la especificación de Mini-Pascal, se tomaron algunas decisiones de diseño para que el comportamiento del compilador sea consistente. A continuación, detallamos las más reelevantes.
+
+\section{Asignación de arreglos}
+Se considera que una variable de tipo arreglo puede ser asignada a otra {\bf si y sólo si}:
+		\begin{enumerate}
+			\item{Ambos arreglos poseen exactamente la misma cantidad de elementos.}
+			\item{Los componentes de los arreglos son de tipos compatibles.}
+		\end{enumerate}
+Dos tipos se consideran compatibles cuando se refieren al mismo tipo base; por ejemplo, dos subrangos de enteros diferentes.
+
+\section{Valores booleanos}
+Se considera que la constante \texttt{false} es ``menor'' ordinalmente a la constante \texttt{true}. Esto define la semántica de las operaciones \texttt{succ}, \texttt{pred}, y el conjunto de subrangos booleanos posibles a declarar. Concretamente, resulta imposible declarar un subrango \texttt{true..false}, puesto que la cota inferior del subrango es mayor a la cota superior.
+\section{Warnings}
+Si bien no necesariamente implican errores (pues el programa es sintáctica y semánticamente correcto), se decidió incluir \emph{warnings} cuando una variable no es inicializada antes de referenciarla, dado que el valor de dicha variable resulta, de esta manera, indefinido, y ese comportamiento no es usualmente deseado por el usuario.
+
+	De la misma manera, si se escribió una función o procedimiento que no es utilizada, o bien ese código es (de momento) inútil, o bien el usuario olvidó escribir la parte del programa encargada de usar dicho procedimiento. De cualquier manera, también se muestra un \emph{warning} para ayudar al usuario a detectar de manera anticipada estos posibles errores.
 
 \begin{thebibliography}{9}
 \addcontentsline{toc}{chapter}{Bibliografía}
@@ -815,7 +621,7 @@ Starting file lexical and syntactical analysis...
 	
 \bibitem{consideraciones}
 	Cátedra de Compiladores e Intérpretes, DCIC, UNS
-	\emph{Consideraciones Generales para la 3er entrega del Proyecto Nº1 - Analizador Sintáctico}
+	\emph{Convenciones para la entrega final del Proyecto Nº1}
 	2010
 
 \end{thebibliography}
