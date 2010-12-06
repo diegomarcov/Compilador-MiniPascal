@@ -6,7 +6,7 @@
 %\usepackage{fancyvrb}
 \usepackage{float}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-\usepackage{gmverb}
+%\usepackage{gmverb}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
@@ -56,14 +56,14 @@ Para ejecutar el compilador es necesario contar con las siguientes librerías (qu
 \subsection*{Argumentos opcionales}
 
 \begin{description}
-	\item[\ttfamily OUT\_FILE] El archivo opcional de salida. En caso de especificarse, en éste archivo se generará el código MEPa correspondiente a {\ttfamily IN\_FILE}; en caso de no especificarse, se removerán los últimos tres caracteres del {\ttfamily IN\_FILE}, y se reemplazarán por \"mepa\", creando un nuevo archivo con ese nombre.
+	\item[\ttfamily OUT\_FILE] El archivo opcional de salida. En caso de especificarse, en éste archivo se generará el código MEPa correspondiente a {\ttfamily IN\_FILE}; en caso de no especificarse, se removerán los últimos tres caracteres del {\ttfamily IN\_FILE}, y se reemplazarán por \verb|mepa|, creando un nuevo archivo con ese nombre.
 	\item[\ttfamily -d] Modo \textit{debug} (utilizado durante el desarrollo, y dejado por la posible utilidad en el futuro).
 	\item[\ttfamily -h, --help] Muestra la ayuda por pantalla.
 	\item[\ttfamily -o DISPLAY\_FILE] Hace que la salida del compilador se muestre en el archivo {\ttfamily DISPLAY\_FILE}. Por defecto, {\ttfamily DISPLAY\_FILE} es el archivo de salida standard del sistema operativo, por lo que de no especificarse, la salida será realizada por la pantalla.
 \end{description}
 
 \section{Formato de la salida}
-La salida por pantalla de \emph{pyComp} mostrará un mensaje de éxito si el programa es correcto, o bien un mensaje de error indicando el tipo de error, y el número de línea en el que fue detectado.
+La salida por pantalla de \textsc{pyComp} mostrará un mensaje de éxito si el programa es correcto, o bien un mensaje de error indicando el tipo de error, y el número de línea en el que fue detectado.
 
 Los errores posiblemente devueltos son:
 
@@ -173,14 +173,6 @@ Un número es una secuencia de dígitos decimales.
 <digit sequence> ::= <digit>{<digit>}
 \end{verbatim}
 
-
-\section{Programas}
-Todo archivo fuente válido en Mini-Pascal es un programa; el programa está compuesto de declaraciones y sentencias, como se verá en las secciones siguientes del manual.
-
-\subsection{Tipos predefinidos}
-Los tipos predefinidos simples en Mini-Pascal son \texttt{char} (caracteres), \texttt{integer} (números enteros) y \texttt{boolean} (\textbf{true} y \textbf{false}).
-
-Por añadidura, pueden declararse estructuras de tipo arreglo con el constructor \texttt{array}, como se detallará en la sección siguiente.
 
 \section{Declaraciones}
 
@@ -392,7 +384,7 @@ Los parámetros actuales serán explicados luego, en la sección de procedimientos.
 <function identifier> ::= <identifier>
 \end{verbatim}
 
-\subsection{Formato}
+\subsection{Forma de las expresiones}
 Vistos los operadores y los factores, pasamos ahora a ver el formato de las expresiones que denotan el cálculo a realizar:
 
 \begin{verbatim}
@@ -485,6 +477,114 @@ El bucle \texttt{while} permite ejecutar un conjunto de sentencias repetidas vec
 
 <while statement> ::= while <expression> do <statement>
 \end{verbatim}
+
+\section{Predefinidos}
+
+\subsection{Constantes predefinidas}
+
+Se cuenta con tres constantes predefinidas.
+
+\begin{itemize}
+	\item [\texttt{true}] Constante de tipo booleano, correspondiente al valor lógico ``\textbf{verdadero}''.
+	\item [\texttt{false}] Constante de tipo booleano, correspondiente al valor lógico ``\textbf{false}''.
+	\item [\texttt{maxint}] Constante de tipo entero, igual a 32767. Indica el máximo valor posible entero.
+\end{itemize}
+
+\subsection{Tipos predefinidos}
+Los tipos predefinidos simples en Mini-Pascal son \texttt{char} (caracteres), \texttt{integer} (números enteros) y \texttt{boolean} (\textbf{true} y \textbf{false}).
+
+\subsubsection{\texttt{char}}
+
+Los caracteres son todos los que se encuentran en el código ASCII \footnote{Para más información, dirigirse a \url{http://es.wikipedia.org/wiki/ASCII}.} Se pueden generar a partir de liteles. Como se ha detallado, éstos pueden ser números o letras (mayúsculas y minúsculas). Sin embargo, una variable declarada de este tipo puede obtener otros valores a partir de la función \verb|chr|, o las funciones \verb|pred| y \verb|succ|.
+
+\subsubsection{\texttt{integer}}
+
+Los enteros son enteros signados de 16 bits. Pueden tomar valores de $-2^{15}$ ($-maxint-1$) a $2^{15}-1$ ($maxint$).
+
+\subsubsection{\texttt{boolean}}
+
+Los booleanos están definidos a partir de las constantes especificadas antes: \verb|true| y \verb|false|, pudiendo tener sólo estos valores.
+
+\subsection{Procedimientos predefinidos}
+
+Existen algunos procedimientos predefinidos, que serán útiles en la entrada y salida, para la interacción con el usuario.
+
+\subsubsection{\texttt{write}}
+
+Puede recibir como único parámetro un carácter, o un entero (así como subrangos definidos sobre esos tipos). Genera como salida por pantalla la impresión del carácter, o número.
+
+\subsubsection{\texttt{writeln}}
+
+Es análogo al procedimiento anterior, con la diferencia de imprimir además un salto de línea.
+
+\subsubsection{\texttt{read}}
+
+Este procedimiento toma un parámetro por referencia de tipo \verb|integer| o \verb|char|, y en éste devuelve el valor de la entrada por pantalla, ya sea un número o un caracter.
+
+
+\subsubsection{\texttt{readln}}
+
+Es análogo al anterior, pero al leer el parámetro, ignora el resto de la línea.
+
+\subsection{Funciones predefinidas}
+
+\subsubsection{\texttt{chr}}
+
+Esta función se puede ver como un \textit{cast}, de \verb|integer| a \verb|char|. Dado un entero (de 0 a 255) devuelve un caracter de ese código ASCII.
+
+\subsubsection{\texttt{ord}}
+
+Es la función inversa a la anterior. Dado un caracter, devuelve su código ASCII.
+
+\subsubsection{\texttt{pred}}
+
+Esta función puede tener como parámetro valores de tipo \verb|char| o \verb|integer| (así como subrangos definidos sobre éstos), y devuelve el valor anterior dentro de los valores posibles.
+
+\subsubsection{\texttt{succ}}
+
+Es análoga a la anterior, sólo que devuelve el sucesor.
+
+\section{Programas}
+
+Todo archivo fuente válido en Mini-Pascal es un programa; el programa está compuesto por las declaraciones y sentencias antes definidas.
+
+\subsection{Bloques}
+
+Un bloque es la estructura principal de un programa (o subprograma) en Mini-Pascal. En la siguiente gramática, se detalla como se declara.
+
+\begin{verbatim}
+<block> ::= <constant definition part><type definition part><variable declaration part><procedure and function declaration part><statement part>
+
+<constant definition part> ::= <empty> | const <constant definition>{;<constant definition>};
+
+<type definition part> ::= <empty> | type <type definition>{;<type definition>};
+
+<variable definition part> : := <empty> | var<variable declaration>{;<variable declaration>};
+
+<procedure and function declaration part> ::= {<procedure or function declaration part>;}
+
+<procedure or function declaration part> ::= <procedure declaration> | <function declaration>
+
+<statement part> ::= <compound statement>
+
+<compound statement> ::= begin <statement>{;<statement>} end
+
+<statement> ::= <unlabelled statement>
+
+<unlabelled statement> ::= <simple statement> | <structured statement>
+\end{verbatim}
+
+\subsection{Sintaxis del programa}
+
+Un programa cuenta con su encabezado, que declara el nombre del programa, y un bloque, como ha sido definido en la sección anterior.
+
+\begin{verbatim}
+<program> ::= <program heading> <block>.
+
+<program heading> ::= program <identifier>;
+\end{verbatim}
+
+
 
 \chapter{Decisiones de diseño}
 
