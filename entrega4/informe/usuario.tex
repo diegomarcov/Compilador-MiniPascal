@@ -588,20 +588,22 @@ Un programa cuenta con su encabezado, que declara el nombre del programa, y un b
 
 \chapter{Decisiones de diseño}
 
-Dado que algunas situaciones no están consideradas completamente en la especificación de Mini-Pascal, se tomaron algunas decisiones de diseño para que el comportamiento del compilador sea consistente. Podemos destacar:
+Dado que algunas situaciones no están consideradas completamente en la especificación de Mini-Pascal, se tomaron algunas decisiones de diseño para que el comportamiento del compilador sea consistente. A continuación, detallamos las más reelevantes.
 
-\begin{itemize}
-	\item {\bf Asignación de arreglos}: se considera que una variable de tipo arreglo puede ser asignada a otra {\bf si y sólo si}:
+\section{Asignación de arreglos}
+Se considera que una variable de tipo arreglo puede ser asignada a otra {\bf si y sólo si}:
 		\begin{enumerate}
 			\item{Ambos arreglos poseen exactamente la misma cantidad de elementos.}
 			\item{Los componentes de los arreglos son de tipos compatibles.}
 		\end{enumerate}
-		Dos tipos se consideran compatibles cuando se refieren al mismo tipo base; por ejemplo, dos subrangos de enteros diferentes.
-	\item {\bf Valores booleanos}: se considera que la constante \texttt{false} es ``menor'' ordinalmente a la constante \texttt{true}. Esto define la semántica de las operaciones \texttt{succ}, \texttt{pred}, y el conjunto de subrangos booleanos posibles a declarar.
-	\item {\bf Warnings}: si bien no necesariamente implican errores (pues el programa es sintáctica y semánticamente correcto), se decidió incluir \emph{warnings} cuando una variable no es inicializada antes de referenciarla, dado que el valor de dicha variable resulta, de esta manera, indefinido, y ese comportamiento no es usualmente deseado por el usuario.
+Dos tipos se consideran compatibles cuando se refieren al mismo tipo base; por ejemplo, dos subrangos de enteros diferentes.
+
+\section{Valores booleanos}
+Se considera que la constante \texttt{false} es ``menor'' ordinalmente a la constante \texttt{true}. Esto define la semántica de las operaciones \texttt{succ}, \texttt{pred}, y el conjunto de subrangos booleanos posibles a declarar. Concretamente, resulta imposible declarar un subrango \texttt{true..false}, puesto que la cota inferior del subrango es mayor a la cota superior.
+\section{Warnings}
+Si bien no necesariamente implican errores (pues el programa es sintáctica y semánticamente correcto), se decidió incluir \emph{warnings} cuando una variable no es inicializada antes de referenciarla, dado que el valor de dicha variable resulta, de esta manera, indefinido, y ese comportamiento no es usualmente deseado por el usuario.
 
 	De la misma manera, si se escribió una función o procedimiento que no es utilizada, o bien ese código es (de momento) inútil, o bien el usuario olvidó escribir la parte del programa encargada de usar dicho procedimiento. De cualquier manera, también se muestra un \emph{warning} para ayudar al usuario a detectar de manera anticipada estos posibles errores.
-\end{itemize}
 
 \begin{thebibliography}{9}
 \addcontentsline{toc}{chapter}{Bibliografía}
