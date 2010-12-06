@@ -2,13 +2,31 @@
 \usepackage[spanish]{babel}
 \usepackage[latin1]{inputenc}
 \usepackage{fullpage}
-%\usepackage{listings}
+\usepackage{listings}
 %\usepackage{fancyvrb}
 \usepackage{float}
 \usepackage[colorlinks=true,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-%\usepackage{gmverb}
+\usepackage{gmverb}
 \usepackage{graphicx}
-
+\usepackage{color}
+\lstset{ %
+language=Python,
+basicstyle=\footnotesize,
+numbers=left,
+numberstyle=\footnotesize,
+stepnumber=1,
+numbersep=5pt,
+backgroundcolor=\color{white},
+showspaces=false,
+showstringspaces=false,
+showtabs=false,
+frame=single,
+tabsize=2,
+captionpos=b,
+breaklines=true,
+breakatwhitespace=false,
+escapeinside={\%}
+}
 
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
 
@@ -488,7 +506,7 @@ Se encuentra en \verb|utils.py|. Su única función es proveer un método \textit{w
 
 
 \subsection{SynAn}
-El código de esta clase se encuentra en el archivo \verb|SynAn.py|. Para su inicialización requiere el Analizador Léxico \textbf{LexAn}. Se le puede pasar un flag de debug y un archivo en el cual escribir la salida. Si el flag de debug es falso, se asigna la salida de debug a una clase que no escribe nada (VortexWriter). Esta decisión se tomó para no tener que realizar un \texttt{if} cada vez que se escriba un mensaje de debug, sino que directamente se escriba siempre, y dependiendo de la clase del objeto se mostrará en el archivo de salida o no. En caso de especificar el flag, todos los mensajes de debug serán mostrados en el archivo de salida. A su vez, si el archivo de salida no es especificado, se considerará por defecto como \textit{stdout}, por lo que la salida por defecto del compilador se realiza por pantalla.
+El código de esta clase se encontraba en el archivo \verb|SynAn.py| en las versiones anteriores; dado que en la última entrega se mezcla el análisis sintáctico con las acciones semánticas, todo el proceso se encuentra en la clase principal del compilador, \texttt{pycomp.py}. Para su inicialización requiere el Analizador Léxico \textbf{LexAn}. Se le puede pasar un flag de debug y un archivo en el cual escribir la salida. Si el flag de debug es falso, se asigna la salida de debug a una clase que no escribe nada (VortexWriter). Esta decisión se tomó para no tener que realizar un \texttt{if} cada vez que se escriba un mensaje de debug, sino que directamente se escriba siempre, y dependiendo de la clase del objeto se mostrará en el archivo de salida o no. En caso de especificar el flag, todos los mensajes de debug serán mostrados en el archivo de salida. A su vez, si el archivo de salida no es especificado, se considerará por defecto como \textit{stdout}, por lo que la salida por defecto del compilador se realiza por pantalla.
 
 El analizador contiene el método \verb|execute| que inicializa el proceso de análisis sintáctico, y devuelve el mensaje de éxito.
 
@@ -496,7 +514,7 @@ El resto de los procedimientos se mapean a los no-terminales de la gramática; su
 
 En los casos en los que esto no sucede, se arroja una excepción.
 
-\subsection{Excepciones}
+\section{Errores detectados}
 
 El analizador sintáctico arroja excepciones del tipo \verb|SynError|, declarada en el archivo \verb|utils.py|, que devuelve errores con el mayor grado de precisión posible, incluyendo las cadenas encontradas (que produjeron el error), lo que se esperaba encontrar, el número de línea y el nombre del archivo donde se encontró el error.
 
@@ -508,8 +526,7 @@ Antes de comenzar con la implementación del analizador semántico se especificó u
 
 Cabe destacar que el Esquema de Traducción se presenta en \emph{pseudo-código}, y en él se detallan todos los controles que realiza el compilador durante el análisis, pero {\bf no} la generación de código intermedio. En su lugar, simplemente se indica textualmente qué debe hacer el código que se debe generar; ésta decisión se tomó para no ensuciar el Esquema de Traducción, puesto que el código MEPa fue generado en la última parte de la implementación del compilador.
 
-\begin{verbatim}
-
+\begin{lstlisting}
 <program> ::= 	{
 					stStack = newSymbolTableStack()
 					
@@ -771,7 +788,7 @@ Cabe destacar que el Esquema de Traducción se presenta en \emph{pseudo-código}, 
 							elif <constant>.tipo.instancia(Booleano):
 								<simple_type_rest>.value = SubBooleano(None,<constant>.value)
 							else:
-								error("Yype "+ constant.tipo + "cannot be used in a subrange")
+								error("Type "+ constant.tipo + "cannot be used in a subrange")
 						}
                         |
                         <LAMBDA>
@@ -804,7 +821,7 @@ Cabe destacar que el Esquema de Traducción se presenta en \emph{pseudo-código}, 
                                 # y las referencias a los valores lowerBound y upperBound
                                 <subrange_type_rest>.tipo = SubEntero(lowerBound=id, upperBound=<constant>.attr)
                              else:
-								 error("Integer subrange expected")
+								 								error("Integer subrange expected")
                         }
 
 						
@@ -1052,7 +1069,7 @@ Cabe destacar que el Esquema de Traducción se presenta en \emph{pseudo-código}, 
 
 <simple_statement_rest> ::= <ASSIGNMENT> <expression> 
                             {
-								#busco primero un retorno de función
+								# busco primero un retorno de función
                                 identifier = getGlobalValue("$" + <simple_statement_rest>.ID)
 								if identifier== None:
 									identifier = getGlobalValue(<simple_statement_rest>.ID)
@@ -1525,7 +1542,7 @@ Cabe destacar que el Esquema de Traducción se presenta en \emph{pseudo-código}, 
 								#label de fin de while
 							}
 
-\end{verbatim}
+\end{lstlisting}
 
 \chapter{Analizador Semántico}
 
@@ -1538,7 +1555,7 @@ Inicialmente, la pila contiene una tabla de símbolos con todos los identificador
 
 \begin{table}[htbp]
 \centering
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l| p{13cm}|}
 \hline
 \textbf{Identificador}			& \textbf{Contenido} \\ \hline
 true	& {\ttfamily Attr(valor = 1, tipo = Booleano(), clase = "`constant"')} \\ \hline
@@ -1593,7 +1610,24 @@ Como se mencionó, cada uno de los identificadores en la tabla de símbolos posee 
 \end{figure}
 
 \section{Implementación del EDT}
-La implementación del Esquema de Traducción en Python fue realizada adaptando todas las acciones indicadas en el EdT a instrucciones propias del lenguaje. Los atributos heredados en el esquema se implementaron mediante parámetros pasados por valor; en cuanto a los atributos sintetizados, dado que Python no posee parámetros por referencia (que hubiese sido el salto a implementación ideal), se utilizó un nivel de indirección extra, enviando una referencia a un objeto que simboliza el atributo sintetizado. De esta manera, el procedimiento en el nivel ``inferior'' modifica el contenido del objeto, y una vez que finaliza, el procedimiento de nivel ``superior'' puede acceder a los atributos del objeto modificados.
+La implementación del Esquema de Traducción en Python fue realizada adaptando todas las acciones indicadas en el EdT a instrucciones propias del lenguaje.
+
+Los atributos heredados en el esquema se implementaron mediante parámetros pasados por valor; en cuanto a los atributos sintetizados, dado que Python no posee parámetros por referencia (que hubiese sido el salto a implementación ideal), se utilizó un nivel de indirección extra: se envía una referencia a un objeto que simboliza el atributo sintetizado.
+
+De esta manera, el procedimiento en el nivel ``inferior'' modifica el contenido del objeto, y una vez que finaliza, el procedimiento de nivel ``superior'' puede acceder a los atributos del objeto modificados, lo que coincide con la semántica de los atributos sintetizados en una gramática.
+
+\section{Errores detectados}
+
+El analizador semántico detecta una gran cantidad de errores en el código fuente de los programas; en caso de encontrar alguno, se arroja la excepción \texttt{SemanticError} y se aborta inmediatamente la compilación; las situaciones de error pueden clasificarse a grandes rasgos en:
+
+\begin{itemize}
+ \item {\bf Tipos incompatibles}: se indica cuando se intenta realizar una operación con dos elementos de tipos que no pueden interactuar entre sí; por ejemplo, asignar un caracter a una variable de tipo entero, sumar dos valores booleanos, u operar con dos arreglos de diferente tamaño o tipo de componente.
+ \item {\bf Out of bounds}: ocurre cuando no se respetan los valores máximos o mínimos de un tipo; por ejemplo, si se quisiera asignar una constante entera 99999999999999999999.
+ \item {\bf Rangos inválidos}: cuando un subrango declarado no cumple alguna de las especificaciones definidas; por ejemplo, declarar un subrango cuyo valor inferior es mayor al valor superior, o declarar valores límite con diferentes tipos.
+ \item {\bf Clases inesperadas}: ocurre cuando se lee un identificador válido, pero la clase de éste no es la que el compilador espera; por ejemplo, si en una declaración de variables se lee el tipo de una variable, pero dicho tipo resulta ser un identificador de procedimiento.
+ \item {\bf Invocación errónea}: ocurre cuando se realiza una llamada a una función o procedimiento, pero la cantidad o el tipo de los parámetros no coincide con los declarados.
+\end{itemize} 
+
 
 \begin{thebibliography}{9}
 \addcontentsline{toc}{chapter}{Bibliografía}
