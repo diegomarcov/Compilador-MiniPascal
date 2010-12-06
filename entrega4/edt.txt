@@ -779,11 +779,16 @@
 <factor_rest> ::= <OPEN_BRACKET> <expression> <CLOSE_BRACKET> 
 				  {
 					array = getGlobalValue(<factor_rest>.id)
-					if array.clase=="variable" and array.tipo.instancia(Arreglo):
+					nivel = lastLexicalLevel()
+					if array.tipo.instancia(Arreglo):
 						if checkTypes(<expression>.attr.tipo,array.tipo.index):
 							#chequear que el resultado de la expresion este dentro del rango, sino tirar index out of bounds
-							#devolver el contenido del arreglo
-							<factor_rest>.attr = newAttr(valor="""valor de la posicion del arreglo""",tipo=array.tipo.element,clase="subexpresion")
+							#restar el lower bound del arreglo
+							<factor_rest>.attr = newAttr(tipo=array.tipo.element,clase="subexpresion")
+							if <factor_rest>.porRef:
+								#apilo el valor indirecto 
+							else:
+								#apilo el valor
 						else:
 							error(array.tipo + " expected as index but " + <expression>.attr.tipo + " found")
 					else:
@@ -793,52 +798,76 @@
 				  | 
 				  <OPEN_PARENTHESIS> 
 				  {
+					if <factor_rest>.porRef:
+						error("reference parameter expected") 
 					fun = getGlobalValue(<factor_rest>.id)
 					if fun.clase=="function":
-						parameterList = fun.tipo.parameterList
-						<actual_parameter>.expected = parameterList[0][1:2] #esto seria el tipo esperado por el parametro
+						if len(fun.tipo.listParams)>0:
+							if lastLexicalLevel()==-1:
+								#la función es predefinida, por lo que a partir del identificador, se invoca a un macro que ejecute la función
+							else:
+								#reservar espacio para el valor de retorno
+								<actual_parameter>.esperado = fun.tipo.listParams[0]
+								<actual_parameter_rest>.listParams = listParams[1:]
+						else:
+							error("More parameters than expected")
 					else:
 						error(<factor_rest>.id + " is not a function")
 				  } 
 				  <actual_parameter>
-				  {
-					<actual_parameter_rest>.parameterList=parameterList[1:] #le paso los siguientes parametros
-					#colocar el parametro en su debido lugar en la pila
-				  }
 				  <actual_parameter_rest> 
 				  {
 					# llamar a la funcion con los parametros que estaran debidamente apilados
-					<factor_rest>.attr=newAttr(valor="""valor donde se colocara el resultado de la funcion"""tipo=id.tipo.ret,clase="subexpresion")
+					<factor_rest>.attr=newAttr(tipo=id.tipo.ret,clase="subexpresion")
 				  }
 				  | 
 				  <LAMBDA>
 				  {
 					id = getGlobalValue(<factor_rest>.id)
 					if id.clase=="function":
+						if <factor_rest>.porRef:
+							error("reference parameter expected") 
 						#llamar a la funcion sin parametros
 						<factor_rest>.attr = newAttr(tipo=id.tipo.ret,clase="subexpresion")
-					elif id.tipo.instancia(Tipo): #es una variable o una constante.
-						# se coloca el valor del id en la pila
-						<factor_rest>.attr = id
+					elif id.clase=="variable":
+						if <factor_rest>.porRef:
+							#apilar la dirección de memoria de la variable
+						else:
+							if id.tipo.instancia(Simple): #es una variable o una constante.
+								# se coloca el valor del id en la pila
+							elif id.tipo.instancia(Arreglo):
+								# se coloca el arreglo entero en la pila
+						<factor_rest>.attr = deepcopy(id)
+					elif id.clase=="constant": 
+						if <factor_rest>.porRef:
+							error("reference parameter expected") 
+						# se apila el valor de la constante
+						<factor_rest>.attr = deepcopy(id)
+					elif id.clase=="reference":
+						if porRef:
+							# apilar la direccion de la variable
+						else:
+							if identifier.tipo.instancia(Simple):
+								# apilo un valor de una variable con una inderección
+							elif identifier.tipo.instancia(Arreglo):
+								# apilo todo un arreglo con una indirección
+						attr.ref = deepcopy(identifier)
 					else:
 						error("Function, variable or constant expected, but "+id.tipo+" found")
 					
 				  }
 
 <actual_parameter> ::= {
-						<expression>.porReferencia=<actual_parameter>.expected[2]#aca viene el booleano
-						#capaz que no sea necesario, si se viene levantando el attr con la clase variable...
+						<expression>.porRef=<actual_parameter>.expected[2]#aca viene el booleano de si es por referencia o on
+						
 					   }
 					   <expression>
 					   {
-						if <actual_parameter>.expected[1]:
-							if <expression>.attr.clase=="variable":
-								<actual_parameter>.attr=<expression>.attr
-							else:
-								error("Variable expected")
+						if <actual_parameter>.id!= None: # si es True, es una función predefinida
+							# se escribe la macro para imprimir, que depende de la instrucción, y del tipo del parámetro
 						else:
-							if checkTypes(<actual_parameter>.tipo,<expression>.attr.tipo):
-								<actual_parameter>.attr=<expression>.attr
+							if not checkTypes(<expression>.attr.tipo,<actual_parameter>.esperado[1]):
+								error("another type expected")
 					   }
 
 <actual_parameter_rest> ::= <COMMA> 
@@ -949,6 +978,7 @@
 								if <expression>.tipo.instancia(Booleano):
 									#apilar su valor en la lista..
 									#aplicar desvio si falso a la etiqueta de despues del if
+									<conditional_statement_other>.label = #label de después del if
 								else:
 									error("Boolean expected")
 							}
@@ -960,6 +990,9 @@
 								  } 
 								  <statement> 
 								  | 
+								  {
+									#pongo etiqueta de después del if
+								  }
 								  <LAMBDA>
 
 <repetitive_statement> ::= <WHILE> 
@@ -974,7 +1007,8 @@
 								else:
 									error("Boolean expected")
 							}
-							<DO> <statement> #saque el repetitive_statement_rest porque statement ya tiene un lambda... o sea, teniamos una gramatica ambigua
+							<DO> <statement> 
 							{
-								#en el apunte de mepa dice que va desvio si verdadero. Para mi es desvio siempre... al label de inicio del while
+								#desvío siempre al comienzo de la expresión
+								#label de fin de while
 							}
