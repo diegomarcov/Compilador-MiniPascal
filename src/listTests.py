@@ -10,6 +10,10 @@ for x in list:
 			casoErroneo.append(x)
 		else:
 			casoCorrecto.append(x)
+			
+print casoCorrecto
+print casoErroneo
+			
 # print "Casos correctos:"		
 # for x in casoCorrecto:
 	# while True:
@@ -20,12 +24,12 @@ for x in list:
 			# print os.system("mepa21.exe bateria/"+x.replace(".pas",".mepa")) 
 		# else:
 			# print os.system(a.replace("$$","bateria/"+x).replace("$m$","bateria/"+x.replace(".pas",".mepa"))) 
-print "Casos erroneos:"		
-for x in casoErroneo:
-	if x>"sin_":
-		while True:
-			a = raw_input("comando para %s, o next para sig.-->" % x)
-			if a=="next":
-				break
+# print "Casos erroneos:"		
+# for x in casoErroneo:
+	# if x>"sin_":
+		# while True:
+			# a = raw_input("comando para %s, o next para sig.-->" % x)
+			# if a=="next":
+				# break
 				
-			print os.system(a.replace("$$","bateria/"+x))
+			# print os.system(a.replace("$$","bateria/"+x))

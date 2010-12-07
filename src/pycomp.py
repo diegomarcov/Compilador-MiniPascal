@@ -1132,6 +1132,8 @@ class PyComp():
 			############
 			try:
 				identifier = self.stStack.getGlobalValue("$" + id) #primero busca el retorno de funcion. Si no aparece, no deja que salte el error y busca el nombre de identificador común. Ya si ese tira error, es que no existe el id, y está bien que se rompa
+				if self.stStack.lastLexicalLevel()!=len(self.stStack)-1:
+					raise SemanticError(self.lexer.errorLeader(),"Undeclared identifier '%s'" % id)
 			except:
 				identifier = self.stStack.getGlobalValue(id)
 			lexLevel = self.stStack.lastLexicalLevel()
@@ -1517,6 +1519,7 @@ class PyComp():
 						elif id=="chr":
 							self.actual_parameter(esperado = listParams[0])
 							self.actual_parameter_rest(listParams = listParams[1:],id = id)
+							self.escribir("CONT %s, %s" % (Caracter().getLower(),Caracter().getUpper()))
 							attr.ref = Attr(clase="subexpression",tipo=Caracter())
 						elif id=="succ":
 							attr1 = Ref()
