@@ -201,7 +201,7 @@ class PyComp():
 					clase = "reference"
 				else:
 					clase = "variable"
-				self.stStack.addNewID(x[0], Attr(clase = clase, tipo = x[1], pos = -(n+3-i)))
+				self.stStack.addNewID(x[0], Attr(clase = clase, tipo = x[1], pos = -(n+3-i), used = True))
 				if x[2]: # por Referencia
 					i+=1
 				else:
@@ -1132,9 +1132,9 @@ class PyComp():
 			############
 			try:
 				identifier = self.stStack.getGlobalValue("$" + id) #primero busca el retorno de funcion. Si no aparece, no deja que salte el error y busca el nombre de identificador común. Ya si ese tira error, es que no existe el id, y está bien que se rompa
-				if self.stStack.lastLexicalLevel()!=len(self.stStack)-1:
+				if self.stStack.lastLexicalLevel()!=len(self.stStack)-2:
 					raise SemanticError(self.lexer.errorLeader(),"Undeclared identifier '%s'" % id)
-			except:
+			except SymbolTableError:
 				identifier = self.stStack.getGlobalValue(id)
 			lexLevel = self.stStack.lastLexicalLevel()
 			attr = Ref()
